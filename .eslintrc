@@ -1,0 +1,68 @@
+{
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2021
+  },
+  "parser": "@babel/eslint-parser",
+  "env": {
+    "node": true,
+    "commonjs": true
+  },
+  "extends": [
+    "airbnb",
+    "eslint:recommended"
+  ],
+  "plugins": [
+    "@babel"
+  ],
+  "rules": {
+    "no-unused-vars": "warn",
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [
+          ".js",
+          ".jsx"
+        ]
+      }
+    ],
+    "linebreak-style": "off",
+    "object-curly-newline": [
+      "warn",
+      {
+        "ObjectExpression": "never",
+        "ObjectPattern": {
+          "multiline": true
+        },
+        "ImportDeclaration": {
+          "multiline": true,
+          "minProperties": 2
+        },
+        "ExportDeclaration": {
+          "multiline": true,
+          "minProperties": 2
+        }
+      }
+    ],
+    "quotes": "off",
+    "no-use-before-define": "warn",
+    "no-trailing-spaces": [
+      "warn",
+      {
+        "skipBlankLines": true
+      }
+    ],
+    "comma-dangle": "off",
+    "semi": "off",
+    "no-shadow": [
+      "warn",
+      {
+        "builtinGlobals": false,
+        "hoist": "functions",
+        "allow": []
+      }
+    ]
+  }
+}
