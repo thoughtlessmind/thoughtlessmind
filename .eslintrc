@@ -12,12 +12,33 @@
   },
   "extends": [
     "airbnb",
-    "eslint:recommended"
+    "eslint:recommended",
+    "airbnb/hooks",
+    "prettier",
+    "prettier/react"
   ],
   "plugins": [
-    "@babel"
+    "@babel",
+    "react",
+    "react-hooks",
+    "jsx-a11y",
+    "import",
+    "prettier"
   ],
   "rules": {
+    "prettier/prettier": [
+      "warn",
+      {
+        "semi": false,
+        "tabWidth": 2,
+        "endOfLine": "auto",
+        "printWidth": 80,
+        "singleQuote": false,
+        "jsxSingleQuote": true,
+        "trailingComma": "none",
+        "parser": "babel"
+      }
+    ],
     "no-unused-vars": "warn",
     "react/jsx-filename-extension": [
       1,
@@ -29,23 +50,24 @@
       }
     ],
     "linebreak-style": "off",
-    "object-curly-newline": [
-      "warn",
-      {
-        "ObjectExpression": "never",
-        "ObjectPattern": {
-          "multiline": true
-        },
-        "ImportDeclaration": {
-          "multiline": true,
-          "minProperties": 2
-        },
-        "ExportDeclaration": {
-          "multiline": true,
-          "minProperties": 2
-        }
-      }
-    ],
+    "object-curly-newline": "off",
+    // [
+    //   "warn",
+    //   {
+    //     "ObjectExpression": "always",
+    //     "ObjectPattern": {
+    //       "multiline": true
+    //     },
+    //     "ImportDeclaration": {
+    //       "multiline": true,
+    //       "minProperties": 2
+    //     },
+    //     "ExportDeclaration": {
+    //       "multiline": true,
+    //       "minProperties": 
+    //     }
+    //   }
+    // ],
     "quotes": "off",
     "no-use-before-define": "warn",
     "no-trailing-spaces": [

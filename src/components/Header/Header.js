@@ -1,26 +1,20 @@
-import React, { useEffect } from "react";
-import {
-  Box,
-  makeStyles,
-  createStyles,
-  AppBar,
-  Toolbar,
-} from "@material-ui/core";
+import React from "react"
+import { makeStyles, AppBar, Toolbar } from "@material-ui/core"
+
+const useStyles = makeStyles((theme) => ({
+  test: {
+    color: theme.palette.primary.main
+  }
+}))
 
 const Header = () => {
-  const classes = useStyles();
-
-  useEffect(() => {
-    console.log("asdf");
-  }, []);
+  const classes = useStyles()
 
   return (
     <AppBar>
-      <Toolbar>HI</Toolbar>
+      <Toolbar className={classes.test}>HI</Toolbar>
     </AppBar>
-  );
-};
+  )
+}
 
-const useStyles = makeStyles((theme) => ({}));
-
-export default Header;
+export default Header
