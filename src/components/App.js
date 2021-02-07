@@ -1,7 +1,8 @@
 import React from "react"
-import { Box, makeStyles, createStyles, Typography } from "@material-ui/core"
+import { Box, makeStyles, Typography } from "@material-ui/core"
 import "../index.css"
 import Header from "./Header/Header"
+import LandingPage from "./LandingPage"
 
 const App = () => {
   const classes = useStyles()
@@ -9,11 +10,11 @@ const App = () => {
   return (
     <Box>
       <Header />
-      <Typography variant='h2'>Hi</Typography>
+      <LandingPage />
     </Box>
   )
 }
 
-const useStyles = makeStyles((theme) => ({}))
+const useStyles = makeStyles(() => ({}))
 
 export default App

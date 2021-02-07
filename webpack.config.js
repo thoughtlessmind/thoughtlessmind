@@ -30,7 +30,7 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist/"),
-    assetModuleFilename: "image/[hash][ext][query]",
+    assetModuleFilename: "image/[hash][ext][query]"
   },
   module: {
     rules: [
@@ -40,9 +40,9 @@ module.exports = {
         parser: {
           dataUrlCondition: {
             //Change the default maxSize of 8kb for putting the img in inline to 10kb
-            maxSize: 10 * 1024,
-          },
-        },
+            maxSize: 10 * 1024
+          }
+        }
       },
 
       {
@@ -52,28 +52,34 @@ module.exports = {
             loader: MiniCssExractPlugin.loader,
             options: {
               //Support url depended assets in css
-              publicPath: "",
-            },
+              publicPath: ""
+            }
           },
           "css-loader",
           "postcss-loader",
-          "sass-loader",
-        ],
+          "sass-loader"
+        ]
       },
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader",
-        },
-      },
-    ],
+          loader: "babel-loader"
+        }
+      }
+    ]
   },
 
   plugins: plugins,
 
   resolve: {
+    modules: ['src', 'node_modules'],
     extensions: [".js", ".jsx"],
+    unsafeCache: true,
+        alias: {
+            components: path.resolve(__dirname, 'src', 'components'),
+            globalComponents: path.resolve(__dirname, 'src', 'globalComponents'),
+        }
   },
 
   devtool: "source-map",
@@ -82,5 +88,9 @@ module.exports = {
     hot: true,
     open: true,
     port: 3000,
-  },
-};
+    overlay: {
+      errors: true,
+      warnings: true
+    }
+  }
+}
