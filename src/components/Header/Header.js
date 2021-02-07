@@ -1,4 +1,3 @@
-import React from "react"
 import {
   makeStyles,
   AppBar,
@@ -6,7 +5,8 @@ import {
   Box,
   Typography,
   fade,
-  useScrollTrigger
+  useScrollTrigger,
+  Button
 } from "@material-ui/core"
 import { HideOnScroll } from "globalComponents"
 
@@ -22,13 +22,11 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     gap: theme.spacing(2),
     "&>a": {
-      cursor: "pointer",
-      padding: theme.spacing(1, 2),
-      backgroundColor: fade("#fff", 0.05),
-      borderRadius: theme.shape.borderRadius,
-      userSelect: "none",
+      fontFamily: theme.custom.fontFamily.codeStyle,
+      transition: theme.transitions.create(["color", "background-color"]),
       "&:hover": {
-        backgroundColor: fade("#fff", 0.2)
+        backgroundColor: fade(theme.palette.secondary.main, 0.1),
+        color: theme.palette.secondary.main
       }
     }
   }
@@ -45,15 +43,15 @@ const Header = () => {
 
   return (
     <>
-      <HideOnScroll threshold={20}>
-        <AppBar elevation={trigger ? 4 : 0}>
+      <HideOnScroll threshold={100}>
+        <AppBar position='sticky' elevation={trigger ? 4 : 0}>
           <Toolbar className={classes.toolbarContainer}>
             <Typography>Logo</Typography>
             <Box className={classes.navItemsContainer}>
               {navbarItems.map((item) => (
-                <Typography component='a' key={item}>
+                <Button size='small' component='a' key={item}>
                   {item}
-                </Typography>
+                </Button>
               ))}
             </Box>
           </Toolbar>

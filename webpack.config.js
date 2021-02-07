@@ -73,13 +73,14 @@ module.exports = {
   plugins: plugins,
 
   resolve: {
-    modules: ['src', 'node_modules'],
+    modules: ["src", "node_modules"],
     extensions: [".js", ".jsx"],
     unsafeCache: true,
-        alias: {
-            components: path.resolve(__dirname, 'src', 'components'),
-            globalComponents: path.resolve(__dirname, 'src', 'globalComponents'),
-        }
+    alias: {
+      components: path.resolve(__dirname, "src", "components"),
+      globalComponents: path.resolve(__dirname, "src", "globalComponents"),
+      resources: path.resolve(__dirname, "src", "resources")
+    }
   },
 
   devtool: "source-map",

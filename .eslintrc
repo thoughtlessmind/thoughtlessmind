@@ -8,7 +8,8 @@
   "parser": "@babel/eslint-parser",
   "env": {
     "node": true,
-    "commonjs": true
+    "commonjs": true,
+    "browser": true
   },
   "extends": [
     "airbnb",
@@ -85,7 +86,9 @@
         "hoist": "functions",
         "allow": []
       }
-    ]
+    ],
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off"
   },
   "settings": {
     "import/resolver": {
