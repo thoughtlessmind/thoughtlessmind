@@ -1,4 +1,4 @@
-import { createMuiTheme } from "@material-ui/core"
+import { createMuiTheme, fade } from "@material-ui/core"
 
 const theme = createMuiTheme({
   palette: {
@@ -10,6 +10,9 @@ const theme = createMuiTheme({
     },
     background: {
       paper: "#0A192F"
+    },
+    offWhite: {
+      main: "rgb(136, 146, 176)"
     }
   },
   props: {
@@ -26,7 +29,7 @@ const theme = createMuiTheme({
     },
     MuiButton: {
       root: {
-        color: "rgb(136, 146, 176)",
+        color: fade('#fff', 0.8),
         textTransform: "inherit"
       },
       textSizeSmall: {

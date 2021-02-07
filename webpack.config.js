@@ -35,7 +35,11 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(png|jpe?g|gif|svg)$/i,
+        test: /\.svg$/,
+        use: ["@svgr/webpack"]
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/i,
         type: "asset",
         parser: {
           dataUrlCondition: {

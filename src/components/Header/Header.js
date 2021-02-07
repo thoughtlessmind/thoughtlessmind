@@ -11,6 +11,10 @@ import {
 import { HideOnScroll } from "globalComponents"
 
 const useStyles = makeStyles((theme) => ({
+  appbarStyle: {
+    transition: theme.transitions.create(["box-shadow"]),
+    padding: theme.spacing(0, 4)
+  },
   toolbarContainer: {
     // color: theme.palette.primary.main
     display: "flex",
@@ -29,6 +33,11 @@ const useStyles = makeStyles((theme) => ({
         color: theme.palette.secondary.main
       }
     }
+  },
+  [theme.breakpoints.down("xs")]: {
+    navItemsContainer: {
+      display: "none"
+    }
   }
 }))
 
@@ -44,8 +53,12 @@ const Header = () => {
   return (
     <>
       <HideOnScroll threshold={100}>
-        <AppBar position='sticky' elevation={trigger ? 4 : 0}>
-          <Toolbar className={classes.toolbarContainer}>
+        <AppBar
+          className={classes.appbarStyle}
+          position='sticky'
+          elevation={trigger ? 8 : 0}
+        >
+          <Toolbar component='nav' className={classes.toolbarContainer}>
             <Typography>Logo</Typography>
             <Box className={classes.navItemsContainer}>
               {navbarItems.map((item) => (
