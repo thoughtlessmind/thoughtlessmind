@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <title>Rajiv Kumar | Javascript Developer</title>
+  <style>
+    #root{
+      display:'none'
+    }
+    .loader:empty {
+      position: absolute;
+      top: calc(50% - 4em);
+      left: calc(50% - 4em);
+      width: 6em;
+      height: 6em;
+      border: 1.1em solid rgba(0, 0, 0, 0.2);
+      border-left: 1.1em solid #000000;
+      border-radius: 50%;
+      animation: load8 1.1s infinite linear;
+    }
+
+    @keyframes load8 {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  <script>
+    function onLoad() {
+      // setTimeout(() => {
+      //   const rootEl = document.getElementById("root")
+      // rootEl.style.display = "block"
+
+      // var loader = document.getElementById("loader");
+      // loader.className = "";
+      // }, 3000);
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+  <title>Document</title>
+</head>
+
+<body onload="onLoad()">
+  <!-- <div class="loader" id="loader"></div> -->
+  <div id="root"></div>
+</body>
+
+</html>
