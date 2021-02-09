@@ -33,8 +33,18 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     justifyContent: "flex-end",
     paddingBottom: theme.spacing(16),
+    animation: "$growVertically 2s 1",
+    transformOrigin: "bottom",
     [theme.breakpoints.down("sm")]: {
       display: "none"
+    }
+  },
+  "@keyframes growVertically": {
+    "0%": {
+      transform: "scaleY(0)"
+    },
+    "100%": {
+      transform: "scaleY(1)"
     }
   },
   linkStyle: {

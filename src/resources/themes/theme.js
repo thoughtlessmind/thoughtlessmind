@@ -2,8 +2,12 @@ import { createMuiTheme, fade } from "@material-ui/core"
 
 const theme = createMuiTheme({
   palette: {
+    type: "dark",
     primary: {
-      main: "#0A192F"
+      // main: "#0A192F"
+      // main: "#003049",
+      main: "#003049",
+      dark: "#222"
     },
     secondary: {
       main: "#64ffda"
@@ -29,7 +33,7 @@ const theme = createMuiTheme({
     },
     MuiButton: {
       root: {
-        color: fade('#fff', 0.8),
+        color: fade("#fff", 0.8),
         textTransform: "inherit"
       },
       textSizeSmall: {

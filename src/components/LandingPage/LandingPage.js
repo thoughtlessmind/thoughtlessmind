@@ -1,4 +1,4 @@
-import { Box, fade, makeStyles, Typography } from "@material-ui/core"
+import { Box, darken, fade, makeStyles, Typography } from "@material-ui/core"
 
 const useStyles = makeStyles((theme) => ({
   landingPageContainer: {
@@ -16,6 +16,32 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(4, 0),
     letterSpacing: "0.6px",
     wordSpacing: "0.6px"
+  },
+  webWord: {
+    zIndex: 20,
+    position: "relative",
+    color: "#fff",
+    "&:after": {
+      content: `""`,
+      position: "absolute",
+      bottom: 5,
+      left: 0,
+      backgroundColor: darken(theme.palette.secondary.main, 0.4),
+      width: "100%",
+      height: 16,
+      zIndex: -2,
+      transform: "skewX(307deg)",
+      transition: theme.transitions.create(["transform", "bottom", "box-shadow"]),
+      boxShadow: "3px 3px 2px 1px #2323236b"
+    },
+    "&:hover": {
+      "&:after": {
+        // transform: "skewX(300deg)",
+        bottom: 3,
+        boxShadow: 'none',
+        // transform: "skewX(307deg) skewY(2deg)"
+      }
+    }
   }
 }))
 
@@ -28,7 +54,7 @@ const LandingPage = () => {
         Rajiv Kumar.
       </Typography>
       <Typography variant='h2'>
-        I build things for the <span>web</span>.
+        I build things for the <span className={classes.webWord}>web</span>.
       </Typography>
       <Typography className={classes.tagline}>
         I&apos;m a software engineer based in New Delhi, India specializing in
