@@ -70,10 +70,10 @@ const useStyles = makeStyles((theme) => ({
   },
   "@keyframes growVertically": {
     "0%": {
-      transform: "scaleY(0)"
+      transform: "translateY(200px)"
     },
     "100%": {
-      transform: "scaleY(1)"
+      transform: "translateY(0px)"
     }
   },
   linksContainer: {
