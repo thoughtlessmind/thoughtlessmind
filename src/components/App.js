@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Box, makeStyles, MuiThemeProvider } from "@material-ui/core"
 import "../index.css"
 import theme from "resources/themes"
@@ -6,9 +7,9 @@ import LandingPage from "./LandingPage"
 import LeftSidebar from "./LeftSidebar/LeftSidebar"
 import RightSidebar from "./RightSidebar/RightSidebar"
 
+
 const App = () => {
   const classes = useStyles()
-
   return (
     <MuiThemeProvider theme={theme}>
       <Box>

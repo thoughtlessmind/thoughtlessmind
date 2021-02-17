@@ -9,6 +9,7 @@ import {
   Button
 } from "@material-ui/core"
 import { HideOnScroll } from "globalComponents"
+import Logo from "resources/svg/logo.svg"
 
 const useStyles = makeStyles((theme) => ({
   appbarStyle: {
@@ -59,13 +60,23 @@ const Header = () => {
           elevation={trigger ? 8 : 0}
         >
           <Toolbar component='nav' className={classes.toolbarContainer}>
-            <Typography>Logo</Typography>
+            <Box>
+              <Logo style={{  width:  40, height:  40  }} />
+            </Box>
             <Box className={classes.navItemsContainer}>
               {navbarItems.map((item) => (
                 <Button size='small' component='a' key={item}>
                   {item}
                 </Button>
               ))}
+              <Button
+                target='_blank'
+                component='a'
+                variant='outlined'
+                href='https://github.com/thoughtlessmind'
+              >
+                Github
+              </Button>
             </Box>
           </Toolbar>
         </AppBar>
