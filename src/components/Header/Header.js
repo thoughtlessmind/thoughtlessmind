@@ -14,7 +14,8 @@ import Logo from "resources/svg/logo.svg"
 const useStyles = makeStyles((theme) => ({
   appbarStyle: {
     transition: theme.transitions.create(["box-shadow"]),
-    padding: theme.spacing(0, 4)
+    padding: theme.spacing(0, 4),
+    overflow:   "hidden"
   },
   toolbarContainer: {
     // color: theme.palette.primary.main
@@ -26,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(2),
+    animation: "$slideLeft 2s",
     "&>a": {
       fontFamily: theme.custom.fontFamily.codeStyle,
       transition: theme.transitions.create(["color", "background-color"]),
@@ -36,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
     }
   },
   logoStyle: {
-    animation: "$logoAnim 1s",
+    animation: "$logoAnim 0.5s",
     cursor: "pointer"
     // left: "60px",
     // top: "20px",
@@ -64,7 +66,25 @@ const useStyles = makeStyles((theme) => ({
     navItemsContainer: {
       display: "none"
     }
+  },
+  "@keyframes slideLeft":   {
+  //   from: {
+  //     transform: "translate(80%, 0)"
+  //   },
+  //   to: {
+  //     transform: "translate(0, 0)"
+  //   }
+  // }
+  "0%": {
+    transform: "translate(120%, 0)"
+  },
+  "35%": {
+    transform: "translate(120%, 0)"
+  },
+  "100%": {
+    transform: "translate(0, 0)"
   }
+},
 }))
 
 const navbarItems = ["About", "Experience", "Work", "Contact"]
