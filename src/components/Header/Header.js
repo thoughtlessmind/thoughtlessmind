@@ -35,6 +35,31 @@ const useStyles = makeStyles((theme) => ({
       }
     }
   },
+  logoStyle: {
+    animation: "$logoAnim 1s",
+    cursor: "pointer"
+    // left: "60px",
+    // top: "20px",
+    // transform: "translate(0%, 0%)"
+  },
+  "@keyframes logoAnim": {
+    "0%": {
+      position: "fixed",
+      left: "50%",
+      top: "50%",
+      transform: "translate(-50%, -50%)"
+    },
+    "99%": {
+      left: "56px",
+      top: "10px",
+      position: "fixed",
+      transform: "translate(0%, 0%)"
+    },
+    "100%": {
+      // transform: "rotate(360deg)",
+      position: "relative"
+    }
+  },
   [theme.breakpoints.down("xs")]: {
     navItemsContainer: {
       display: "none"
@@ -61,7 +86,12 @@ const Header = () => {
         >
           <Toolbar component='nav' className={classes.toolbarContainer}>
             <Box>
-              <Logo style={{  width:  40, height:  40  }} />
+              {/* <Box>
+                <Logo style={{ width: 40, height: 40 }} />
+              </Box> */}
+              <Box className={classes.logoStyle}>
+                <Logo style={{ width: 45, height: 45 }} />
+              </Box>
             </Box>
             <Box className={classes.navItemsContainer}>
               {navbarItems.map((item) => (
