@@ -5,11 +5,27 @@ const useStyles = makeStyles((theme) => ({
     height: `calc(100vh - ${theme.mixins.toolbar.minHeight}px)`,
     display: "flex",
     justifyContent: "center",
-    flexDirection: "column"
+    flexDirection: "column",
+    animation: "$slideDown 1.5s"
   },
-  test: {
+  "@keyframes slideDown": {
+    "0%": {
+      // transform: "translate(0, -80%)"
+      transform: "translate(-80%, 0)"
+    },
+    // "35%": {
+    //   transform: "translate(0, -80%)"
+    // },
+    "100%": {
+      transform: "translate(0, 0)"
+    }
+  },
+  nameStyle: {
     color: fade(theme.palette.common.white, "0.8"),
     fontWeight: 400
+  },
+  slagLine: {
+    fontSize: "3.7rem"
   },
   tagline: {
     maxWidth: "500px",
@@ -31,16 +47,28 @@ const useStyles = makeStyles((theme) => ({
       height: 16,
       zIndex: -2,
       transform: "skewX(307deg)",
-      transition: theme.transitions.create(["transform", "bottom", "box-shadow"]),
+      transition: theme.transitions.create([
+        "transform",
+        "bottom",
+        "box-shadow"
+      ]),
       boxShadow: "3px 3px 2px 1px #2323236b"
     },
     "&:hover": {
       "&:after": {
         // transform: "skewX(300deg)",
         bottom: 3,
-        boxShadow: 'none',
+        boxShadow: "none"
         // transform: "skewX(307deg) skewY(2deg)"
       }
+    }
+  },
+  [theme.breakpoints.down("xs")]: {
+    nameStyle: {
+      fontSize: "2rem"
+    },
+    slagLine: {
+      fontSize: "1.5rem"
     }
   }
 }))
@@ -49,15 +77,15 @@ const LandingPage = () => {
   const classes = useStyles()
   return (
     <Box className={classes.landingPageContainer}>
-      <Typography color='secondary'>Hi, my name is</Typography>
-      <Typography className={classes.test} variant='h2'>
+      <Typography color='secondary'>Hello World, my name is</Typography>
+      <Typography className={classes.nameStyle} variant='h2'>
         Rajiv Kumar.
       </Typography>
-      <Typography variant='h2'>
+      <Typography variant='h2' className={classes.slagLine}>
         I build things for the <span className={classes.webWord}>web</span>.
       </Typography>
       <Typography className={classes.tagline}>
-        I&apos;m a software engineer based in New Delhi, India specializing in
+        I&apos;m a web developer based in New Delhi, India specializing in
         building exceptional, high-quality websites and web applications.
       </Typography>
     </Box>

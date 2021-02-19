@@ -29,6 +29,7 @@ const socialLinks = [
 ]
 
 const LeftSidebar = () => {
+  // eslint-disable-next-line no-use-before-define
   const classes = useStyles()
   return (
     <Box className={classes.leftSideContainer}>
@@ -70,7 +71,10 @@ const useStyles = makeStyles((theme) => ({
   },
   "@keyframes growVertically": {
     "0%": {
-      transform: "translateY(200px)"
+      transform: "translateY(400px)"
+    },
+    "50%": {
+      transform: "translateY(400px)"
     },
     "100%": {
       transform: "translateY(0px)"
