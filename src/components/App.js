@@ -6,6 +6,7 @@ import Header from "./Header/Header"
 import LandingPage from "./LandingPage"
 import LeftSidebar from "./LeftSidebar/LeftSidebar"
 import RightSidebar from "./RightSidebar/RightSidebar"
+import About from "./About"
 
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
         <RightSidebar />
         <Box className={classes.pageContainer}>
           <LandingPage />
+          <About />
         </Box>
       </Box>
     </MuiThemeProvider>

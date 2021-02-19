@@ -20,9 +20,12 @@ const useStyles = makeStyles((theme) => ({
       transform: "translate(0, 0)"
     }
   },
-  test: {
+  nameStyle: {
     color: fade(theme.palette.common.white, "0.8"),
     fontWeight: 400
+  },
+  slagLine: {
+    fontSize: "3.7rem"
   },
   tagline: {
     maxWidth: "500px",
@@ -59,6 +62,14 @@ const useStyles = makeStyles((theme) => ({
         // transform: "skewX(307deg) skewY(2deg)"
       }
     }
+  },
+  [theme.breakpoints.down("xs")]: {
+    nameStyle: {
+      fontSize: "2rem"
+    },
+    slagLine: {
+      fontSize: "1.5rem"
+    }
   }
 }))
 
@@ -67,14 +78,14 @@ const LandingPage = () => {
   return (
     <Box className={classes.landingPageContainer}>
       <Typography color='secondary'>Hello World, my name is</Typography>
-      <Typography className={classes.test} variant='h2'>
+      <Typography className={classes.nameStyle} variant='h2'>
         Rajiv Kumar.
       </Typography>
-      <Typography variant='h2'>
+      <Typography variant='h2' className={classes.slagLine}>
         I build things for the <span className={classes.webWord}>web</span>.
       </Typography>
       <Typography className={classes.tagline}>
-        I&apos;m a software engineer based in New Delhi, India specializing in
+        I&apos;m a web developer based in New Delhi, India specializing in
         building exceptional, high-quality websites and web applications.
       </Typography>
     </Box>

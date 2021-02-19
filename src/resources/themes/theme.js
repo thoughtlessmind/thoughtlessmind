@@ -28,7 +28,8 @@ const theme = createMuiTheme({
   overrides: {
     MuiTypography: {
       root: {
-        color: "rgb(136, 146, 176)"
+        // color: "rgb(136, 146, 176)"
+        color: "rgb(187 187 187)"
       }
     },
     MuiButton: {

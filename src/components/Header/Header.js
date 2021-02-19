@@ -3,7 +3,6 @@ import {
   AppBar,
   Toolbar,
   Box,
-  Typography,
   fade,
   useScrollTrigger,
   Button
@@ -39,7 +38,8 @@ const useStyles = makeStyles((theme) => ({
   },
   logoStyle: {
     animation: "$logoAnim 1s",
-    cursor: "pointer"
+    cursor: "pointer",
+    height: 45
   },
   "@keyframes logoAnim": {
     "0%": {
@@ -117,6 +117,14 @@ const Header = () => {
     threshold: 0
   })
 
+  const handleNavigation = (navTarget) => {
+    document.getElementById("about-section").scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    })
+    // document.getElementById(navTarget).scrollIntoView(true)
+  }
+
   return (
     <>
       <HideOnScroll threshold={100}>
@@ -136,7 +144,12 @@ const Header = () => {
             </Box>
             <Box className={classes.navItemsContainer}>
               {navbarItems.map((item) => (
-                <Button size='small' component='a' key={item}>
+                <Button
+                  size='small'
+                  onClick={handleNavigation}
+                  component='a'
+                  key={item}
+                >
                   {item}
                 </Button>
               ))}

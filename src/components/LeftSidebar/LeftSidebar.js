@@ -29,6 +29,7 @@ const socialLinks = [
 ]
 
 const LeftSidebar = () => {
+  // eslint-disable-next-line no-use-before-define
   const classes = useStyles()
   return (
     <Box className={classes.leftSideContainer}>
