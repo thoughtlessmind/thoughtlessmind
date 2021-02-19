@@ -66,7 +66,7 @@ const LandingPage = () => {
   const classes = useStyles()
   return (
     <Box className={classes.landingPageContainer}>
-      <Typography color='secondary'>Hi, my name is</Typography>
+      <Typography color='secondary'>Hello World, my name is</Typography>
       <Typography className={classes.test} variant='h2'>
         Rajiv Kumar.
       </Typography>

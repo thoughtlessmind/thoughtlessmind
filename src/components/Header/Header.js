@@ -14,8 +14,8 @@ import Logo from "resources/svg/logo.svg"
 const useStyles = makeStyles((theme) => ({
   appbarStyle: {
     transition: theme.transitions.create(["box-shadow"]),
-    padding: theme.spacing(0, 4),
-    overflow:   "hidden"
+    padding: theme.spacing(0, 8),
+    overflow: "hidden"
   },
   toolbarContainer: {
     // color: theme.palette.primary.main
@@ -38,11 +38,8 @@ const useStyles = makeStyles((theme) => ({
     }
   },
   logoStyle: {
-    animation: "$logoAnim 0.5s",
+    animation: "$logoAnim 1s",
     cursor: "pointer"
-    // left: "60px",
-    // top: "20px",
-    // transform: "translate(0%, 0%)"
   },
   "@keyframes logoAnim": {
     "0%": {
@@ -52,8 +49,26 @@ const useStyles = makeStyles((theme) => ({
       transform: "translate(-50%, -50%)"
     },
     "99%": {
-      left: "56px",
+      left: "88px",
       top: "10px",
+      position: "fixed",
+      transform: "translate(0%, 0%)"
+    },
+    "100%": {
+      // transform: "rotate(360deg)",
+      position: "relative"
+    }
+  },
+  "@keyframes logoAnimMobile": {
+    "0%": {
+      position: "fixed",
+      left: "50%",
+      top: "50%",
+      transform: "translate(-50%, -50%)"
+    },
+    "99%": {
+      left: "36px",
+      top: "8px",
       position: "fixed",
       transform: "translate(0%, 0%)"
     },
@@ -65,29 +80,35 @@ const useStyles = makeStyles((theme) => ({
   [theme.breakpoints.down("xs")]: {
     navItemsContainer: {
       display: "none"
+    },
+    appbarStyle: {
+      padding: theme.spacing(0, 2)
+    },
+    logoStyle: {
+      animation: "$logoAnimMobile 1s"
     }
   },
-  "@keyframes slideLeft":   {
-  //   from: {
-  //     transform: "translate(80%, 0)"
-  //   },
-  //   to: {
-  //     transform: "translate(0, 0)"
-  //   }
-  // }
-  "0%": {
-    transform: "translate(120%, 0)"
-  },
-  "35%": {
-    transform: "translate(120%, 0)"
-  },
-  "100%": {
-    transform: "translate(0, 0)"
+  "@keyframes slideLeft": {
+    //   from: {
+    //     transform: "translate(80%, 0)"
+    //   },
+    //   to: {
+    //     transform: "translate(0, 0)"
+    //   }
+    // }
+    "0%": {
+      transform: "translate(120%, 0)"
+    },
+    "35%": {
+      transform: "translate(120%, 0)"
+    },
+    "100%": {
+      transform: "translate(0, 0)"
+    }
   }
-},
 }))
 
-const navbarItems = ["About", "Experience", "Work", "Contact"]
+const navbarItems = ["About", "Work", "Contact"]
 
 const Header = () => {
   const classes = useStyles()
