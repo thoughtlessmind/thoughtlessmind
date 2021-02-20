@@ -1,4 +1,3 @@
-import React from "react"
 import {
   Box,
   makeStyles,
@@ -13,6 +12,39 @@ import Css3Logo from "resources/svg/css3-logo.svg"
 import GithubLogo from "resources/svg/github-brand-logo.svg"
 import JsLogo from "resources/svg/js-square-logo.svg"
 
+const techs = [
+  {
+    name: "javascript",
+    Icon: JsLogo,
+    color: "#f0db4f"
+  },
+  {
+    name: "reactjs",
+    Icon: ReactLogo,
+    color: "#61DBFB"
+  },
+  {
+    name: "html",
+    Icon: HtmlLogo,
+    color: "#FF5733"
+  },
+  {
+    name: "css",
+    Icon: Css3Logo,
+    color: "#264de4"
+  },
+  {
+    name: "git",
+    Icon: GitLogo,
+    color: "#f44d27"
+  },
+  {
+    name: "github",
+    Icon: GithubLogo,
+    color: "#000"
+  }
+]
+
 const useStyles = makeStyles((theme) =>
   createStyles({
     aboutPageContainer: {
@@ -21,7 +53,7 @@ const useStyles = makeStyles((theme) =>
     },
     sectionHeading: {
       position: "relative",
-      paddingBottom: theme.spacing(2),
+      marginBottom: theme.spacing(2),
       color: theme.palette.common.white,
       "&:after": {
         content: "''",
@@ -116,39 +148,6 @@ const useStyles = makeStyles((theme) =>
   })
 )
 
-const techs = [
-  {
-    name: "javascript",
-    Icon: JsLogo,
-    color: "#f0db4f"
-  },
-  {
-    name: "reactjs",
-    Icon: ReactLogo,
-    color: "#61DBFB"
-  },
-  {
-    name: "html",
-    Icon: HtmlLogo,
-    color: "#FF5733"
-  },
-  {
-    name: "css",
-    Icon: Css3Logo,
-    color: "#264de4"
-  },
-  {
-    name: "git",
-    Icon: GitLogo,
-    color: "#f44d27"
-  },
-  {
-    name: "github",
-    Icon: GithubLogo,
-    color: "#000"
-  }
-]
-
 const About = () => {
   const classes = useStyles()
   return (
@@ -181,7 +180,7 @@ const About = () => {
           </Typography>
           <Box className={classes.logosContainer}>
             {techs.map((item, index) => (
-              <item.Icon className={`logo${index}`} />
+              <item.Icon key={item.name} className={`logo${index}`} />
             ))}
           </Box>
         </Box>
