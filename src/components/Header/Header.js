@@ -118,11 +118,13 @@ const Header = () => {
   })
 
   const handleNavigation = (navTarget) => {
-    document.getElementById("about-section").scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    })
-    // document.getElementById(navTarget).scrollIntoView(true)
+    const el = document.getElementById(navTarget)
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      })
+    }
   }
 
   return (
@@ -138,7 +140,16 @@ const Header = () => {
               {/* <Box>
                 <Logo style={{ width: 40, height: 40 }} />
               </Box> */}
-              <Box className={classes.logoStyle}>
+              <Box
+                onClick={() =>
+                  window.scroll({
+                    top: 0,
+                    left: 0,
+                    behavior: "smooth"
+                  })
+                }
+                className={classes.logoStyle}
+              >
                 <Logo style={{ width: 45, height: 45 }} />
               </Box>
             </Box>
@@ -146,7 +157,9 @@ const Header = () => {
               {navbarItems.map((item) => (
                 <Button
                   size='small'
-                  onClick={handleNavigation}
+                  onClick={() =>
+                    handleNavigation(`${item.toLowerCase()}-section`)
+                  }
                   component='a'
                   key={item}
                 >
