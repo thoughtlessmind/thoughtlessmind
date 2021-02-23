@@ -8,7 +8,8 @@ const useStyles = makeStyles((theme) =>
   createStyles({
     workPageContainer: {
       minHeight: `calc(100vh - ${theme.mixins.toolbar.minHeight}px)`,
-      padding: theme.spacing(2, 0)
+      padding: theme.spacing(2, 0),
+      paddingTop: theme.mixins.toolbar.minHeight + 15
     },
     sectionHeading: {
       position: "relative",
