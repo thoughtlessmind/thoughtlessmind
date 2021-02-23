@@ -65,10 +65,10 @@ const useStyles = makeStyles((theme) => ({
   },
   [theme.breakpoints.down("xs")]: {
     nameStyle: {
-      fontSize: "2rem"
+      fontSize: "3rem"
     },
     slagLine: {
-      fontSize: "1.5rem"
+      fontSize: "2.5rem"
     }
   }
 }))

@@ -57,7 +57,8 @@ const useStyles = makeStyles((theme) =>
       width: "auto",
       height: 180,
       flexGrow: "1",
-      borderRadius: theme.shape.borderRadius
+      borderRadius: theme.shape.borderRadius,
+      // aspectRatio: 2
     },
     iconContainer: {
       display: "flex",
@@ -75,6 +76,16 @@ const useStyles = makeStyles((theme) =>
           // height: 20
           transform: "scale(1.2)"
         }
+      }
+    },
+    [theme.breakpoints.down("md")]:  {
+      projectPic:  {
+        height: 150,
+      }
+    },
+    [theme.breakpoints.down("sm")]:  {
+      projectPic:  {
+        display:'none'
       }
     }
   })
