@@ -52,9 +52,12 @@ const useStyles = makeStyles((theme) =>
       }
     },
     helloButton: {
-      marginLeft: "45%",
-      marginTop: theme.spacing(4),
-      padding: theme.spacing(2, 4)
+      padding: theme.spacing(2, 4),
+      display: "block",
+      textAlign: "center",
+      margin: "0 auto",
+      width: 150,
+      marginTop: theme.spacing(2)
     },
     iconsContainer: {
       marginTop: theme.spacing(3),

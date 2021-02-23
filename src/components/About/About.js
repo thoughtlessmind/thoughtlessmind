@@ -87,7 +87,7 @@ const useStyles = makeStyles((theme) =>
       }
     },
     animContainer: {
-      backgroundColor: fade("#fff", 0.1),
+      // backgroundColor: fade("#fff", 0.1),
       height: " 30vh"
     },
     jsWordStyle: {
