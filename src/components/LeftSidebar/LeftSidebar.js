@@ -4,6 +4,7 @@ import Dev from "resources/svg/dev-brands.svg"
 import LinkedIn from "resources/svg/linkedin-brands.svg"
 import Twitter from "resources/svg/twitter-brands.svg"
 import Github from "resources/svg/github-brands.svg"
+import Stackoverflow from "resources/svg/stack-overflow-brands.svg"
 
 const socialLinks = [
   {
@@ -16,15 +17,21 @@ const socialLinks = [
     Icon: (props) => <LinkedIn {...props} />,
     link: "https://www.linkedin.com/in/thoughtlessmind/"
   },
-  {
-    name: "Twitter",
-    Icon: (props) => <Twitter {...props} />,
-    link: "https://twitter.com/d_rajivkumar"
-  },
+  
   {
     name: "Dev",
     Icon: (props) => <Dev {...props} />,
     link: "https://dev.to/thoughtlessmind"
+  },
+  {
+    name: "Stackoverflow",
+    Icon: (props) => <Stackoverflow {...props} />,
+    link: "https://stackoverflow.com/users/11222282/rajiv"
+  },
+  {
+    name: "Twitter",
+    Icon: (props) => <Twitter {...props} />,
+    link: "https://twitter.com/d_rajivkumar"
   }
 ]
 

@@ -48,8 +48,10 @@ const techs = [
 const useStyles = makeStyles((theme) =>
   createStyles({
     aboutPageContainer: {
-      height: `calc(100vh - ${theme.mixins.toolbar.minHeight}px)`,
-      padding: theme.spacing(2, 0)
+      // height: `calc(100vh - ${theme.mixins.toolbar.minHeight}px)`,
+      height: "100vh",
+      padding: theme.spacing(2, 0),
+      paddingTop: theme.mixins.toolbar.minHeight + 15
     },
     sectionHeading: {
       position: "relative",

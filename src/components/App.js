@@ -8,6 +8,7 @@ import LeftSidebar from "./LeftSidebar/LeftSidebar"
 import RightSidebar from "./RightSidebar/RightSidebar"
 import About from "./About"
 import Work from "./Work"
+import Contact from "./Contact"
 
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
           <LandingPage />
           <About />
           <Work />
+          <Contact />
         </Box>
       </Box>
     </MuiThemeProvider>

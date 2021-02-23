@@ -129,55 +129,63 @@ const Header = () => {
 
   return (
     <>
-      <HideOnScroll threshold={100}>
-        <AppBar
-          className={classes.appbarStyle}
-          position='sticky'
-          elevation={trigger ? 8 : 0}
-        >
-          <Toolbar component='nav' className={classes.toolbarContainer}>
-            <Box>
-              {/* <Box>
+      {/* <HideOnScroll threshold={100}> */}
+      <AppBar
+        className={classes.appbarStyle}
+        position='sticky'
+        elevation={trigger ? 8 : 0}
+      >
+        <Toolbar component='nav' className={classes.toolbarContainer}>
+          <Box>
+            {/* <Box>
                 <Logo style={{ width: 40, height: 40 }} />
               </Box> */}
-              <Box
-                onClick={() =>
-                  window.scroll({
-                    top: 0,
-                    left: 0,
-                    behavior: "smooth"
-                  })
-                }
-                className={classes.logoStyle}
-              >
-                <Logo style={{ width: 45, height: 45 }} />
-              </Box>
+            <Box
+              onClick={() =>
+                window.scroll({
+                  top: 0,
+                  left: 0,
+                  behavior: "smooth"
+                })
+              }
+              className={classes.logoStyle}
+            >
+              <Logo style={{ width: 45, height: 45 }} />
             </Box>
-            <Box className={classes.navItemsContainer}>
-              {navbarItems.map((item) => (
-                <Button
-                  size='small'
-                  onClick={() =>
-                    handleNavigation(`${item.toLowerCase()}-section`)
-                  }
-                  component='a'
-                  key={item}
-                >
-                  {item}
-                </Button>
-              ))}
+          </Box>
+          <Box className={classes.navItemsContainer}>
+            {navbarItems.map((item) => (
               <Button
-                target='_blank'
+                size='small'
+                onClick={() =>
+                  handleNavigation(`${item.toLowerCase()}-section`)
+                }
                 component='a'
-                variant='outlined'
-                href='https://github.com/thoughtlessmind'
+                key={item}
               >
-                Github
+                {item}
               </Button>
-            </Box>
-          </Toolbar>
-        </AppBar>
-      </HideOnScroll>
+            ))}
+            <Button
+              target='_blank'
+              component='a'
+              size='small'
+              href='https://dev.to/thoughtlessmind'
+            >
+              Blogs
+            </Button>
+            <Button
+              target='_blank'
+              component='a'
+              variant='outlined'
+              href='https://github.com/thoughtlessmind'
+            >
+              Github
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
+      {/* </HideOnScroll> */}
     </>
   )
 }
