@@ -110,7 +110,9 @@ const Contact = () => {
         </Typography>
         <Box className={classes.iconsContainer}>
           {socialLinks.map((link) => (
-            <link.Icon />
+            <a href={link.link} target='_blank' rel='noreferrer'>
+              <link.Icon />
+            </a>
           ))}
         </Box>
       </Box>
