@@ -1,6 +1,6 @@
 import { Box, makeStyles, createStyles, Typography } from "@material-ui/core"
 import { useState } from "react"
-import ytPlaylistGif from "resources/images/ytPlaylistInfo.gif"
+import ytPlaylistGif from "resources/images/ytPlaylistinfoSS.png"
 import tooltipDemo from "resources/images/tooltipDemo.gif"
 import ProjectCard from "./ProjectCard"
 

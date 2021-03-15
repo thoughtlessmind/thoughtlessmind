@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme) =>
       alignItems: "center",
       justifyContent: "center",
       gap: theme.spacing(4),
-      "&>svg": {
+      "&>a>svg": {
         width: theme.spacing(3),
         cursor: "pointer",
         color: fade(theme.palette.common.white, 0.8),
