@@ -30,7 +30,7 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist/"),
-    assetModuleFilename: "image/[hash][ext][query]"
+    assetModuleFilename: "image/[name][ext][query]"
   },
   module: {
     rules: [
