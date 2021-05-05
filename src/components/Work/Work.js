@@ -37,7 +37,7 @@ const Work = () => {
         "A react app which calculates and shows the total time required to watch a complete YouTube playlist by using playlist url. User can play the list's video here and also open those videos in youtube directly.",
       repoLink: "https://github.com/thoughtlessmind/youtube-playlist-info",
       liveLink: "https://youtube-playlist-info.netlify.app",
-      showcaseImage: "resources/images/ytPlaylistinfoSS.png"
+      showcaseImage: ytPlaylistGif
     },
     {
       title: "css-only-tooltip",
@@ -45,7 +45,7 @@ const Work = () => {
         "A very lightweight tooltip utitlity library, made using only CSS with dynamic light and dark themes.",
       repoLink: "https://github.com/thoughtlessmind/css-only-tooltip",
       liveLink: "https://www.npmjs.com/package/css-only-tooltip",
-      showcaseImage: "resources/images/tooltipDemo.gif"
+      showcaseImage: tooltipDemo
     }
   ])
   return (
