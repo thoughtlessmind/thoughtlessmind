@@ -1,7 +1,7 @@
 import { Box, makeStyles, createStyles, Typography } from "@material-ui/core"
 import { useState } from "react"
-import ytPlaylistGif from "resources/images/ytPlaylistinfoSS.png"
-import tooltipDemo from "resources/images/tooltipDemo.gif"
+import ytPlaylistGif from "resources/images/ytPlaylistinfoSS1.png"
+import tooltipDemo from "resources/images/tooltipDemo1.gif"
 import ProjectCard from "./ProjectCard"
 
 const useStyles = makeStyles((theme) =>
