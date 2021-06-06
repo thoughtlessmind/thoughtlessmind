@@ -53,7 +53,7 @@ const Work = () => {
         "A web app built on Angular 12 which shows the trending movies and shows. Also one can search the show/movie by name.",
       repoLink: "https://github.com/thoughtlessmind/watchflix",
       liveLink: "https://notwatchflix.netlify.app",
-      showcaseImage: "https://thoughtlessmind.dev/image/nwfSS.gif"
+      showcaseImage: "https://thoughtlessmind.dev/image/nwfSS.png"
     }
   ])
   return (
