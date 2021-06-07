@@ -47,14 +47,14 @@ const Work = () => {
       liveLink: "https://www.npmjs.com/package/css-only-tooltip",
       showcaseImage: "https://thoughtlessmind.dev/image/tooltipDemo1.gif"
     },
-    {
-      title: "WatchFlix",
-      description:
-        "A web app built on Angular 12 which shows the trending movies and shows. Also one can search the show/movie by name.",
-      repoLink: "https://github.com/thoughtlessmind/watchflix",
-      liveLink: "https://notwatchflix.netlify.app",
-      showcaseImage: "https://thoughtlessmind.dev/image/nwfSS.png"
-    }
+    // {
+    //   title: "WatchFlix",
+    //   description:
+    //     "A web app built on Angular 12 which shows the trending movies and shows. Also one can search the show/movie by name.",
+    //   repoLink: "https://github.com/thoughtlessmind/watchflix",
+    //   liveLink: "https://notwatchflix.netlify.app",
+    //   showcaseImage: "https://thoughtlessmind.dev/image/nwfSS.png"
+    // }
   ])
   return (
     <Box className={classes.workPageContainer} id='work-section'>
