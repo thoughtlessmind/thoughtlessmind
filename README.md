@@ -24,7 +24,7 @@ I can be found and connected here:
 
 --- 
 
-[![user:11222282's SO profile](https://stackoverflow-readme-profile.johannchopin.fr/profile/11222282?theme=cobalt&website=true&location=true)](https://github.com/johannchopin/stackoverflow-readme-profile)
+[![user:11222282's SO profile](https://stackoverflow-readme-profile.johannchopin.fr/profile/11222282?theme=cobalt&website=true&location=true)](https://thoughtlessmind.dev)
 <!--
 **thoughtlessmind/thoughtlessmind** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
