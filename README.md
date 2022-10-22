@@ -20,8 +20,11 @@ I can be found and connected here:
 
 [![Gmail logo](https://img.shields.io/badge/Gmail-D14836?style=flat&logo=gmail&logoColor=white)](mailto:me.rajiv21@gmail.com)
 [![Linkedin](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/thoughtlessmind/)
-[![Stackoverflow badge](https://img.shields.io/stackexchange/stackoverflow/r/11222282?color=orange&label=Stackoverflow&logo=stackoverflow&logoColor=orange)](https://stackoverflow.com/users/11222282/rajiv)
-[![dev.to Link](https://img.shields.io/badge/dev.to-0A0A0A?styleflat&logo=dev.to&logoColor=white)](https://dev.to/thoughtlessmind)
+[![dev.to Link](https://img.shields.io/badge/dev.to-0A0A0A?styleflat&logo=dev.to&logoColor=white)](https://dev.to/thoughtlessmind)   
+
+--- 
+
+[![user:11222282's SO profile](https://stackoverflow-readme-profile.johannchopin.fr/profile/11222282?theme=cobalt&website=true&location=true)](https://github.com/johannchopin/stackoverflow-readme-profile)
 <!--
 **thoughtlessmind/thoughtlessmind** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
