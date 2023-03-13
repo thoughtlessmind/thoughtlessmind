@@ -94,7 +94,7 @@ const Contact = () => {
         </Typography>
         <Button
           component='a'
-          href='mailto:me.rajiv21@gmail.com'
+          href='mailto:rajiv@thoughtlessmind.dev'
           variant='outlined'
           size='large'
           color='secondary'
