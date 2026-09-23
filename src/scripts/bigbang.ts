@@ -46,6 +46,9 @@ type Run = {
   blur: Element | null;
   cx: number; // the viewport centre, client px
   cy: number;
+  flash: HTMLElement; // the bang's light
+  glow: HTMLCanvasElement; // the afterglow
+  skyOpacity: number; // .sky's opacity before the run
   layer: HTMLElement;
   copies: HTMLElement;
   pieces: Piece[];
@@ -101,6 +104,50 @@ const BLOB = 30; // px: the molten blob's radius once everything has fallen in (
 const KMIN = 0.14; // an arrived copy's size in the blob
 const CHURN = 6; // rad/s an arrived copy keeps turning in the blob
 const COLLAPSE = 0.3; // s: the blob collapses into the point over the crunch's end
+const COOL_MS = 2400; // the plasma cools from the bang to transparent
+const GLOW_AT = 1500; // ms after the bang: the afterglow…
+const GLOW_MS = 1200; // …for this long
+const DAWN = 7.1; // s: after the dark ages, the first stars
+const DAWN_MS = 2400;
+const FORM = 8.0; // s: structure begins to condense
+const FORM_SPREAD = 1.5; // s from the smallest copy's start to the largest's
+const FORM_JITTER = 0.28; // s of random on top
+const FORM_MS = 1220; // one copy: 800ms condensing, then the flicker stutter
+const SKY_AT = 1.8; // s after FORM: the planet (the largest structure) forms last
+const SKY_MS = 900;
+const END = 11.0; // s: every copy has formed; swap back
+const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)'; // --ease-out
+const STEP = 'steps(1, end)';
+// Blackbody colours as the plasma cools (physics, not theme tokens). 3,000 K is recombination: the universe turns
+// transparent and lets go of the light we now see as the cosmic microwave background.
+const COOLING: Keyframe[] = [
+  { backgroundColor: '#cfdcff', offset: 0 }, // ~15,000 K, blue-white
+  { backgroundColor: '#fff8ee', offset: 0.08 }, // ~6,500 K, white: the peak…
+  { backgroundColor: '#fff8ee', offset: 0.14 }, // …held 150ms
+  { backgroundColor: '#ffe2bf', offset: 0.3 }, // ~4,500 K
+  { backgroundColor: '#ffb46b', offset: 0.5 }, // ~3,000 K, recombination
+  { backgroundColor: '#ff5f1f', offset: 0.66 }, // ~1,900 K
+  { backgroundColor: '#5a1604', offset: 0.84 },
+  { backgroundColor: 'rgb(90 22 4 / 0)', offset: 1 },
+];
+/** A copy condensing out of diffuse gas, then flickering on (the .flicker steps), to its own opacity o. */
+const condense = (o: number): Keyframe[] => [
+  { opacity: 0, transform: 'scale(1.6)', easing: EASE },
+  { opacity: 0.6 * o, transform: 'scale(1)', offset: 0.66, easing: STEP },
+  { opacity: 0.8 * o, offset: 0.73, easing: STEP },
+  { opacity: 0.2 * o, offset: 0.8, easing: STEP },
+  { opacity: o, offset: 0.87, easing: STEP },
+  { opacity: 0.6 * o, offset: 0.93, easing: STEP },
+  { opacity: o, transform: 'scale(1)' },
+];
+/** Large copies (over 5% of the viewport): a smaller swell and the soft flicker, never below 0.6. */
+const condenseSoft = (o: number): Keyframe[] => [
+  { opacity: 0, transform: 'scale(1.08)', easing: EASE },
+  { opacity: 0.6 * o, transform: 'scale(1)', offset: 0.66, easing: STEP },
+  { opacity: 0.85 * o, offset: 0.79, easing: STEP },
+  { opacity: 0.6 * o, offset: 0.88, easing: STEP },
+  { opacity: o, transform: 'scale(1)' },
+];
 // Liquid: static noise wobbles the copies (only its scale animates, so the noise is never regenerated), then a
 // blur and an alpha threshold fuse neighbours into one molten blob; the crisp copy is drawn back over it.
 const LIQUID_SVG =
@@ -112,8 +159,13 @@ const LIQUID_SVG =
   '<feComposite in="wobble" in2="goo" operator="atop"/></filter></svg>';
 
 // [time in s from T-0, what happens]: run in order, once each, from the frame loop.
-// Until the bang lands: the crunch and the singularity, then swap back.
-const STEPS: [number, (r: Run) => void][] = [[BANG, () => finish()]];
+const STEPS: [number, (r: Run) => void][] = [
+  [BANG, bang],
+  [BANG + 0.25, reset], // under the white: the copies go back to their places, unseen
+  [DAWN, dawn],
+  [FORM, form],
+  [END, () => finish()],
+];
 
 const root = document.documentElement;
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
@@ -305,13 +357,37 @@ function layer() {
   copies.className = 'bb-copies';
   const point = document.createElement('div');
   point.className = 'bb-point';
-  el.append(copies, point);
+  const flash = document.createElement('div');
+  flash.className = 'bb-flash';
+  const glow = document.createElement('canvas');
+  glow.className = 'bb-glow';
+  afterglow(glow);
+  el.append(copies, point, flash, glow);
   document.body.append(el);
   if ('showPopover' in el) {
     el.popover = 'manual';
     el.showPopover();
   }
-  return { el, copies, point, disp: el.querySelector('feDisplacementMap'), blur: el.querySelector('feGaussianBlur') };
+  return {
+    el,
+    copies,
+    point,
+    flash,
+    glow,
+    disp: el.querySelector('feDisplacementMap'),
+    blur: el.querySelector('feGaussianBlur'),
+  };
+}
+
+/** The afterglow's mottle: 48×27 random cells of 3,000 K light, blown up smooth (the CMB, stood in for). */
+function afterglow(c: HTMLCanvasElement) {
+  c.width = 48;
+  c.height = 27;
+  const g = c.getContext('2d');
+  if (!g) return;
+  const img = g.createImageData(48, 27);
+  for (let i = 0; i < img.data.length; i += 4) img.data.set([255, 180, 107, Math.random() * 255], i);
+  g.putImageData(img, 0, 0);
 }
 
 export function bigBang() {
@@ -321,10 +397,11 @@ export function bigBang() {
     return;
   }
   for (const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) d.close();
-  const { el, copies, point, disp, blur } = layer();
+  const { el, copies, point, flash, glow, disp, blur } = layer();
   const cx = innerWidth / 2;
   const cy = innerHeight / 2;
   const space = [...document.querySelectorAll<HTMLElement>('canvas.field-fx, .sky')];
+  const sky = space.find((s) => s.matches('.sky'));
   const ac = new AbortController();
   run = {
     t0: 0,
@@ -338,6 +415,9 @@ export function bigBang() {
     blur,
     cx,
     cy,
+    flash,
+    glow,
+    skyOpacity: sky ? Number(getComputedStyle(sky).opacity) : 1,
     layer: el,
     copies,
     pieces: [],
@@ -461,6 +541,68 @@ function singularity(r: Run, t: number) {
   const q = Math.max(0, (t - (BANG - 0.3)) / 0.3);
   s.opacity = String(Math.min(1, (t - (CRUNCH - 0.2)) / 0.2));
   s.transform = `translate(${(Math.random() - 0.5) * 2 * q}px, ${(Math.random() - 0.5) * 2 * q}px) scale(${1 + 2 * q})`;
+}
+
+/** Inflation: light bursts from the point to fill the screen, then cools along the blackbody curve. */
+function bang(r: Run) {
+  r.flash.animate([{ clipPath: 'circle(0px at 50% 50%)' }, { clipPath: 'circle(150% at 50% 50%)' }], {
+    duration: 200,
+    easing: 'cubic-bezier(0.3, 0, 0, 1)',
+    fill: 'forwards',
+  });
+  r.flash.animate(COOLING, { duration: COOL_MS, fill: 'forwards' });
+  r.glow.animate([{ opacity: 0 }, { opacity: 0.3, offset: 0.4 }, { opacity: 0 }], {
+    duration: GLOW_MS,
+    delay: GLOW_AT,
+    fill: 'both',
+  });
+}
+
+/** Under the white: every copy back on its original, unseen; space back to size, dark until its stars ignite. */
+function reset(r: Run) {
+  for (const p of r.pieces) {
+    const s = p.el.style;
+    s.transform = '';
+    s.opacity = '0';
+    if (p.kind === 'word') s.color = p.color;
+    else if (p.rgb) s.backgroundColor = p.color;
+  }
+  r.copies.style.filter = '';
+  r.space.forEach((el, i) => {
+    el.style.cssText = r.spaceCss[i];
+    el.style.transition = 'none';
+    el.style.opacity = '0';
+  });
+}
+
+/** Cosmic dawn: the dust ignites star by star (field.ts draws its dark first frame before this returns). */
+function dawn(r: Run) {
+  window.dispatchEvent(new CustomEvent('signal:dawn', { detail: { ms: DAWN_MS } }));
+  const field = r.space.find((el) => el.matches('canvas.field-fx'));
+  if (field) field.style.opacity = '';
+}
+
+/**
+ * Structure forms bottom-up, as in ΛCDM: the smallest copies condense first, the largest last, everywhere at once
+ * (not a ripple from the centre: the big bang happened everywhere). The planet is the largest and forms last.
+ */
+function form(r: Run) {
+  const area = innerWidth * innerHeight;
+  const order = [...r.pieces].sort((a, b) => a.w * a.h - b.w * b.h);
+  order.forEach((p, i) => {
+    const q = order.length > 1 ? i / (order.length - 1) : 0;
+    const delay = (q * FORM_SPREAD + Math.random() * FORM_JITTER) * 1000;
+    const keys = p.w * p.h > 0.05 * area ? condenseSoft(p.o) : condense(p.o);
+    p.el.animate(keys, { duration: FORM_MS, delay, fill: 'both' });
+  });
+  const sky = r.space.find((el) => el.matches('.sky'));
+  const b = r.skyOpacity;
+  sky?.animate([{ opacity: 0 }, { opacity: 0.85 * b, offset: 0.3 }, { opacity: 0.6 * b, offset: 0.55 }, { opacity: b }], {
+    duration: SKY_MS,
+    delay: SKY_AT * 1000,
+    easing: 'steps(4, end)',
+    fill: 'both',
+  });
 }
 
 function listen(signal: AbortSignal) {

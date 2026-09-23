@@ -797,6 +797,17 @@
     background: #fff; /* the singularity: physics, not a theme colour */
     opacity: 0;
   }
+  .bb-flash { position: absolute; inset: 0; clip-path: circle(0 at 50% 50%); }
+  /* 48×27 cells blown up and blurred into soft blobs; overscanned so the blur keeps the edges lit. */
+  .bb-glow {
+    position: absolute;
+    inset: -2rem;
+    width: calc(100% + 4rem);
+    height: calc(100% + 4rem);
+    opacity: 0;
+    image-rendering: auto;
+    filter: blur(16px);
+  }
 }
 
 /* Registered so --breakout resolves on .prose (body font), not inside a 14px code block. */
