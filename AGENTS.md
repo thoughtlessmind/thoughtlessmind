@@ -52,7 +52,7 @@ the file. ` ```ts title="file.ts" ` gives a code block a filename tab and a copy
 as a module card on home and /work (keep it to about 3). A project with `image` spans both card columns.
 
 **Facts**: `src/consts.ts` (name, role, company, email, socials, coords, since, nav) and `src/lib/person.ts` (JSON-LD).
-Use real facts only; never invent numbers or titles. Never name the current employer anywhere; the role reads "web engineer".
+Use real facts only; never invent numbers or titles. Name the current employer (swipejobs) only in the about page's Experience entry; the role reads "web engineer".
 
 ## Design direction: v3 "SIGNAL"
 
