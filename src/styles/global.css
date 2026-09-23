@@ -762,6 +762,32 @@
   }
   .prose .demo [data-tooltip]:is(:hover, :focus-visible)::after { transform: translate(-50%, 8px) scale(1); }
   .prose .demo [data-tooltip]:is(:hover, :focus-visible)::before { transform: translate(-50%, -4px) scale(1); }
+
+  /* ---------- Big bang (src/scripts/bigbang.ts) ----------
+     While it runs, html.bb hides the page and a manual popover holds copies of what was on screen; only the
+     copies move. After .hud, so a copied frame keeps position: absolute. */
+  html.bb :is(body > header, body > main, body > footer) { visibility: hidden; }
+  .bb-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bb-copies { position: absolute; inset: 0; }
+  .bb-copies > * {
+    position: absolute;
+    margin: 0;
+    white-space: pre;
+    transform-origin: center;
+    box-sizing: border-box;
+  }
 }
 
 /* Registered so --breakout resolves on .prose (body font), not inside a 14px code block. */
