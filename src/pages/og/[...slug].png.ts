@@ -28,7 +28,7 @@ const fonts = CanvasKit.FontMgr.FromData(b.buffer.slice(b.byteOffset, b.byteOffs
 if (!fonts) throw new Error('OG: could not load src/assets/fonts/og/GeistMono.ttf');
 
 const BG = CanvasKit.Color(10, 11, 13); // --bg
-const GRID_LINE = CanvasKit.Color(233, 231, 226, 0.045); // --grid
+const GRID_LINE = CanvasKit.Color(233, 231, 226, 0.045); // faint rule lines (OG only)
 const RULE = CanvasKit.Color(35, 39, 46); // --border
 const TEXT = CanvasKit.Color(235, 233, 228); // --text
 const MUTED = CanvasKit.Color(166, 170, 178); // --text-muted

@@ -69,18 +69,6 @@
   --glitch-blend: multiply;
 }
 
-/* Legacy aliases so components mid-migration keep resolving. Remove once nothing references them. */
-:root {
-  --duration-fast: var(--dur-1);
-  --duration-base: var(--dur-2);
-  --duration-slow: var(--dur-3);
-  --text-h4: var(--text-h3);
-  --text-h4--line-height: var(--text-h3--line-height);
-  --text-h5: 1.0625rem;
-  --text-h5--line-height: 1.4;
-  --text-eyebrow: var(--text-label);
-}
-
 /* ---------- Tailwind theme: static tokens (always emitted) ---------- */
 @theme static {
   --font-display: "Geist Pixel Variable", "Geist Mono Variable", ui-monospace, monospace;
@@ -110,12 +98,9 @@
   --text-caption: 0.75rem;
   --text-caption--line-height: 1.5;
 
-  /* Radius: 0. 2px only for kbd; 999px for status dots. Old steps alias to 0. */
+  /* Radius: 0. 2px only for kbd; 999px for status dots. */
   --radius-*: initial;
   --radius-1: 2px;
-  --radius-2: 0;
-  --radius-3: 0;
-  --radius-4: 0;
 
   /* Motion */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -134,7 +119,7 @@
 
   /* Layout */
   --container-site: 1320px;
-  --container-measure: 40rem; /* spec says 68ch, but Geist's wide "0" makes that ~88 chars; 40rem is ~70 */
+  --container-measure: 40rem; /* ~70 characters of Geist (68ch ran to ~88 because of its wide "0") */
   --container-wide: 880px;
   --spacing-gutter: clamp(1rem, 4vw, 2.5rem);
   --spacing-section: clamp(5rem, 3rem + 7vw, 9rem);
@@ -256,7 +241,6 @@
   .section { padding-block: calc(var(--spacing-section) / 2); }
   .rows { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
   .rows > * { border-bottom: 1px solid var(--border); }
-  .hairline { border: 0; border-top: 1px solid var(--border); }
 
   /* Small links keep their look; on touch the hit area grows to >= 44px. */
   .tap { position: relative; }
@@ -310,8 +294,7 @@
     line-height: var(--text-lead--line-height);
     color: var(--text-muted);
   }
-  .label,
-  .eyebrow {
+  .label {
     font-family: var(--font-ui);
     font-size: var(--text-label);
     line-height: var(--text-label--line-height);
@@ -358,29 +341,6 @@
   }
   .link:hover,
   .link:focus-visible { text-decoration-color: var(--signal); }
-
-  .link-arrow {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.5em;
-    font-family: var(--font-ui);
-    font-size: var(--text-label);
-    font-weight: 500;
-    font-stretch: 87.5%;
-    letter-spacing: var(--text-label--letter-spacing);
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-decoration: none;
-    transition: color var(--dur-1) var(--ease-out);
-  }
-  .link-arrow::after {
-    content: "→" / "";
-    transition: translate var(--dur-1) var(--ease-out);
-  }
-  .link-arrow:is([href^="http"], [href^="mailto"])::after { content: "↗" / ""; }
-  .link-arrow:hover,
-  .link-arrow:focus-visible { color: var(--text); }
-  .link-arrow:hover::after { translate: 3px 0; color: var(--accent); }
 
   /* Buttons read as [ LABEL ]; ghost reads as a prompt: > label. Brackets are hidden from AT. */
   .btn {
@@ -481,11 +441,6 @@
     line-height: 1;
   }
 
-  .popover {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-strong);
-  }
-
   /* Status */
   .dot-status {
     display: inline-flex;
@@ -538,8 +493,6 @@
 
   /* CRT turn-on (once). */
   .flicker { animation: flicker-on var(--dur-flicker) var(--ease-step) both; }
-  /* Idle flicker: fx.ts adds .is-dim for one 120ms dip. */
-  .flicker-idle.is-dim { opacity: 0.7; }
 
   /* Glitch: two copies of data-text, offset in accent + signal, sliced into 3 bands. */
   .glitch { position: relative; }
@@ -811,7 +764,7 @@
   .prose .demo [data-tooltip]:is(:hover, :focus-visible)::before { transform: translate(-50%, -4px) scale(1); }
 }
 
-/* Registered so the ch-based measure resolves on .prose (body font), not inside a 14px code block. */
+/* Registered so --breakout resolves on .prose (body font), not inside a 14px code block. */
 @property --breakout {
   syntax: '<length>';
   inherits: true;

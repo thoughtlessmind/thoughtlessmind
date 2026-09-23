@@ -9,10 +9,10 @@ export type Pointer = { x: number; y: number; px: number; py: number };
 /** Theme colours as sRGB 0..1, read from the CSS tokens on <html>. */
 export type Palette = { ink: THREE.Vector3; hot: THREE.Vector3; cold: THREE.Vector3; dark: boolean };
 
-// Used only when a token is missing (e.g. mid-migration); values from DESIGN.md §2.
+// Used only when a token is missing; values from DESIGN.md §2.
 const FALLBACK = {
   dark: { ink: '#ebe9e4', hot: '#ff5f1f', cold: '#38e1f0' },
-  light: { ink: '#111214', hot: '#c73a05', cold: '#00788a' },
+  light: { ink: '#111214', hot: '#b33504', cold: '#006d7d' },
 };
 
 let ctx: CanvasRenderingContext2D | null = null;
@@ -48,7 +48,7 @@ function usePalette(): RefObject<Palette> {
   const ref = useRef(palette);
   useEffect(() => {
     const mo = new MutationObserver(() => readPalette(palette));
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-preset'] });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => mo.disconnect();
   }, [palette]);
   return ref;

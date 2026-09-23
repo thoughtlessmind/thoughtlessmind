@@ -8,7 +8,6 @@
 //   data-count-to (+suffix)  digits roll then settle when in view (900ms)
 //   data-boot                children appear one by one, decoding; once per session
 //   data-glitch-burst        on a .glitch: a burst every 5–9s
-//   .flicker-idle            one 120ms dip every 6–11s
 //   data-clock               HH:MM:SS in Asia/Kolkata
 //   data-uptime-since="YYYY-MM"  "07y 06m"
 //   data-pointer-coords      "X 0412 · Y 0233" (fine pointers)
@@ -158,15 +157,6 @@ function bursts() {
         }
         loop();
       }, 5000 + Math.random() * 4000);
-    loop();
-  }
-  for (const el of $$('.flicker-idle')) {
-    const loop = () =>
-      later(() => {
-        el.classList.add('is-dim');
-        later(() => el.classList.remove('is-dim'), 120);
-        loop();
-      }, 6000 + Math.random() * 5000);
     loop();
   }
 }

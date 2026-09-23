@@ -1,7 +1,7 @@
 ---
 /**
  * Article chrome, the calmest page: progress bar + readout, head (title, dek, label meta line, tags),
- * a 68ch .prose column with a sticky `> section` rail at >= 1200px (details/summary below), and the end stack
+ * a 40rem .prose column with a sticky `> section` rail at >= 1200px (details/summary below), and the end stack
  * (share, series, older/newer, author, related).
  */
 import type { MarkdownHeading } from 'astro';
@@ -273,7 +273,7 @@ const jsonLd = [
     border-top: 1px solid var(--border);
   }
 
-  /* Rail layout: [breakout] [68ch column] [breakout] [rail]. The breakout columns match .prose's --breakout,
+  /* Rail layout: [breakout] [40rem column] [breakout] [rail]. The breakout columns match .prose's --breakout,
      so wide code blocks and figures never slide under the rail. */
   @media (min-width: 1200px) {
     .article--rail {
