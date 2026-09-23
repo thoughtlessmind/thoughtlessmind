@@ -1,0 +1,199 @@
+---
+/** This site as the featured case study: what it is built from and why, as a HUD panel with a build pipeline readout. */
+interface Props {
+  level?: 'h2' | 'h3';
+}
+const { level: Title = 'h3' } = Astro.props;
+
+const facts = [
+  {
+    term: 'Problem',
+    text: 'The 2020 site was a client-rendered React app that shipped a whole bundle to show a few paragraphs, and it no longer said anything true about how I build.',
+  },
+  {
+    term: 'Rendering',
+    text: 'Astro renders every page as static HTML. React hydrates only two islands: the ⌘K search palette and the planet, which loads after idle and never on article pages.',
+  },
+  {
+    term: 'The planet',
+    text: 'A React Three Fiber point cloud with a Bayer-dithered shader, capped at 30fps. Without WebGL, or with reduced motion, a CSS drawing takes its place.',
+  },
+  {
+    term: 'Motion',
+    text: 'One small script runs the decode, glitch, counters and clock. Each effect has a reduced-motion path, and the text is already in the HTML before it animates.',
+  },
+  {
+    term: 'Easter eggs',
+    text: 'Some coordinates in the home hero are not empty, and the cursor readout tells you when you are close. One opens a terminal with real commands: cd, cat, neofetch, a ping that measures this site. Six eggs in all, and the terminal keeps count.',
+  },
+  {
+    term: 'Content',
+    text: 'Posts are MDX with typed frontmatter. RSS, OG images, the sitemap, llms.txt and Pagefind search are all derived at build time.',
+  },
+];
+const pipeline = [
+  ['src/content', 'MDX + frontmatter'],
+  ['astro build', 'static HTML, 2 islands'],
+  ['dist/', 'RSS · OG · Pagefind'],
+];
+---
+
+<article class="hud case-study">
+  <header class="case-study__head">
+    <p class="label case-study__kind">
+      <span class="case-study__id">M-00</span>
+      <span>Case study · 2026</span>
+    </p>
+    <Title class="case-study__title">This site, rebuilt as a signal console</Title>
+    <p class="case-study__summary">
+      A static Astro site with a pixel-type interface, a dithered WebGL planet and motion that stays out of the reading
+      path.
+    </p>
+    <a
+      href="https://github.com/thoughtlessmind/thoughtlessmind"
+      class="label link tap case-study__source"
+      rel="noopener"
+      target="_blank"
+    >
+      Source <span aria-hidden="true">↗</span>
+    </a>
+  </header>
+
+  <div class="case-study__body">
+    <dl class="case-study__facts">
+      {
+        facts.map((f) => (
+          <div>
+            <dt class="label">{f.term}</dt>
+            <dd>{f.text}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <figure class="case-study__flow">
+      <figcaption class="label">Build pipeline</figcaption>
+      <ol>
+        {
+          pipeline.map(([step, out]) => (
+            <li>
+              <span class="case-study__step">{step}</span>
+              <span class="case-study__out">{out}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </figure>
+  </div>
+</article>
+
+<style>
+  .case-study {
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .case-study__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+  }
+  .case-study__head > :not(.case-study__source) {
+    grid-column: 1;
+  }
+  .case-study__kind {
+    display: flex;
+    gap: 1.25em;
+    margin: 0;
+    color: var(--text-subtle);
+  }
+  .case-study__id {
+    color: var(--accent);
+  }
+  .case-study__title {
+    max-width: 26ch;
+    margin-top: 1rem;
+  }
+  .case-study__summary {
+    max-width: 60ch;
+    margin-top: 0.75rem;
+    color: var(--text-muted);
+  }
+  .case-study__source {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  .case-study__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  .case-study__facts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem 2rem;
+    margin: 0;
+  }
+  .case-study__facts dt {
+    color: var(--text-subtle);
+  }
+  .case-study__facts dd {
+    margin: 0.4rem 0 0;
+    font-size: var(--text-small);
+    color: var(--text-muted);
+  }
+
+  .case-study__flow {
+    align-self: start;
+    margin: 0;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    background: var(--code-bg);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+  }
+  .case-study__flow figcaption {
+    color: var(--text-subtle);
+  }
+  .case-study__flow ol {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .case-study__flow li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    padding-block: 0.625rem;
+  }
+  .case-study__flow li + li {
+    border-top: 1px dashed var(--border);
+  }
+  .case-study__step {
+    color: var(--text);
+  }
+  .case-study__step::before {
+    content: '▸ ';
+    color: var(--accent);
+  }
+  .case-study__out {
+    color: var(--text-subtle);
+  }
+
+  @media (min-width: 640px) {
+    .case-study__facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    .case-study__body {
+      grid-template-columns: minmax(0, 8fr) minmax(16rem, 4fr);
+      gap: clamp(2rem, 4vw, 3.5rem);
+    }
+  }
+</style>

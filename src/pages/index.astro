@@ -1,0 +1,157 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Marquee from '../components/Marquee.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import SiteCaseStudy from '../components/SiteCaseStudy.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import PostRow from '../components/PostRow.astro';
+import Counters from '../components/Counters.astro';
+import { SITE } from '../consts';
+import { getSyndicatedPosts } from '../lib/posts';
+import { person } from '../lib/person';
+
+const projects = (await getCollection('projects', ({ data }) => data.featured && !data.archived)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const posts = (await getSyndicatedPosts()).slice(0, 3);
+const years = String(new Date().getFullYear() - SITE.since).padStart(2, '0');
+const counters = [
+  { value: '98', label: 'Stack Overflow answers' },
+  { value: '60', label: 'Accepted' },
+  { value: '110', suffix: 'k+', label: 'Reads on one answer' },
+  { value: '49', label: "PRs to others' repos" },
+  { value: years, label: 'Years on the web' },
+];
+const socials = [
+  { label: 'GitHub', href: SITE.socials.github },
+  { label: 'LinkedIn', href: SITE.socials.linkedin },
+  { label: 'X', href: SITE.socials.x },
+  { label: 'Stack Overflow', href: SITE.socials.stackoverflow },
+  { label: 'dev.to', href: SITE.socials.devto },
+];
+---
+
+<BaseLayout title={SITE.title} description={SITE.description} jsonLd={person()}>
+  <Hero />
+  <Marquee />
+
+  <section id="work" class="container-site section" aria-labelledby="work-title" data-reveal-group>
+    <SectionHeading index="01" label="Shipped" title="Selected work" id="work-title" href="/work/" linkLabel="All work" class="reveal" />
+    <div class="reveal"><SiteCaseStudy /></div>
+    <ul class="home-modules">
+      {projects.map((p, i) => <ProjectCard project={p} index={i + 1} class="reveal" />)}
+    </ul>
+  </section>
+
+  <section id="writing" class="container-site section" aria-labelledby="writing-title" data-reveal-group>
+    <SectionHeading index="02" label="Logs" title="Latest writing" id="writing-title" href="/writing/" linkLabel="All writing" class="reveal" />
+    <ul class="rows">
+      {posts.map((post) => <PostRow post={post} class="reveal" />)}
+    </ul>
+  </section>
+
+  <section id="operator" class="container-site section" aria-labelledby="operator-title" data-reveal-group>
+    <SectionHeading index="03" label="Operator" title="On record" id="operator-title" href="/about/" linkLabel="Full dossier" class="reveal" />
+    <Counters items={counters} class="reveal" />
+    <div class="operator reveal">
+      <p class="operator__bio">
+        I'm {SITE.name}, a frontend engineer in New Delhi. I work on production React and TypeScript, answer frontend
+        questions on Stack Overflow, and build small tools when an everyday annoyance needs a clean fix.
+      </p>
+      <p class="label operator__off">
+        <span class="operator__key">Off-duty:</span> Rockets · Orbital mechanics · Physics · Sport
+      </p>
+    </div>
+  </section>
+
+  <section id="contact" class="container-site section transmit" aria-labelledby="transmit-title" data-reveal-group>
+    <SectionHeading index="04" label="Transmit" class="reveal" />
+    <h2 id="transmit-title" class="display transmit__title reveal">Let's build something.</h2>
+    <p class="reveal">
+      <a href={`mailto:${SITE.email}`} class="glitch transmit__email" data-text={SITE.email}>{SITE.email}</a>
+    </p>
+    <ul class="label transmit__socials reveal" aria-label="Elsewhere">
+      {
+        socials.map((s) => (
+          <li>
+            <a href={s.href} class="link tap" rel="me noopener" target="_blank">
+              {s.label} <span aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .home-modules {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 720px) {
+    .home-modules {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .operator {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .operator__bio {
+    max-width: 60ch;
+    font-size: var(--text-lead);
+    line-height: 1.55;
+  }
+  .operator__off {
+    color: var(--text-muted);
+  }
+  .operator__key {
+    color: var(--accent);
+  }
+
+  .transmit {
+    padding-bottom: var(--spacing-section);
+  }
+  .transmit__title {
+    max-width: 12ch;
+  }
+  .transmit__email {
+    display: inline-block;
+    max-width: 100%;
+    margin-top: 2rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-h2);
+    overflow-wrap: anywhere;
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+  .transmit__email:hover,
+  .transmit__email:focus-visible {
+    color: var(--accent);
+  }
+  .transmit__socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 2rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .transmit__socials a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+</style>

@@ -1,0 +1,69 @@
+---
+title: Event loop, microtasks, and why your await isn't slow
+description: One thread, two queues. How the event loop orders tasks and microtasks, what await really does, and where the time actually goes.
+pubDate: 2026-05-30
+tags: [javascript]
+draft: true
+---
+
+"Is `await` slow?" comes up in every codebase that has just adopted async functions. The answer is no, and the reason is worth understanding, because it is the same reason a click handler sometimes fires later than you expect.
+
+## One thread, two queues
+
+JavaScript on the main thread runs one thing at a time. When the call stack is empty, the event loop picks the next piece of work from one of two queues.
+
+The task queue holds the big things: a timer that fired, a click, a network response. The browser runs one task, then renders if it needs to, then picks another.
+
+The microtask queue holds promise reactions and `queueMicrotask` callbacks. It is drained completely after every task and after every callback, before the browser gets a chance to render. A microtask that schedules another microtask keeps the loop in that queue.
+
+```js title="order.js"
+console.log('1: sync');
+
+setTimeout(() => console.log('4: task'), 0);
+
+Promise.resolve().then(() => console.log('3: microtask'));
+
+console.log('2: sync');
+```
+
+The output is 1, 2, 3, 4. The promise callback runs before the timer even though the timer was queued first, because microtasks drain before the loop moves to the next task.
+
+## What `await` actually does
+
+`await x` does two things. It wraps `x` in a promise if it is not one already, and it suspends the function until that promise settles, resuming in a microtask.
+
+```js title="await.js"
+async function run() {
+  console.log('a');
+  await null; // already settled, but still yields
+  console.log('c');
+}
+
+run();
+console.log('b');
+```
+
+Output: a, b, c. The `await` gave the rest of the current task a turn, then resumed as a microtask. That suspension costs about as much as a function call. It is not where your time goes.
+
+## Why it feels slow anyway
+
+If the await is cheap, the slowness is in one of three places.
+
+The thing being awaited is slow. A fetch takes as long as the network takes. Awaiting it does not add to that, but it does make the wait visible in a stack trace, which is where people first notice it.
+
+The awaits are sequential when they could be parallel. Two independent requests written as two awaits run one after the other. `Promise.all` starts both and waits once.
+
+```js title="parallel.js"
+// 800 ms if each takes 400 ms
+const user = await getUser();
+const posts = await getPosts();
+
+// 400 ms
+const [user2, posts2] = await Promise.all([getUser(), getPosts()]);
+```
+
+Or a long synchronous section is hiding between awaits. Nothing yields during a 200 ms loop, and every promise resolution queued behind it waits for it to finish. The await is blamed because it sits next to the delay in the code.
+
+## Measuring instead of guessing
+
+Wrap the suspicious section in `performance.mark` and `performance.measure`, or open the Performance panel and look at the task lengths. Long bars are synchronous work. Gaps are waiting on I/O. An await that costs anything you can see on that timeline is a sign the work around it, not the await, needs to change.

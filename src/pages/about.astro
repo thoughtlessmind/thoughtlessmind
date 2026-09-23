@@ -1,0 +1,331 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Avatar from '../components/Avatar.astro';
+import Counters from '../components/Counters.astro';
+import Icon from '../components/Icon.astro';
+import type { IconName } from '../components/Icon.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Timeline from '../components/Timeline.astro';
+import { SITE } from '../consts';
+import { person } from '../lib/person';
+
+const dek = 'Frontend engineer. Seven years in, still curious about what runs underneath.';
+const id = [
+  ['Name', SITE.name],
+  ['Role', SITE.role],
+  ['Company', SITE.company],
+  ['Base', SITE.location],
+  ['Coords', SITE.coords],
+  ['Active', `Since ${SITE.since}`],
+];
+const stack = [
+  ['Language', 'TypeScript'],
+  ['UI', 'React · Next.js · Astro'],
+  ['Styling', 'Tailwind CSS · Material UI'],
+  ['State', 'Redux'],
+  ['Build', 'Vite · Webpack'],
+  ['Runtime', 'Node'],
+  ['Platform', 'Chrome extensions'],
+];
+// Role, company, domain, period. No metrics until the owner supplies ones that are safe to publish.
+const experience = [
+  {
+    status: 'current',
+    meta: [SITE.role, SITE.company, 'HR tech'],
+    text: 'An HR-tech platform that matches workers with jobs. I work on its web frontends in React and TypeScript.',
+  },
+  {
+    status: '2020 –',
+    meta: ['Frontend Engineer', SITE.previousCompany, 'conversion-rate optimisation'],
+    text: 'A conversion-rate optimisation product for websites. I built and maintained its React frontend.',
+  },
+];
+const counters = [
+  { value: '98', label: 'Stack Overflow answers' },
+  { value: '60', label: 'Accepted' },
+  { value: '110', suffix: 'k+', label: 'Reads on one answer' },
+  { value: '49', label: "PRs to others' repos" },
+];
+const record = ['3.8k Stack Overflow reputation, mostly Material UI and React', 'css-only-tooltip on npm since 2021'];
+const elsewhere: { name: IconName; label: string; href: string }[] = [
+  { name: 'github', label: 'GitHub', href: SITE.socials.github },
+  { name: 'x', label: 'X (@d_rajivkumar)', href: SITE.socials.x },
+  { name: 'linkedin', label: 'LinkedIn', href: SITE.socials.linkedin },
+  { name: 'devto', label: 'dev.to', href: SITE.socials.devto },
+  { name: 'stackoverflow', label: 'Stack Overflow', href: SITE.socials.stackoverflow },
+  { name: 'mail', label: 'Email', href: `mailto:${SITE.email}` },
+];
+---
+
+<BaseLayout title="About" description={dek} jsonLd={person(`${SITE.url}/about/`)}>
+  <header class="container-site page-head dossier">
+    <Avatar size={176} class="dossier__avatar" />
+    <div class="dossier__file">
+      <p class="label dossier__kind"><span class="dossier__accent">//</span> Operator dossier</p>
+      <h1 class="page-title flicker">About</h1>
+      <p class="page-head__dek">{dek}</p>
+      <dl class="dossier__id">
+        {
+          id.map(([k, v]) => (
+            <div>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="label dossier__contact">
+        <a href={SITE.socials.linkedin} class="link tap" rel="me noopener" target="_blank">
+          LinkedIn <span aria-hidden="true">↗</span>
+        </a>
+        <a href={`mailto:${SITE.email}`} class="link tap">Email <span aria-hidden="true">↗</span></a>
+      </p>
+    </div>
+  </header>
+
+  <div class="container-site about">
+    <div class="about__prose" data-reveal-group>
+      <p class="reveal">
+        I started building for the web in {SITE.since} and never really stopped. Most of my work is React and TypeScript in
+        production: design systems, dashboards, and the unglamorous plumbing that keeps them fast.
+      </p>
+      <p class="reveal">
+        I like tools that solve one problem completely. css-only-tooltip is a tooltip library with no JavaScript at all.
+        Diver is a Chrome extension that outlines every element on a page so you can see the layout skeleton in one click.
+        YouTube Playlist Info tells you how long a playlist really takes before you commit to it.
+      </p>
+      <p class="reveal">
+        Outside of work I read about rockets, physics, and whatever sport is on. I like problems that look simple and
+        aren't.
+      </p>
+    </div>
+
+    <section class="about__block" aria-labelledby="experience-title" data-reveal-group>
+      <SectionHeading index="01" label="Log" title="Experience" id="experience-title" class="reveal" />
+      <ol class="log">
+        {
+          experience.map((e) => (
+            <li class="log__item reveal">
+              <p class="label log__meta">
+                <span class="log__status">[{e.status}]</span>
+                <span>{e.meta.join(' · ')}</span>
+              </p>
+              <p class="log__text">{e.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="about__block" aria-labelledby="trajectory-title" data-reveal-group>
+      <SectionHeading index="02" label="Trajectory" title={`Since ${SITE.since}`} id="trajectory-title" class="reveal" />
+      <div class="reveal about__measure"><Timeline /></div>
+    </section>
+
+    <section class="about__block" aria-labelledby="stack-title" data-reveal-group>
+      <SectionHeading index="03" label="Spec sheet" title="Stack" id="stack-title" class="reveal" />
+      <table class="spec reveal">
+        <tbody>
+          {
+            stack.map(([k, v]) => (
+              <tr>
+                <th scope="row">{k}</th>
+                <td>{v}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section class="about__block" aria-labelledby="record-title" data-reveal-group>
+      <SectionHeading index="04" label="On record" title="Public track record" id="record-title" class="reveal" />
+      <Counters items={counters} class="reveal" />
+      <ul class="record reveal">
+        {record.map((r) => <li>{r}</li>)}
+      </ul>
+    </section>
+
+    <section class="about__block" aria-labelledby="now-title" data-reveal-group>
+      <SectionHeading index="05" label="Now" title="Currently" id="now-title" class="reveal" />
+      <p class="about__measure reveal">
+        Shipping frontend at {SITE.company}. Rebuilding this site with Astro and React Three Fiber. Reading about orbital
+        mechanics for no practical reason.
+      </p>
+    </section>
+
+    <section class="about__block" aria-labelledby="elsewhere-title" data-reveal-group>
+      <SectionHeading index="06" label="Elsewhere" title="Find me elsewhere" id="elsewhere-title" class="reveal" />
+      <ul class="elsewhere reveal">
+        {
+          elsewhere.map((l) => (
+            <li>
+              <a
+                href={l.href}
+                class="link tap elsewhere__link"
+                {...(l.href.startsWith('http') ? { rel: 'me noopener', target: '_blank' } : {})}
+              >
+                <Icon name={l.name} size={16} />
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .dossier {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+  }
+  .dossier__kind {
+    color: var(--text-muted);
+  }
+  .dossier__accent {
+    color: var(--accent);
+  }
+  .dossier__id {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin: 2rem 0 0;
+    max-width: 40rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+  }
+  .dossier__id > div {
+    display: grid;
+    grid-template-columns: 9ch minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dossier__id dt {
+    font-size: var(--text-label);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+  }
+  .dossier__id dd {
+    margin: 0;
+    color: var(--text);
+  }
+  .dossier__contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+    margin-top: 1rem;
+  }
+  .dossier__contact a,
+  .elsewhere__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  @media (min-width: 720px) {
+    .dossier {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: clamp(2rem, 5vw, 4rem);
+    }
+    .dossier__id {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2rem;
+    }
+  }
+
+  .about {
+    padding-bottom: var(--spacing-section);
+  }
+  .about__prose,
+  .about__measure {
+    max-width: var(--container-measure);
+  }
+  .about__prose > p + p {
+    margin-top: 1.25em;
+  }
+  .about__block {
+    margin-top: calc(var(--spacing-section) * 0.6);
+  }
+
+  .log {
+    max-width: var(--container-measure);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .log__item + .log__item {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .log__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1em;
+    color: var(--text-subtle);
+  }
+  .log__status {
+    color: var(--accent);
+  }
+  .log__text {
+    margin-top: 0.5rem;
+  }
+
+  .spec {
+    width: 100%;
+    max-width: 44rem;
+    border-collapse: collapse;
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+  }
+  .spec :is(th, td) {
+    padding: 0.75rem 1rem 0.75rem 0;
+    text-align: left;
+    vertical-align: baseline;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec tr:first-child :is(th, td) {
+    border-top: 1px solid var(--border);
+  }
+  .spec th {
+    width: 11ch;
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+  }
+  .spec td {
+    color: var(--text);
+  }
+
+  .record {
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    color: var(--text-muted);
+  }
+  .record li::before {
+    content: '▸ ';
+    color: var(--accent);
+  }
+  .record li + li {
+    margin-top: 0.375rem;
+  }
+
+  .elsewhere {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

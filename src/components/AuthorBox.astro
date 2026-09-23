@@ -1,0 +1,60 @@
+---
+/** Operator card for the end of an article: avatar, name, role, two-line bio, three mono links, in a HUD frame. */
+import Avatar from './Avatar.astro';
+import { SITE } from '../consts';
+---
+
+<aside class="hud author-box" aria-label="About the author">
+  <Avatar size={56} />
+  <div>
+    <p class="label author-box__role">Written by</p>
+    <p class="author-box__name">{SITE.name}</p>
+    <p class="author-box__bio">
+      Frontend engineer in New Delhi. Seven years of React and TypeScript, mostly spent making things faster and smaller.
+    </p>
+    <p class="label author-box__links">
+      <a href={SITE.socials.github} class="link" rel="me noopener">GitHub</a>
+      <a href={SITE.socials.x} class="link" rel="me noopener">X</a>
+      <a href={`mailto:${SITE.email}`} class="link">Email</a>
+      <a href="/about/" class="link">About</a>
+    </p>
+  </div>
+</aside>
+
+<style>
+  .author-box {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    padding: 1.5rem;
+  }
+  .author-box :global(.avatar) {
+    flex: none;
+  }
+  .author-box__role {
+    color: var(--text-subtle);
+  }
+  .author-box__name {
+    margin-top: 0.25rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-h3);
+    font-weight: 500;
+    line-height: var(--text-h3--line-height);
+  }
+  .author-box__bio {
+    margin-top: 0.5rem;
+    font-size: var(--text-small);
+    color: var(--text-muted);
+  }
+  .author-box__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin-top: 1rem;
+  }
+  @media (max-width: 480px) {
+    .author-box {
+      flex-direction: column;
+    }
+  }
+</style>

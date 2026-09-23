@@ -1,0 +1,101 @@
+/* The fixed sky behind every page: BaseLayout renders div.sky[data-canvas] > SkyCanvas, which fills it
+   with the WebGL scene (.sky-layer + canvas) or the static stand-in (.sky-static). Imported by SkyCanvas. */
+.sky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100lvh; /* large viewport: the canvas does not resize while mobile toolbars slide */
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-4) var(--ease-out);
+}
+/* Content stacks above the sky (the sticky header carries its own, higher z-index). */
+.sky ~ main,
+.sky ~ footer {
+  position: relative;
+  z-index: 1;
+}
+/* Articles are the calm page: no sky at all (DESIGN §7); the live scene also stops rendering there. */
+body[data-page="article"] .sky {
+  opacity: 0;
+}
+
+.sky-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--dur-4) var(--ease-out);
+}
+.sky-layer.is-ready {
+  opacity: 1;
+}
+
+/* --- Static stand-in (no WebGL, reduced motion, save-data, weak devices): no animation. --- */
+.sky-static {
+  /* A sparse, fixed star field. */
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--text) 40%, transparent) 0.7px, transparent 1.1px),
+    radial-gradient(circle, color-mix(in srgb, var(--text) 24%, transparent) 0.6px, transparent 1px);
+  background-size: 337px 293px, 211px 179px;
+  background-position: 0 0, 71px 43px;
+}
+
+/* A dithered disc with a tilted ring, top-right. Everything is a 3px grid of dots, masked. */
+.sky-static__planet {
+  --d: clamp(64px, 8vw, 120px); /* disc diameter; the ring spans 2.4x */
+  position: absolute;
+  top: calc(3.5rem + var(--d) * 0.55);
+  right: calc(var(--d) * 0.8);
+  width: var(--d);
+  aspect-ratio: 1;
+  opacity: 0.45;
+}
+
+.sky-static__disc {
+  position: absolute;
+  inset: 0;
+  clip-path: circle(50%);
+  background: var(--bg); /* hides the far half of the ring */
+}
+.sky-static__disc::before,
+.sky-static__disc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+/* Lit from the upper left, quantised into four steps like the live shader. */
+.sky-static__disc::before {
+  --dot: var(--text);
+  mask: radial-gradient(circle at 30% 28%, #000 0 34%, rgb(0 0 0 / 0.6) 34% 50%, rgb(0 0 0 / 0.3) 50% 63%, transparent 63%);
+}
+/* The terminator in launch orange. */
+.sky-static__disc::after {
+  --dot: var(--accent);
+  mask: radial-gradient(circle at 30% 28%, transparent 61%, #000 63% 70%, transparent 72%);
+}
+
+.sky-static__ring {
+  --dot: var(--text);
+  /* Ring bands from r 1.5 to 2.4 with the Cassini gap, as fractions of the outer radius. */
+  --ring: radial-gradient(closest-side, transparent 62%, rgb(0 0 0 / 0.4) 63% 72%, #000 74% 85%, transparent 86% 89%, rgb(0 0 0 / 0.7) 90% 99%, transparent 100%);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--d) * 2.4);
+  height: calc(var(--d) * 0.84);
+  translate: -50% -50%;
+  rotate: -18deg;
+  mask: var(--ring);
+}
+/* --dot is set per element, so the dot grid is declared where it is used. */
+.sky-static__disc::before,
+.sky-static__disc::after,
+.sky-static__ring {
+  background: radial-gradient(circle, var(--dot) 0.8px, transparent 1.15px) 0 0 / 3px 3px;
+}
+/* The near half passes in front of the disc. */
+.sky-static__ring--front {
+  mask: var(--ring), linear-gradient(transparent 50%, #000 50%);
+  mask-composite: intersect;
+}

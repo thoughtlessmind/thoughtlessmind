@@ -1,0 +1,321 @@
+---
+/**
+ * Article chrome, the calmest page: progress bar + readout, head (title, dek, label meta line, tags),
+ * a 68ch .prose column with a sticky `> section` rail at >= 1200px (details/summary below), and the end stack
+ * (share, series, older/newer, author, related).
+ */
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import ReadingProgress from '../components/ReadingProgress.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import ShareRow from '../components/ShareRow.astro';
+import SeriesNav from '../components/SeriesNav.astro';
+import AuthorBox from '../components/AuthorBox.astro';
+import PrevNext from '../components/PrevNext.astro';
+import Related from '../components/Related.astro';
+import { SITE } from '../consts';
+import { getPublishedPosts, getRelated, getSeries, isoDate, readingTime, type Post } from '../lib/posts';
+
+interface Props {
+  post: Post;
+  headings: MarkdownHeading[];
+}
+const { post, headings } = Astro.props;
+const { title, description, pubDate, updatedDate, tags, series, canonical, draft } = post.data;
+
+const posts = (await getPublishedPosts()).filter((p) => !p.data.external);
+const index = posts.findIndex((p) => p.id === post.id);
+const newer = posts[index - 1];
+const older = posts[index + 1];
+const related = getRelated(post, posts);
+const seriesPosts = series ? (getSeries(posts).get(series) ?? []) : [];
+const { minutes, words } = readingTime(post.body);
+const hasToc = headings.some((h) => h.depth === 2 || h.depth === 3);
+
+const url = new URL(`/writing/${post.id}/`, Astro.site ?? SITE.url).href;
+const image = `/og/${post.id}.png`;
+const canonicalHost = canonical ? new URL(canonical).hostname.replace(/^www\./, '') : null;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description,
+    datePublished: pubDate.toISOString(),
+    dateModified: (updatedDate ?? pubDate).toISOString(),
+    author: { '@type': 'Person', name: SITE.name, url: SITE.url },
+    image: new URL(image, SITE.url).href,
+    mainEntityOfPage: url,
+    keywords: tags.join(', '),
+    wordCount: words,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE.url}/` },
+      { '@type': 'ListItem', position: 2, name: 'Writing', item: `${SITE.url}/writing/` },
+      { '@type': 'ListItem', position: 3, name: title, item: url },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  type="article"
+  publishedTime={pubDate}
+  modifiedTime={updatedDate}
+  tags={[...tags]}
+  image={image}
+  canonical={canonical}
+  noindex={draft}
+  jsonLd={jsonLd}
+  page="article"
+>
+  <ReadingProgress />
+
+  <div class:list={['container-site article', { 'article--rail': hasToc }]} data-pagefind-ignore={draft ? 'all' : undefined}>
+    <header class="article__head" data-pagefind-ignore>
+      <a href="/writing/" class="crumb">cd ../writing</a>
+      <h1 class="article__title" transition:name={`post-${post.id}`} data-pagefind-meta="title">{title}</h1>
+      <p class="article__dek">{description}</p>
+      <p class="label article__meta">
+        <time datetime={pubDate.toISOString()}>{isoDate(pubDate)}</time>
+        <span>{minutes} min read</span>
+        <span>{words.toLocaleString('en-GB')} words</span>
+        {
+          updatedDate && (
+            <span>
+              Updated <time datetime={updatedDate.toISOString()}>{isoDate(updatedDate)}</time>
+            </span>
+          )
+        }
+        {draft && <span class="draft-badge">Draft</span>}
+      </p>
+      {
+        tags.length > 0 && (
+          <ul class="article__tags" aria-label="Tags">
+            {tags.map((t) => (
+              <li>
+                <a href={`/writing/tag/${t}/`} class="tag">
+                  {t}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      {
+        canonicalHost && (
+          <p class="article__canonical">
+            Originally published on{' '}
+            <a href={canonical} class="link" rel="noopener">
+              {canonicalHost}
+            </a>
+          </p>
+        )
+      }
+    </header>
+
+    <div class="article__body">
+      {
+        hasToc && (
+          <details class="toc-mobile" data-pagefind-ignore>
+            <summary class="label">On this page</summary>
+            <TableOfContents headings={headings} variant="inline" />
+          </details>
+        )
+      }
+      <article class="prose" data-pagefind-body={draft ? undefined : ''}>
+        <slot />
+      </article>
+    </div>
+
+    {
+      hasToc && (
+        <aside class="article__rail" data-pagefind-ignore>
+          <TableOfContents headings={headings} />
+        </aside>
+      )
+    }
+
+    <footer class="article__end" data-pagefind-ignore>
+      <ShareRow url={url} title={title} />
+      {series && seriesPosts.length > 1 && <SeriesNav series={series} posts={seriesPosts} currentId={post.id} />}
+      <PrevNext older={older} newer={newer} />
+      <AuthorBox />
+      <Related posts={related.posts} label={related.label} />
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  .article {
+    padding-block: clamp(2rem, 1rem + 4vw, 4.5rem) var(--spacing-section);
+  }
+  .article > * {
+    max-width: var(--container-measure);
+    margin-inline: auto;
+  }
+  .article__rail {
+    display: none;
+  }
+
+  .crumb {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text-subtle);
+    text-decoration: none;
+  }
+  .crumb::before {
+    content: '$ ' / '';
+    color: var(--accent);
+  }
+  .crumb:hover {
+    color: var(--text);
+  }
+
+  .article__title {
+    font-family: var(--font-ui);
+    font-size: var(--text-h2);
+    font-weight: 600;
+    line-height: var(--text-h2--line-height);
+    letter-spacing: var(--text-h2--letter-spacing);
+    text-wrap: balance;
+  }
+  .article__dek {
+    margin-top: 1rem;
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+  .article__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    margin-top: 1.75rem;
+    color: var(--text-subtle);
+    font-variant-numeric: tabular-nums;
+  }
+  /* Separators between meta items; the draft badge stands on its own. */
+  .article__meta > :not(:first-child, .draft-badge)::before {
+    content: '·' / '';
+    margin-right: 0.75rem;
+  }
+  .article__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .article__canonical {
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text-subtle);
+  }
+  .article__head {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .article__body {
+    padding-top: 2.5rem;
+  }
+  .toc-mobile {
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--border);
+  }
+  .toc-mobile > summary {
+    display: flex;
+    justify-content: space-between;
+    min-height: 2.75rem;
+    align-items: center;
+    padding-inline: 1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    list-style: none;
+  }
+  .toc-mobile > summary::-webkit-details-marker {
+    display: none;
+  }
+  .toc-mobile > summary::before {
+    content: '>' / '';
+    color: var(--accent);
+    margin-right: 0.75rem;
+  }
+  .toc-mobile > summary::after {
+    content: '[+]' / '';
+    margin-left: auto;
+    color: var(--text-subtle);
+  }
+  .toc-mobile[open] > summary::after {
+    content: '[-]' / '';
+  }
+  .toc-mobile > :global(.toc) {
+    padding: 0 1rem 1rem;
+  }
+
+  .article__end {
+    display: grid;
+    gap: 2.5rem;
+    margin-top: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Rail layout: [breakout] [68ch column] [breakout] [rail]. The breakout columns match .prose's --breakout,
+     so wide code blocks and figures never slide under the rail. */
+  @media (min-width: 1200px) {
+    .article--rail {
+      --gutter-col: calc((var(--container-wide) - var(--container-measure)) / 2);
+      display: grid;
+      grid-template-columns: var(--gutter-col) minmax(0, var(--container-measure)) var(--gutter-col) minmax(12rem, 16rem);
+      justify-content: center;
+    }
+    .article--rail > * {
+      grid-column: 2;
+      max-width: none;
+      margin-inline: 0;
+    }
+    .article--rail .article__rail {
+      display: block;
+      grid-column: 4;
+      grid-row: 2;
+      align-self: start;
+      position: sticky;
+      top: calc(var(--header-h) + 2.5rem);
+      max-height: calc(100dvh - var(--header-h) - 4rem);
+      overflow-y: auto;
+      padding-top: 2.5rem;
+    }
+    .article--rail .toc-mobile {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // "#" anchors on h2/h3, visible on hover or focus (styled with .prose in global.css).
+  function addAnchors() {
+    for (const h of document.querySelectorAll<HTMLElement>('.prose :is(h2, h3)[id]')) {
+      if (h.querySelector('.heading-anchor')) continue;
+      const a = document.createElement('a');
+      a.className = 'heading-anchor';
+      a.href = `#${h.id}`;
+      a.setAttribute('aria-label', 'Link to section');
+      a.textContent = '#';
+      h.append(a);
+    }
+  }
+  document.addEventListener('astro:page-load', addAnchors);
+</script>

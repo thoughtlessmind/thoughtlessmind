@@ -1,0 +1,68 @@
+---
+// Two-state [DRK|LGT] switch. One native button: pressed = light. The lit segment is CSS off html[data-theme],
+// so it is right before any JS runs; the script only flips the theme and keeps aria-pressed honest.
+---
+
+<button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false">
+  <span class="sr-only">Light theme</span>
+  <span class="theme-toggle__face" aria-hidden="true">
+    [<span data-opt="dark">DRK</span>|<span data-opt="light">LGT</span>]
+  </span>
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--text-subtle);
+    font-family: var(--font-ui);
+    font-size: var(--text-label);
+    font-weight: 500;
+    font-stretch: 87.5%;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  [data-opt] {
+    padding: 0.125rem 0.3125rem;
+    color: var(--text-muted);
+    transition:
+      background-color var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
+  }
+  .theme-toggle:hover [data-opt] {
+    color: var(--text);
+  }
+  :global(:root:not([data-theme='light'])) [data-opt='dark'],
+  :global([data-theme='light']) [data-opt='light'] {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+
+  const sync = () => {
+    const light = String(root.dataset.theme === 'light');
+    for (const b of document.querySelectorAll('[data-theme-toggle]')) b.setAttribute('aria-pressed', light);
+  };
+
+  document.addEventListener('click', (e) => {
+    if (!(e.target as Element | null)?.closest?.('[data-theme-toggle]')) return;
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    root.classList.add('theme-transition');
+    window.setTimeout(() => root.classList.remove('theme-transition'), 240);
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch {}
+  });
+
+  // The palette (or anything else) may set data-theme directly.
+  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  document.addEventListener('astro:page-load', sync);
+</script>

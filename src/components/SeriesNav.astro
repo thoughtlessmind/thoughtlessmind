@@ -1,0 +1,81 @@
+---
+/** HUD panel: "Series · part n of m", the series link, and the ordered parts; the current one is marked, the rest link. */
+import { slugify, type Post } from '../lib/posts';
+
+interface Props {
+  series: string;
+  posts: Post[];
+  currentId: string;
+}
+const { series, posts, currentId } = Astro.props;
+const index = posts.findIndex((p) => p.id === currentId);
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<nav class="hud series-nav" aria-label="Series">
+  <p class="label series-nav__label">Series · part {pad(index + 1)} of {pad(posts.length)}</p>
+  <a href={`/writing/series/${slugify(series)}/`} class="link series-nav__name">{series}</a>
+  <ol class="series-nav__list">
+    {
+      posts.map((p, i) => (
+        <li class:list={['series-nav__item', { 'is-current': p.id === currentId }]}>
+          <span class="series-nav__num">{pad(i + 1)}</span>
+          {p.id === currentId ? (
+            <span aria-current="page">{p.data.title}</span>
+          ) : (
+            <a href={`/writing/${p.id}/`} class="link">
+              {p.data.title}
+            </a>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .series-nav {
+    padding: 1.25rem;
+  }
+  .series-nav__label {
+    color: var(--text-subtle);
+  }
+  .series-nav__name {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-small);
+    font-weight: 600;
+  }
+  .series-nav__list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 1rem 0 0;
+    border-top: 1px solid var(--border);
+  }
+  .series-nav__item {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    align-items: baseline;
+    padding-block: 0.375rem;
+    font-size: var(--text-small);
+    color: var(--text-muted);
+  }
+  .series-nav__item.is-current {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .series-nav__num {
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-subtle);
+  }
+  .series-nav__item.is-current .series-nav__num {
+    color: var(--accent);
+  }
+  .series-nav__item.is-current .series-nav__num::before {
+    content: '▸' / '';
+    margin-right: 0.25rem;
+  }
+</style>

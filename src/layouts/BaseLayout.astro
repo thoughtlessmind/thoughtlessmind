@@ -1,0 +1,51 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import Head from '../components/Head.astro';
+import type { Props as HeadProps } from '../components/Head.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SkyCanvas from '../components/three/SkyCanvas';
+import { SITE } from '../consts';
+import themeScript from '../scripts/theme.js?raw';
+
+export interface Props extends HeadProps {
+  /** Extra classes on <main>. */
+  class?: string;
+  /** Sets `data-page` on <body>; "article" keeps the sky off (ArticleLayout passes it). */
+  page?: string;
+}
+
+const { class: mainClass, page, ...head } = Astro.props;
+
+// gtag is injected after the first page-load + idle so its 160 KB never competes with the hero font;
+// page_view still fires on every ClientRouter navigation (queued into dataLayer until gtag.js lands).
+const gaScript = `(function(){var id='${SITE.gaId}',booted=false;function boot(){booted=true;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',id,{send_page_view:false});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s)}function view(){gtag('event','page_view',{page_location:location.href,page_title:document.title})}document.addEventListener('astro:page-load',function(){if(booted)return view();var go=function(){boot();view()};'requestIdleCallback'in window?requestIdleCallback(go,{timeout:4000}):setTimeout(go,1500)})})();`;
+---
+
+<html lang="en">
+  <head>
+    <script is:inline set:html={themeScript} />
+    <Head {...head} />
+    <ClientRouter />
+    {import.meta.env.PROD && <script is:inline set:html={gaScript} />}
+  </head>
+  <body data-page={page}>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <div class="field" aria-hidden="true"></div>
+    <canvas class="field-fx" width="0" height="0" aria-hidden="true" transition:persist="field-fx"></canvas>
+    <div data-canvas aria-hidden="true" class="sky">
+      <SkyCanvas client:idle transition:persist transition:name="sky" />
+    </div>
+    <Header />
+    <main id="main" class={mainClass} tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import '../scripts/fx';
+      import '../scripts/reveal';
+      import '../scripts/field';
+    </script>
+  </body>
+</html>

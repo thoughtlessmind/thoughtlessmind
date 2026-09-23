@@ -1,0 +1,202 @@
+---
+/**
+ * Shared template for /writing, /writing/tag/[tag] and /writing/series/[series]:
+ * page head, `--tag=` filters, terminal log listing (year-grouped, or numbered in series order), optional series block.
+ */
+import BaseLayout from './BaseLayout.astro';
+import TagChips from '../components/TagChips.astro';
+import PostRow from '../components/PostRow.astro';
+import { groupByYear, slugify, type Post } from '../lib/posts';
+
+interface Props {
+  title: string;
+  heading: string;
+  description: string;
+  posts: Post[];
+  tags: { tag: string; count: number }[];
+  active: string;
+  allCount: number;
+  /** Group rows under year labels (default). Series pages pass false to keep reading order. */
+  groupYears?: boolean;
+  /** Number the rows "01", "02"… — only for a real sequence (series pages). */
+  numbered?: boolean;
+  /** Show the tag filter bar (default). Series pages hide it: filtering would leave the series. */
+  showTags?: boolean;
+  series?: Map<string, Post[]>;
+  breadcrumb?: boolean;
+}
+const {
+  title,
+  heading,
+  description,
+  posts,
+  tags,
+  active,
+  allCount,
+  groupYears = true,
+  numbered = false,
+  showTags = true,
+  series,
+  breadcrumb = false,
+} = Astro.props;
+const groups: [string, Post[]][] = groupYears ? groupByYear(posts).map(([y, list]) => [String(y), list]) : [['', posts]];
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<BaseLayout title={title} description={description} page="writing">
+  <header class="container-site page-head">
+    {
+      breadcrumb && (
+        <a href="/writing/" class="crumb">
+          cd ../writing
+        </a>
+      )
+    }
+    <h1 class="page-title">{heading}</h1>
+    <p class="page-head__dek">{description}</p>
+  </header>
+
+  {
+    showTags && (
+      <div class="container-site">
+        <TagChips tags={tags} active={active} total={posts.length} allCount={allCount} />
+      </div>
+    )
+  }
+
+  {
+    groups.map(([label, list]) => (
+      <section class="container-site writing-group" aria-label={label || 'Articles'} data-reveal-group>
+        {label && (
+          <p class="label writing-group__label reveal">
+            <span class="writing-group__slash" aria-hidden="true">
+              {'//'}
+            </span>
+            {label}
+            <span class="writing-group__count">{pad(list.length)}</span>
+          </p>
+        )}
+        <ul class="rows">
+          {list.map((post, i) => (
+            <PostRow post={post} level="h2" number={numbered ? pad(i + 1) : undefined} class="reveal" />
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {
+    series && series.size > 0 && (
+      <section class="container-site writing-group" aria-labelledby="series-label" data-reveal-group>
+        <p class="label writing-group__label reveal" id="series-label">
+          <span class="writing-group__slash" aria-hidden="true">
+            {'//'}
+          </span>
+          Series
+        </p>
+        <ul class="rows">
+          {[...series].map(([name, list]) => (
+            <li class="series-row reveal">
+              <span class="series-row__marker" aria-hidden="true">
+                ▸
+              </span>
+              <a href={`/writing/series/${slugify(name)}/`} class="series-row__title">
+                {name}
+              </a>
+              <span class="series-row__leader" aria-hidden="true"></span>
+              <span class="series-row__count">
+                {pad(list.length)} {list.length === 1 ? 'part' : 'parts'}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .crumb {
+    display: inline-block;
+    margin-bottom: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text-subtle);
+    text-decoration: none;
+  }
+  .crumb::before {
+    content: '$ ' / '';
+    color: var(--accent);
+  }
+  .crumb:hover {
+    color: var(--text);
+  }
+
+  .writing-group {
+    padding-bottom: 3.5rem;
+  }
+  .writing-group:last-child {
+    padding-bottom: var(--spacing-section);
+  }
+  .writing-group__label {
+    display: flex;
+    gap: 0.75rem;
+    padding-bottom: 0.875rem;
+    color: var(--text-muted);
+  }
+  .writing-group__slash {
+    color: var(--accent);
+  }
+  .writing-group__count {
+    color: var(--text-subtle);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .series-row {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    padding-block: 1.125rem;
+    font-family: var(--font-ui);
+  }
+  .series-row__marker,
+  .series-row__leader,
+  .series-row__count {
+    font-size: var(--text-caption);
+    color: var(--text-subtle);
+    white-space: nowrap;
+  }
+  .series-row__title {
+    min-width: 0;
+    font-size: var(--text-body);
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    transition: color var(--dur-1) var(--ease-out);
+  }
+  .series-row__title::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .series-row:hover .series-row__title,
+  .series-row:hover .series-row__marker {
+    color: var(--accent);
+  }
+  .series-row__leader {
+    flex: 1 1 2rem;
+    min-width: 2rem;
+    overflow: hidden;
+    opacity: 0.7;
+  }
+  .series-row__leader::before {
+    content: '................................................................................................................................................................';
+  }
+  .series-row__count {
+    flex: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

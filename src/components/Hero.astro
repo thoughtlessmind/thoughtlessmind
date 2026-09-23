@@ -1,0 +1,554 @@
+---
+/**
+ * Home hero: boot log, status, glitching name, role line, lead, CTAs and a telemetry HUD.
+ * `[data-planet-anchor]` is an empty, sized box: the scene agent draws the WebGL planet over its rect.
+ * Every live value (clock, uptime, cursor) is rendered at its build-time/fallback value; fx.ts animates it.
+ * The CURSOR row's `[data-egg-hint]` and the `[data-egg-mark]` ring belong to the coordinate eggs (eggs.ts).
+ */
+import { SITE } from '../consts';
+
+const since = { year: SITE.since, month: 3 }; // matches data-uptime-since="2019-03" below
+const now = new Date();
+const months = (now.getUTCFullYear() - since.year) * 12 + (now.getUTCMonth() + 1 - since.month);
+const pad = (n: number) => String(n).padStart(2, '0');
+const uptime = `${pad(Math.floor(months / 12))}y ${pad(months % 12)}m`;
+
+const [first, last] = SITE.name.split(' ');
+
+const boot = [
+  '> init signal.v3 ........ ok',
+  '> mount /work /writing /about .. ok',
+  '> locate operator ....... 28.61N 77.21E',
+  '> status .................. shipping',
+];
+---
+
+<section class="hero container-site" aria-labelledby="hero-title">
+  <div class="hero__planet" data-planet-anchor aria-hidden="true"></div>
+
+  <div class="hero__copy">
+    <ol class="hero__boot" data-boot aria-hidden="true">
+      {boot.map((line) => <li>{line}</li>)}
+    </ol>
+
+    <p class="label hero__status">
+      <span class="dot-status">Online — sys://{SITE.handle}</span>
+    </p>
+
+    <h1 id="hero-title" class="display flicker glitch hero__name" data-text={`${first}\n${last}`} data-glitch-burst>
+      {first}<br />{last}
+    </h1>
+
+    <p class="mono hero__role">
+      <span data-scramble>frontend engineer</span><span class="caret" aria-hidden="true"></span>
+    </p>
+
+    <p class="hero__lead">
+      I build interfaces that load fast and read clearly. Seven years of React and TypeScript, currently shipping
+      at {SITE.company}.
+    </p>
+
+    <div class="hero__actions">
+      <a href="#work" class="btn btn-primary"><span data-scramble="hover">View work</span></a>
+      <a href={`mailto:${SITE.email}`} class="btn btn-ghost"><span data-scramble="hover">ping me</span></a>
+    </div>
+  </div>
+
+  <!-- The slot keeps the compact size in the grid; the panel scales inside it from the bottom-right corner. -->
+  <div class="hero__tele">
+    <div class="hud hud--solid hero__telemetry" data-tele>
+      <span
+        class="hero__grip"
+        data-tele-grip
+        role="slider"
+        tabindex="0"
+        aria-label="Telemetry panel size"
+        aria-valuemin="85"
+        aria-valuemax="180"
+        aria-valuenow="100"
+        aria-valuetext="100%"></span>
+      <dl class="hero__rows">
+        <div class="hero__row">
+          <dt>Loc</dt>
+          <dd>{SITE.coords}</dd>
+        </div>
+        <div class="hero__row">
+          <dt>Local</dt>
+          <dd><span data-clock>--:--:--</span> IST</dd>
+        </div>
+        <div class="hero__row">
+          <dt>Uptime</dt>
+          <dd><span data-uptime-since="2019-03">{uptime}</span></dd>
+        </div>
+        <div class="hero__row">
+          <dt>Stack</dt>
+          <dd>TS / React / Astro / R3F</dd>
+        </div>
+        <div class="hero__row">
+          <dt>Status</dt>
+          <dd>Shipping @ {SITE.company}</dd>
+        </div>
+        <div class="hero__row hero__row--cursor">
+          <dt>Cursor</dt>
+          <dd>
+            <span data-pointer-coords>X ---- · Y ----</span><span class="hero__egg" data-egg-hint aria-hidden="true" hidden><svg class="hero__egg-dir" viewBox="0 0 16 16"><g transform="rotate(0 8 8)"><path d="M2.5 8h10M9 4.5 12.5 8 9 11.5"></path></g></svg><svg class="hero__egg-lock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"></circle><circle cx="8" cy="8" r="2.5"></circle></svg><span data-egg-hint-text></span></span>
+          </dd>
+        </div>
+      </dl>
+    </div>
+    <script is:inline data-astro-rerun>
+      // Before paint: the saved panel size (Hero's script clamps it to the space available).
+      try {
+        var s = parseFloat(localStorage.getItem('tele-scale'));
+        if (s > 0) document.querySelector('[data-tele]').style.setProperty('--tele-scale', String(Math.min(1.8, Math.max(0.85, s))));
+      } catch (e) {}
+    </script>
+  </div>
+
+  <!-- The coordinate-egg marker (eggs.ts): a fixed ring the script moves onto a reached point. -->
+  <button type="button" class="egg-mark" data-egg-mark aria-label="Hidden signal">
+    {Array.from({ length: 10 }, (_, i) => <i style={`--i: ${i}`}></i>)}
+  </button>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'planet' 'copy' 'telemetry';
+    gap: 2.5rem;
+    padding-block: 2.5rem 3.5rem;
+  }
+
+  /* Mobile: its own band above the copy, so no text sits on the points. Empty on purpose; the canvas behind the page draws here. */
+  .hero__planet {
+    grid-area: planet;
+    height: min(62vw, 15rem);
+    margin-bottom: -1rem;
+    pointer-events: none;
+  }
+
+  .hero__copy {
+    grid-area: copy;
+    position: relative;
+    min-width: 0;
+  }
+
+  .hero__boot {
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    line-height: 1.7;
+    color: var(--text-subtle);
+    white-space: pre;
+    overflow-x: clip;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Decorative, and on a phone it would push the name below the fold. */
+  @media (max-width: 599px) {
+    .hero__boot { display: none; }
+    .hero .hero__status { margin-top: 0; }
+  }
+
+  .hero__status {
+    margin-top: 2rem;
+    color: var(--text-muted);
+  }
+
+  .hero__name {
+    margin-top: 1.25rem;
+  }
+
+  .hero__role {
+    margin-top: 1.5rem;
+    font-size: var(--text-h3);
+    color: var(--text);
+  }
+
+  .hero__lead {
+    max-width: 52ch;
+    margin-top: 1.25rem;
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-top: 2.25rem;
+  }
+
+  /* Telemetry: compact, and every size is in em off one font-size, so --tele-scale (the grip, fine pointers in
+     the two-column layout) scales it uniformly. Rows are one line each: 1.5em line + 2 x 0.25em padding. */
+  .hero__tele {
+    --rows: 6;
+    grid-area: telemetry;
+    align-self: end;
+    font-size: var(--text-label);
+  }
+  .hero__telemetry {
+    position: relative;
+    width: min(100%, 32em);
+    padding: 0.875em 1.125em;
+    font-family: var(--font-ui);
+    font-size: 1em;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero__rows {
+    margin: 0;
+  }
+  .hero__row {
+    display: grid;
+    grid-template-columns: 7ch minmax(0, 1fr);
+    gap: 1em;
+    padding-block: 0.25em;
+  }
+  .hero__row + .hero__row {
+    border-top: 1px solid var(--border);
+  }
+  .hero__row dt {
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+  /* One line per cell, so the slot height below holds and the egg hint never wraps or shifts anything. */
+  .hero__row dd {
+    margin: 0;
+    color: var(--text);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media (pointer: coarse) {
+    .hero__tele {
+      --rows: 5;
+    }
+    .hero__row--cursor {
+      display: none;
+    }
+  }
+
+  /* Egg hint (eggs.ts): a direction arrow rotated toward the nearest hidden point, then its coordinates; the
+     arrow becomes a lock in --accent once the marker is up. */
+  .hero__egg {
+    margin-left: 1ch;
+    color: var(--text-muted);
+  }
+  .hero__egg svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-right: 0.5ch;
+    vertical-align: -0.15em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: square;
+  }
+  .hero__egg-lock {
+    color: var(--accent);
+  }
+  .hero__egg-lock circle + circle {
+    fill: currentColor;
+    stroke: none;
+  }
+  .hero__egg.is-locked .hero__egg-dir,
+  .hero__egg:not(.is-locked) .hero__egg-lock {
+    display: none;
+  }
+
+  /* Resize grip: the panel's top-left bracket (its free corner). Hidden unless fine pointer + two columns. */
+  .hero__grip {
+    display: none;
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
+    cursor: nwse-resize;
+    touch-action: none;
+  }
+  .hero__grip::before,
+  .hero__grip::after {
+    content: '';
+    position: absolute;
+    opacity: 0;
+    transition: opacity var(--dur-1) var(--ease-out);
+  }
+  /* A longer, brighter bracket over the panel's own, and two short diagonal grip strokes inside the corner.
+     The box sits mostly outside the panel so neither covers the first row's text. */
+  .hero__grip::before {
+    top: 13px;
+    left: 13px;
+    width: 14px;
+    height: 14px;
+    border-top: 2px solid var(--accent-hover);
+    border-left: 2px solid var(--accent-hover);
+  }
+  .hero__grip::after {
+    top: 16px;
+    left: 16px;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(
+      135deg,
+      transparent 0 22%,
+      var(--accent-hover) 22% 34%,
+      transparent 34% 52%,
+      var(--accent-hover) 52% 64%,
+      transparent 64%
+    );
+  }
+  .hero__grip:hover::before,
+  .hero__grip:hover::after,
+  .hero__grip:focus-visible::before,
+  .hero__grip:focus-visible::after,
+  .hero__grip.is-dragging::before,
+  .hero__grip.is-dragging::after {
+    opacity: 1;
+  }
+  .hero__grip:focus-visible {
+    outline: 1px dashed var(--accent);
+    outline-offset: 0;
+  }
+
+  /* Coordinate-egg marker: a 26px ring (the one circle in the system) centred in a 48px hit area, with ten
+     pixel dots drifting in to the ring. Positioned by eggs.ts with `translate`; hidden until .is-on. */
+  .egg-mark {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    width: 48px;
+    height: 48px;
+    margin: -24px 0 0 -24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      scale var(--dur-2) var(--ease-out),
+      visibility 0s linear var(--dur-2);
+  }
+  .egg-mark.is-on {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity var(--dur-1) var(--ease-out),
+      scale var(--dur-2) var(--ease-out);
+  }
+  .egg-mark.is-fired {
+    scale: 0.25;
+  }
+  .egg-mark::before {
+    content: '';
+    position: absolute;
+    inset: 11px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    /* A dark halo and tinted core keep it legible over the planet's points. */
+    background: color-mix(in srgb, var(--bg) 60%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+  .egg-mark i {
+    --a: calc(var(--i) * 36deg);
+    position: absolute;
+    top: 23px;
+    left: 23px;
+    width: 2px;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 0 1px var(--bg);
+    transform: rotate(var(--a)) translateY(-19px);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .egg-mark.is-on i {
+      animation: egg-home calc(var(--dur-2) * 5) linear infinite;
+      animation-delay: calc(var(--i) * var(--dur-2) / -2);
+    }
+  }
+  @keyframes egg-home {
+    from {
+      transform: rotate(var(--a)) translateY(-26px);
+      opacity: 0;
+    }
+    30% {
+      opacity: 1;
+    }
+    to {
+      transform: rotate(var(--a)) translateY(-14px);
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .egg-mark.is-fired {
+      scale: none;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .hero {
+      /* Planet box: up to 540px, but short viewports shrink it so hero + telemetry still fit above the fold. */
+      --planet: max(16rem, min(40vw, 540px, calc(100svh - var(--header-h) - 24rem)));
+      grid-template-columns: minmax(0, 1fr) max(var(--planet), 26rem);
+      grid-template-rows: auto auto;
+      grid-template-areas:
+        'copy planet'
+        'copy telemetry';
+      align-items: center;
+      column-gap: clamp(2rem, 4vw, 4rem);
+      min-height: calc(92svh - var(--header-h));
+      padding-block: 3rem 4rem;
+    }
+    .hero__planet {
+      justify-self: end;
+      width: var(--planet);
+      height: auto;
+      aspect-ratio: 1;
+      margin-bottom: 0;
+    }
+    /* The slot holds the compact size (1em = --text-label): width + (rows x 2em + row borders) + padding + border. */
+    .hero__tele {
+      position: relative;
+      justify-self: end;
+      width: 32em;
+      height: calc(var(--rows) * 2em + (var(--rows) - 1) * 1px + 1.75em + 2px);
+    }
+    .hero__telemetry {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 32em;
+    }
+  }
+  @media (min-width: 900px) and (pointer: fine) {
+    .hero__telemetry {
+      font-size: calc(1em * var(--tele-scale, 1));
+    }
+    .hero__grip {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  // Telemetry resize: drag the top-left grip (up-left grows), or use it as a slider from the keyboard. The scale
+  // is a multiple of the compact size, 0.85 to 1.8, clamped so the panel never reaches into the copy column
+  // (plus room for the launch-pad egg left of it) or above the hero. The user's choice is kept in localStorage;
+  // the inline script next to the panel applies it before paint.
+  const KEY = 'tele-scale';
+  const MIN = 0.85;
+  const MAX = 1.8;
+  const STEP = 0.05;
+  const GAP = 56; // kept free between the copy column and the panel
+
+  let ac: AbortController | undefined;
+
+  function init() {
+    ac?.abort();
+    const tele = document.querySelector<HTMLElement>('[data-tele]');
+    const grip = tele?.querySelector<HTMLElement>('[data-tele-grip]');
+    const copy = document.querySelector<HTMLElement>('.hero__copy');
+    const hero = tele?.closest('section');
+    if (!tele || !grip || !copy || !hero) return;
+    const mq = matchMedia('(min-width: 900px) and (pointer: fine)');
+    ac = new AbortController();
+    const { signal } = ac;
+
+    let pref = 1; // what the user chose
+    let scale = 1; // what is applied (pref, clamped to the room there is)
+    try {
+      pref = Math.min(MAX, Math.max(MIN, parseFloat(localStorage.getItem(KEY) ?? '') || 1));
+    } catch {}
+
+    const room = () => {
+      const r = tele.getBoundingClientRect();
+      const c = copy.getBoundingClientRect();
+      const h = hero.getBoundingClientRect();
+      const w = (r.right - c.right - GAP) / (r.width / scale);
+      const v = (r.bottom - h.top) / (r.height / scale);
+      return Math.max(MIN, Math.min(MAX, w, v));
+    };
+    const apply = (v: number, max = room()) => {
+      scale = Math.round(Math.min(max, Math.max(MIN, v)) * 100) / 100;
+      tele.style.setProperty('--tele-scale', String(scale));
+      const pct = Math.round(scale * 100);
+      grip.setAttribute('aria-valuenow', String(pct));
+      grip.setAttribute('aria-valuetext', `${pct}%`);
+      grip.setAttribute('aria-valuemax', String(Math.round(max * 100)));
+    };
+    const choose = (v: number, max?: number) => {
+      apply(v, max);
+      pref = scale;
+      try {
+        localStorage.setItem(KEY, String(pref));
+      } catch {}
+    };
+    const fit = () => mq.matches && apply(pref);
+
+    scale = parseFloat(tele.style.getPropertyValue('--tele-scale')) || 1;
+    fit();
+    addEventListener('resize', fit, { signal });
+
+    let start: { x: number; y: number; size: number; scale: number; max: number } | undefined;
+    grip.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (e.button !== 0 || !mq.matches) return;
+        e.preventDefault();
+        grip.setPointerCapture(e.pointerId);
+        grip.classList.add('is-dragging');
+        const r = tele.getBoundingClientRect();
+        start = { x: e.clientX, y: e.clientY, size: r.width + r.height, scale, max: room() };
+      },
+      { signal },
+    );
+    grip.addEventListener(
+      'pointermove',
+      (e) => {
+        if (!start) return;
+        // Growth along the diagonal, relative to the size at pointerdown.
+        const k = 1 + (start.x - e.clientX + start.y - e.clientY) / start.size;
+        apply(start.scale * k, start.max);
+      },
+      { signal },
+    );
+    const end = () => {
+      if (!start) return;
+      start = undefined;
+      grip.classList.remove('is-dragging');
+      choose(scale);
+    };
+    grip.addEventListener('pointerup', end, { signal });
+    grip.addEventListener('lostpointercapture', end, { signal });
+    grip.addEventListener('dblclick', () => choose(1), { signal });
+    grip.addEventListener(
+      'keydown',
+      (e) => {
+        const k = e.key;
+        let v: number;
+        if (k === 'ArrowLeft' || k === 'ArrowDown') v = scale - STEP;
+        else if (k === 'ArrowRight' || k === 'ArrowUp') v = scale + STEP;
+        else if (k === 'Home') v = MIN;
+        else if (k === 'End') v = MAX;
+        else if (k === 'Enter') v = 1;
+        else return;
+        e.preventDefault();
+        choose(v);
+      },
+      { signal },
+    );
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => ac?.abort());
+</script>

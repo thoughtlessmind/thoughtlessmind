@@ -1,0 +1,643 @@
+---
+/**
+ * The main easter egg: a Quake-style console that drops from under the header. Opened by the window event
+ * `terminal:open`, sent by a hidden coordinate in the home hero (eggs.ts) and the ⌘K "Open terminal" action.
+ * A native modal <dialog> (focus, Esc, inert page); it persists across ClientRouter navigations so `cd` keeps
+ * the scrollback.
+ * Also holds the live region for egg toasts (src/scripts/eggs.ts).
+ */
+import { getCollection } from 'astro:content';
+import { SITE } from '../consts';
+
+const cols = (rows: string[][]) => {
+  const width = Math.max(...rows.map((r) => r[0].length)) + 3;
+  return rows.map(([k, ...v]) => k.padEnd(width) + v.join(' ')).join('\n');
+};
+const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+
+// Files for `cat`, generated from the same data as the pages. stack.txt mirrors the about page's spec sheet.
+const files = {
+  'about.txt': [
+    SITE.name,
+    `${SITE.role} at ${SITE.company}, ${SITE.location}.`,
+    `Building for the web since ${SITE.since}, mostly React and TypeScript in production:`,
+    'design systems, dashboards and the plumbing that keeps them fast.',
+    'Off duty: rockets, physics and whatever sport is on.',
+  ].join('\n'),
+  'projects.txt': cols(
+    projects.map((p) => [`${p.data.year}  ${p.data.title}${p.data.archived ? ' [archived]' : ''}`, p.data.summary]),
+  ),
+  'socials.txt': cols([
+    ['github', bare(SITE.socials.github)],
+    ['linkedin', bare(SITE.socials.linkedin)],
+    ['x', bare(SITE.socials.x)],
+    ['so', bare(SITE.socials.stackoverflow)],
+    ['devto', bare(SITE.socials.devto)],
+    ['rss', `${bare(SITE.url)}/rss.xml`],
+    ['email', SITE.email],
+  ]) + '\nTry: open github',
+  'stack.txt': cols([
+    ['language', 'TypeScript'],
+    ['ui', 'React · Next.js · Astro'],
+    ['styling', 'Tailwind CSS · Material UI'],
+    ['state', 'Redux'],
+    ['build', 'Vite · Webpack'],
+    ['runtime', 'Node'],
+    ['platform', 'Chrome extensions'],
+  ]),
+};
+---
+
+<dialog class="term-dialog" aria-label="Terminal" aria-modal="true" data-terminal data-files={JSON.stringify(files)} transition:persist="terminal">
+  <div class="container-site">
+    <section class="hud term">
+      <header class="term__bar">
+        <p class="label term__title">tm-sh <span class="term__sep" aria-hidden="true">·</span> <span data-term-cwd>~</span></p>
+        <button type="button" class="btn btn-sm" data-terminal-close aria-label="Close terminal">Esc</button>
+      </header>
+      <div class="term__out" role="log" aria-live="polite" aria-label="Output"></div>
+      <p class="term__prompt">
+        <span class="term__ps1" aria-hidden="true"><span class="term__host">rajiv@thoughtlessmind:</span><span class="term__path" data-term-cwd>~</span>$</span>
+        <span class="term__field">
+          <input
+            class="term__input"
+            id="term-input"
+            type="text"
+            aria-label="Command"
+            placeholder=" "
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            enterkeyhint="send"
+            autofocus
+          />
+          <span class="caret" aria-hidden="true"></span>
+        </span>
+      </p>
+    </section>
+  </div>
+</dialog>
+<div class="egg-toasts" role="status" aria-live="polite" data-egg-toasts></div>
+
+<style is:global>
+  /* Component styles, global because the output lines, toasts and rocket are created by script. */
+  .term-dialog {
+    position: fixed;
+    inset: var(--header-h) 0 auto;
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    overflow: visible;
+  }
+  .term-dialog::backdrop {
+    background: transparent;
+  }
+  .term {
+    display: flex;
+    flex-direction: column;
+    height: min(60dvh, 32rem);
+    background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+  }
+  .term-dialog[open] .term {
+    animation: term-drop var(--dur-2) var(--ease-out);
+  }
+  .term-dialog.is-instant .term {
+    animation: none;
+  }
+  @keyframes term-drop {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(-2px);
+    }
+  }
+
+  .term__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.375rem 0.375rem 0.375rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .term__title {
+    margin: 0;
+    color: var(--text-subtle);
+  }
+  .term__sep {
+    color: var(--accent);
+  }
+
+  .term__out {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.75rem 1rem 0.25rem;
+  }
+  .term__l {
+    min-height: 1lh;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .term__l.is-muted {
+    color: var(--text-muted);
+  }
+  .term__l.is-accent,
+  .term__key {
+    color: var(--accent);
+  }
+  .term__cmd {
+    margin-top: 0.5rem;
+  }
+  .term__cmd:first-child {
+    margin-top: 0;
+  }
+
+  .term__prompt {
+    display: flex;
+    align-items: center;
+    gap: 1ch;
+    margin: 0;
+    padding: 0.625rem 1rem 0.75rem;
+    border-top: 1px dashed var(--border);
+  }
+  .term__prompt:focus-within {
+    border-top-color: var(--accent);
+  }
+  .term__ps1 {
+    flex: none;
+    white-space: nowrap;
+    color: var(--accent);
+  }
+  .term__path {
+    color: var(--signal);
+  }
+  .term__field {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+  .term__input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--text);
+    caret-color: var(--accent);
+    outline: none;
+  }
+  /* Empty and focused: the accent block caret stands in for the thin native one. */
+  .term__input:placeholder-shown {
+    caret-color: transparent;
+  }
+  .term__field .caret {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    translate: 0 -50%;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .term__input:not(:placeholder-shown) + .caret,
+  .term__input:not(:focus) + .caret {
+    display: none;
+  }
+
+  /* neofetch */
+  .term__fetch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    gap: 0.75rem 3ch;
+    padding-block: 0.25rem;
+  }
+  .term__fetch pre {
+    margin: 0;
+    font: inherit;
+    white-space: pre-wrap;
+  }
+  .term__logo {
+    color: var(--accent);
+    line-height: 1;
+  }
+  .term__swatches {
+    display: flex;
+    margin-top: 0.5rem;
+  }
+  .term__swatches i {
+    width: 2.5ch;
+    height: 1em;
+  }
+  .term__swatches i:nth-child(1) { background: var(--accent); }
+  .term__swatches i:nth-child(2) { background: var(--signal); }
+  .term__swatches i:nth-child(3) { background: var(--ok); }
+  .term__swatches i:nth-child(4) { background: var(--text-muted); }
+  .term__swatches i:nth-child(5) { background: var(--text); }
+
+  /* Egg toasts, bottom-right */
+  .egg-toasts {
+    position: fixed;
+    right: var(--spacing-gutter);
+    bottom: 1rem;
+    z-index: 70;
+    display: grid;
+    justify-items: end;
+    gap: 0.5rem;
+    pointer-events: none;
+  }
+  .egg-toast {
+    margin: 0;
+    padding: 0.625rem 0.875rem;
+    color: var(--text);
+    animation: egg-in var(--dur-2) var(--ease-out);
+  }
+  @keyframes egg-in {
+    from {
+      opacity: 0;
+      translate: 1.5rem 0;
+    }
+  }
+
+  /* Launch overlay (a manual popover when supported, so it flies over an open terminal). */
+  .egg-rocket {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Output lines type in left to right, a few at a time. */
+    .term__l:not(.term__cmd) {
+      animation: term-type var(--dur-2) var(--ease-step) both;
+      animation-delay: calc(var(--i, 0) * var(--dur-1) / 4);
+    }
+  }
+  @keyframes term-type {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .term-dialog[open] .term,
+    .egg-toast {
+      animation: none;
+    }
+  }
+  @media (max-width: 479px) {
+    .term__host {
+      display: none;
+    }
+  }
+  @media (pointer: coarse) {
+    .term__input {
+      font-size: 1rem; /* iOS zooms into inputs under 16px */
+    }
+  }
+</style>
+
+<script>
+  import { navigate } from 'astro:transitions/client';
+  import { SITE } from '../consts';
+  import { EGGS, LOGO, found, launch, markFound, warp, type EggId } from '../scripts/eggs';
+  import { uptime } from '../scripts/fx';
+
+  type Cmd = (args: string[], raw: string) => void | Promise<void>;
+
+  const HOST = 'rajiv@thoughtlessmind';
+  const SINCE = `${SITE.since}-03`; // same month as the hero's uptime readout
+  const DIRS: Record<string, string> = { '~': '/', '..': '/', work: '/work/', writing: '/writing/', about: '/about/' };
+  const SITES: Record<string, string> = {
+    github: SITE.socials.github,
+    linkedin: SITE.socials.linkedin,
+    x: SITE.socials.x,
+    so: SITE.socials.stackoverflow,
+    devto: SITE.socials.devto,
+    rss: '/rss.xml',
+  };
+  const HELP = `help                 this list
+whoami               who runs this console
+ls, cat <file>       list and read the files
+cd <dir>             work · writing · about · ~
+open <site>          github · linkedin · x · so · devto · rss
+neofetch             system info
+uptime, date         time in the trade, time in New Delhi
+ping                 real round trip to this site
+theme [dark|light]   switch the lights
+hire                 email (hire --send opens your mail app)
+launch, warp         try them
+eggs                 easter eggs found so far
+history, echo, clear, exit
+Tab completes, ↑ ↓ walk history, Esc closes.`;
+
+  const history: string[] = [];
+  let cursor = 0;
+  let opener: HTMLElement | null = null;
+  let reopen = false;
+  let files: Record<string, string> = {};
+  let ac: AbortController | undefined;
+  let d: HTMLDialogElement;
+  let out: HTMLElement;
+  let input: HTMLInputElement;
+  let n = 0; // lines printed in the current block: staggers the typing animation
+
+  const cwd = () => '~' + location.pathname.replace(/\/+$/, '');
+  const root = document.documentElement;
+
+  function line(parts: (string | Node)[], cls = '') {
+    const el = document.createElement('div');
+    el.className = `term__l ${cls}`.trim();
+    el.style.setProperty('--i', String(Math.min(n++, 12)));
+    el.append(...parts);
+    out.append(el);
+    out.scrollTop = out.scrollHeight;
+  }
+  const print = (text: string, cls = '') => text.split('\n').forEach((t) => line([t], cls));
+  const el = (tag: string, cls: string, text = '') => {
+    const e = document.createElement(tag);
+    e.className = cls;
+    e.textContent = text;
+    return e;
+  };
+  const link = (text: string, href: string) => {
+    const a = el('a', 'link', text) as HTMLAnchorElement;
+    a.href = href;
+    if (/^https?:/.test(href)) Object.assign(a, { target: '_blank', rel: 'noopener' });
+    return a;
+  };
+  const egg = (id: EggId) => {
+    const msg = markFound(id);
+    if (msg) print(`▲ ${msg}`, 'is-accent');
+  };
+
+  function echo(raw: string) {
+    n = 0;
+    const ps1 = el('span', 'term__ps1');
+    ps1.append(`${HOST}:`, el('span', 'term__path', cwd()), '$ ');
+    line([ps1, raw], 'term__cmd');
+  }
+
+  function neofetch() {
+    const info: [string, string][] = [
+      ['user', SITE.name],
+      ['host', new URL(SITE.url).host],
+      ['os', 'Astro 7 (static)'],
+      ['shell', 'tm-sh'],
+      ['uptime', uptime(SINCE)],
+      ['stack', 'TS · React · Astro · R3F'],
+      ['location', SITE.location],
+      ['theme', root.dataset.theme ?? 'dark'],
+      ['resolution', `${innerWidth}x${innerHeight}`],
+      ['eggs', `${found().length}/${EGGS.length}`],
+    ];
+    const text = el('pre', '');
+    text.append(`${HOST}\n${'-'.repeat(HOST.length)}\n`);
+    for (const [k, v] of info) text.append(el('span', 'term__key', k.padEnd(12)), `${v}\n`);
+    const swatches = el('span', 'term__swatches');
+    swatches.setAttribute('aria-hidden', 'true');
+    swatches.append(...Array.from({ length: 5 }, () => document.createElement('i')));
+    text.append(swatches);
+    const logo = el('pre', 'term__logo', LOGO);
+    logo.setAttribute('aria-hidden', 'true');
+    const wrap = el('div', 'term__fetch');
+    wrap.append(logo, text);
+    line([wrap]);
+  }
+
+  async function ping() {
+    const host = location.host;
+    const times: number[] = [];
+    print(`PING ${host} (/robots.txt)`);
+    for (let seq = 0; seq < 3; seq++) {
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/robots.txt', { cache: 'no-store' });
+        const bytes = (await res.arrayBuffer()).byteLength;
+        const ms = performance.now() - t0;
+        times.push(ms);
+        n = 0;
+        print(`${bytes} bytes from ${host}: seq=${seq} time=${ms.toFixed(1)} ms`);
+      } catch {
+        n = 0;
+        print(`request timeout for seq ${seq}`, 'is-muted');
+      }
+      if (seq < 2) await new Promise((r) => setTimeout(r, 400));
+    }
+    const fmt = (v: number) => v.toFixed(1);
+    const avg = times.reduce((a, b) => a + b, 0) / (times.length || 1);
+    n = 0;
+    print(`--- ${host} ping statistics ---`);
+    print(`3 packets transmitted, ${times.length} received, ${Math.round((1 - times.length / 3) * 100)}% packet loss`);
+    if (times.length) print(`rtt min/avg/max = ${fmt(Math.min(...times))}/${fmt(avg)}/${fmt(Math.max(...times))} ms`);
+  }
+
+  const time = (opts: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat('en-GB', { timeZone: SITE.timezone, hourCycle: 'h23', ...opts }).format(new Date());
+  const clock = () => time({ hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const COMMANDS: Record<string, Cmd> = {
+    help: () => print(HELP),
+    whoami: () => print(`rajiv\n${SITE.name} · ${SITE.role} at ${SITE.company} · ${SITE.location}`),
+    ls: () => print([...Object.keys(files), 'work/', 'writing/', 'about/'].join('  ')),
+    cat: ([f]) => {
+      if (!f) return print('usage: cat <file>. Try ls.', 'is-muted');
+      if (files[f]) return print(files[f]);
+      print(`cat: ${f}: no such file. Try ls.`, 'is-muted');
+    },
+    cd: ([dir = '~']) => {
+      const key = dir.replace(/^~?\/+/, '').replace(/\/+$/, '') || '~';
+      const to = DIRS[key];
+      if (!to) return print(`cd: no such directory: ${dir}. Try ls.`, 'is-muted');
+      if (to === location.pathname) return print('Already here.', 'is-muted');
+      reopen = true;
+      d.close();
+      navigate(to);
+    },
+    open: ([site]) => {
+      const url = SITES[site?.toLowerCase()];
+      if (!url) return print(`usage: open <${Object.keys(SITES).join('|')}>`, 'is-muted');
+      window.open(url, '_blank', 'noopener');
+      line(['Opening ', link(url.replace(/^https?:\/\/(www\.)?/, ''), url)]);
+    },
+    neofetch,
+    uptime: () => print(`${clock()} up ${uptime(SINCE)}, 1 user, load average: rockets, physics, sport`),
+    date: () =>
+      print(`${time({ weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} ${clock()} IST`),
+    ping,
+    theme: ([t]) => {
+      const cur = root.dataset.theme === 'light' ? 'light' : 'dark';
+      if (t && t !== 'dark' && t !== 'light') return print('usage: theme [dark|light]', 'is-muted');
+      const next = t ?? (cur === 'light' ? 'dark' : 'light');
+      if (next !== cur) document.querySelector<HTMLElement>('[data-theme-toggle]')?.click();
+      print(`Theme: ${next}.`);
+    },
+    hire: ([flag]) => {
+      const mail = `mailto:${SITE.email}`;
+      if (flag === '--send') {
+        location.href = mail;
+        return print('Opening your mail app.');
+      }
+      line(['Email ', link(SITE.email, mail)]);
+      print('hire --send opens your mail app.', 'is-muted');
+    },
+    launch: () => {
+      egg('launch');
+      print(launch(true));
+    },
+    warp: () => {
+      egg('warp');
+      print(warp(true));
+    },
+    sudo: () => {
+      print('rajiv is not in the sudoers file. This incident will be reported.');
+      egg('sudo');
+    },
+    rm: () => print('rm: refusing. This is a static site: there is nothing here to delete, only HTML.'),
+    echo: (_, raw) => print(raw.replace(/^echo\s?/i, '')),
+    history: () => print(history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`).join('\n')),
+    eggs: () => {
+      const have = found();
+      print(`${have.length}/${EGGS.length} eggs found`);
+      for (const e of EGGS) {
+        if (have.includes(e.id)) print(`[x] ${e.name}`);
+        else print(`[ ] ???          hint: ${e.hint}`, 'is-muted');
+      }
+    },
+    clear: () => out.replaceChildren(),
+    exit: () => d.close(),
+  };
+  COMMANDS.contact = COMMANDS.hire;
+
+  const ARGS: Record<string, () => string[]> = {
+    cat: () => Object.keys(files),
+    cd: () => Object.keys(DIRS).filter((k) => k !== '..'),
+    open: () => Object.keys(SITES),
+    theme: () => ['dark', 'light'],
+    hire: () => ['--send'],
+  };
+
+  function run(raw: string) {
+    echo(raw);
+    const text = raw.trim();
+    if (!text) return;
+    history.push(text);
+    cursor = history.length;
+    const [name, ...args] = text.split(/\s+/);
+    const cmd = COMMANDS[name.toLowerCase()];
+    if (cmd) void cmd(args, text);
+    else print(`tm-sh: command not found: ${name}. Try help.`, 'is-muted');
+  }
+
+  function complete() {
+    const words = input.value.split(' ');
+    const word = words[words.length - 1];
+    const pool = words.length === 1 ? Object.keys(COMMANDS) : (ARGS[words[0].toLowerCase()]?.() ?? []);
+    const hits = pool.filter((c) => c.startsWith(word));
+    if (!hits.length) return;
+    let prefix = hits[0];
+    for (const h of hits) while (!h.startsWith(prefix)) prefix = prefix.slice(0, -1);
+    if (hits.length === 1) prefix += ' ';
+    if (prefix.length > word.length) {
+      words[words.length - 1] = prefix;
+      input.value = words.join(' ');
+    } else {
+      echo(input.value);
+      print(hits.join('  '));
+    }
+  }
+
+  function onInputKey(e: KeyboardEvent) {
+    const k = e.key;
+    if (k === 'Enter') {
+      e.preventDefault();
+      run(input.value);
+      input.value = '';
+    } else if (k === 'ArrowUp' || k === 'ArrowDown') {
+      e.preventDefault();
+      cursor = Math.max(0, Math.min(history.length, cursor + (k === 'ArrowUp' ? -1 : 1)));
+      input.value = history[cursor] ?? '';
+    } else if (k === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      complete();
+    } else if (e.ctrlKey && k.toLowerCase() === 'l') {
+      e.preventDefault();
+      out.replaceChildren();
+    } else if ((e.metaKey || e.ctrlKey) && k.toLowerCase() === 'k') {
+      d.close(); // let the ⌘K palette open over the page
+    }
+  }
+
+  function open(instant = false) {
+    if (d.open) return;
+    if (!instant) opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    d.classList.toggle('is-instant', instant);
+    for (const c of d.querySelectorAll('[data-term-cwd]')) c.textContent = cwd();
+    d.showModal();
+    input.focus();
+    if (!out.childElementCount) {
+      n = 0;
+      print('tm-sh on thoughtlessmind.dev\nType help for commands. Esc closes.', 'is-muted');
+    }
+    egg('terminal');
+  }
+
+  function init() {
+    ac?.abort();
+    const dialog = document.querySelector<HTMLDialogElement>('[data-terminal]');
+    if (!dialog) return;
+    ac = new AbortController();
+    const { signal } = ac;
+    d = dialog;
+    out = d.querySelector('.term__out')!;
+    input = d.querySelector('.term__input')!;
+    files = JSON.parse(d.dataset.files ?? '{}');
+
+    addEventListener('terminal:open', () => open(), { signal });
+    d.querySelector('[data-terminal-close]')?.addEventListener('click', () => d.close(), { signal });
+    // Outside the panel (backdrop or gutter) closes; pointerdown so a text selection dragged out does not.
+    d.addEventListener('pointerdown', (e) => !(e.target as Element).closest('.term') && d.close(), { signal });
+    // Clicking the output (without selecting text) puts you back at the prompt.
+    out.addEventListener('click', () => !getSelection()?.toString() && input.focus(), { signal });
+    input.addEventListener('keydown', onInputKey, { signal });
+    d.addEventListener('close', () => opener?.isConnected && opener.focus({ preventScroll: true }), { signal });
+
+    if (reopen) {
+      reopen = false;
+      open(true);
+    }
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => {
+    // The dialog persists into the next page; close it first so it never moves while modal, and reopen after.
+    if (d?.open) {
+      reopen = true;
+      d.close();
+    }
+    ac?.abort();
+  });
+</script>

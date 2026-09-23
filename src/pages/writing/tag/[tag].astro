@@ -1,0 +1,24 @@
+---
+import WritingLayout from '../../../layouts/WritingLayout.astro';
+import { getAllTags, getPublishedPosts } from '../../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return getAllTags(posts).map(({ tag }) => ({ params: { tag } }));
+}
+
+const { tag } = Astro.params;
+const all = await getPublishedPosts();
+const posts = all.filter((p) => p.data.tags.includes(tag));
+---
+
+<WritingLayout
+  title={`Writing · ${tag}`}
+  heading={`Writing · ${tag}`}
+  description={`Everything filed under ${tag}.`}
+  posts={posts}
+  tags={getAllTags(all)}
+  active={tag}
+  allCount={all.length}
+  breadcrumb
+/>

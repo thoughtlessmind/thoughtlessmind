@@ -1,0 +1,73 @@
+---
+title: "Designing for the second visit: caching, prefetch and view transitions"
+description: The first load is a benchmark. The second visit is the product. Cache headers, prefetching, and view transitions that make a static site feel instant.
+pubDate: 2026-08-09
+tags: [performance, tooling]
+series: Frontend performance field notes
+seriesOrder: 3
+draft: true
+---
+
+Most performance work targets the first visit: the cold cache, the unknown device, the Lighthouse run. That is the visit you can measure. The visit that decides whether someone comes back is the second one, and it is shaped by three things you set once and forget.
+
+## Cache headers that mean it
+
+A static site has two kinds of files: HTML that changes when you publish, and assets with a content hash in the filename that never change. They need opposite headers.
+
+```text title="_headers"
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+```
+
+`immutable` tells the browser not to revalidate even on reload. On the second visit, the only request that leaves the device is the HTML, and with an `ETag` it usually comes back as a 304 with no body. Everything else is served from disk.
+
+The mistake I see most is one blanket `max-age` for the whole site: either too short, so assets re-download, or too long, so readers see stale HTML after a deploy.
+
+## Prefetch what the reader will click
+
+The second page of a session can load before the reader asks for it. Astro, Next and most frameworks ship a prefetch that watches links entering the viewport and fetches them at low priority. On a blog index that means every visible post is already in the cache when the click comes.
+
+For the browsers that support it, Speculation Rules go further and prerender the page in a hidden tab, so navigation is effectively instant.
+
+```html title="index.html"
+<script type="speculationrules">
+  {
+    "prerender": [{ "where": { "href_matches": "/writing/*" }, "eagerness": "moderate" }]
+  }
+</script>
+```
+
+`moderate` triggers on hover, which is late enough to avoid wasting bandwidth on links nobody uses and early enough that most clicks land on a ready page. Keep prerender off pages with side effects, and remember that prerendered pages run scripts: an analytics call in a prerendered tab counts a visit that did not happen unless you check `document.prerendering` first.
+
+## View transitions
+
+A cached, prefetched page still loads with a flash of blank between documents. View transitions replace that with a cross-fade, and the CSS-only version needs two rules.
+
+```css title="global.css"
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 250ms;
+}
+```
+
+Give an element the same `view-transition-name` on both pages, an article title on the index and on the post, and the browser animates it from one position to the other. The effect is small, but it is the difference between "a site" and "an app" in the reader's head. Keep it at 250 ms and respect `prefers-reduced-motion`.
+
+## What to measure
+
+The first visit has Lighthouse. For the second, look at:
+
+- Cache hit ratio at the CDN. It should be above 90 percent for assets.
+- The number of requests on a warm reload. For a post page here it is one.
+- Navigation timing in the field, split by `transferSize === 0`, which tells you the response came from cache.
+
+A fast first load gets someone in the door. A fast second visit is why they stay.

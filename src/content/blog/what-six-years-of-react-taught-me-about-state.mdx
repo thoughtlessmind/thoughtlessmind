@@ -1,0 +1,64 @@
+---
+title: What six years of React taught me about state
+description: Most state is derived, server data is not client state, and the reducer is for transitions. Six years of React distilled into four rules.
+pubDate: 2026-08-20
+tags: [react, thinking]
+draft: true
+---
+
+I have been writing React since 2019. The thing I got wrong most often in the first two years was not hooks, or rendering, or keys. It was state: where it lived, how much of it there was, and who was allowed to change it. These are the four rules I use now.
+
+## Most state is derived
+
+If a value can be computed from other values you already have, do not store it. A filtered list is a function of the list and the filter. A "form is valid" flag is a function of the fields. Storing the result means you now have two sources of truth and a bug waiting for the moment they disagree.
+
+```tsx title="Orders.tsx"
+function Orders({ orders }: { orders: Order[] }) {
+  const [status, setStatus] = useState<Status>('open');
+
+  // Derived on render. No effect, no second state variable.
+  const visible = orders.filter((o) => o.status === status);
+  const total = visible.reduce((sum, o) => sum + o.amount, 0);
+
+  return <OrderTable rows={visible} total={total} onStatus={setStatus} />;
+}
+```
+
+`useMemo` is for when the derivation is measurably slow, not a default. Most filters over a few hundred rows are cheaper than the memo bookkeeping.
+
+## Server data is not client state
+
+A list of orders fetched from an API is a cache of something the server owns. Treating it as local state, with `useState` and an effect to load it, means writing your own cache invalidation, loading flags, and error handling. Every time. A query library (TanStack Query, SWR, or the framework's loader) owns that lifecycle and leaves `useState` for things that are genuinely local: an open dropdown, a draft input, a selected row.
+
+The test I use: if a second tab could change it, it is server data.
+
+## Colocate first, lift only when two components need it
+
+State should live in the smallest component that needs it. The instinct to put everything in a top-level store, or in context, comes from wanting to be ready for sharing later. Later rarely comes, and when it does, lifting a `useState` two levels up is a five-minute change. Unwinding a global store that fifteen components read is not.
+
+Context is for values that change rarely and are read widely: theme, locale, the current user. Putting fast-changing state in context re-renders every consumer on every change.
+
+## Reducers are for transitions, not for size
+
+`useReducer` is not "useState for big objects". It earns its place when the next state depends on the previous state and the action, and there are several actions. A multi-step form, a drag interaction, an undo stack. The reducer turns "what can happen" into a list you can read and test without a DOM.
+
+```ts title="wizard.ts"
+type Action = { type: 'next' } | { type: 'back' } | { type: 'reset' };
+
+function wizard(step: number, action: Action): number {
+  switch (action.type) {
+    case 'next':
+      return Math.min(step + 1, 3);
+    case 'back':
+      return Math.max(step - 1, 0);
+    case 'reset':
+      return 0;
+  }
+}
+```
+
+If the reducer's `switch` has one case, it is a `useState` with extra steps.
+
+## The rule behind the rules
+
+Each of these is the same idea: keep the amount of state small, and keep each piece of state as close as possible to the one place that changes it. Fewer things can go out of sync when there are fewer things.

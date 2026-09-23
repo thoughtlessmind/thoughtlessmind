@@ -1,0 +1,53 @@
+---
+title: "Rebuilding this site: what I kept and what I threw out"
+description: Notes from replacing a 2020 React portfolio with a static Astro site. What earned its place, what got cut, and the numbers behind each call.
+pubDate: 2026-09-08
+tags: [thinking, tooling]
+draft: true
+---
+
+The old site was a React app from 2020 with a hand-written webpack config. It shipped 180 KB of JavaScript to render three paragraphs and two screenshots. It had a contact form that posted to a service I no longer pay for. It worked, in the sense that it loaded, but it had stopped saying anything true about how I build things.
+
+This version is static HTML with two small islands. Here is what survived the move and what did not.
+
+## Kept
+
+**The domain and the handle.** `thoughtlessmind` predates the site. It stays.
+
+**The projects.** Three of them, the same three. A YouTube playlist calculator, a CSS-only tooltip library, and an Angular app I built to learn Angular. Only the tooltip library is still something I would write the same way today, and that is the point of keeping the others.
+
+**Google Analytics.** One tag, loaded after everything else. I look at it twice a year. That is enough to justify 20 lines.
+
+**The two articles.** Both were on Hashnode and dev.to. They now live here, with a canonical link pointing back at the original so nothing gets counted twice.
+
+## Thrown out
+
+**The framework on the critical path.** Nothing on this page needs React to render text. The blog, the project list, and the navigation are built at deploy time. React runs only for the search palette and the background, both of which mount after the page is readable.
+
+**The contact form.** It produced 11 messages in five years, 9 of them spam. A `mailto:` link produces the same 2 real ones with no backend.
+
+**Every animation over 500 ms.** The old hero had a 1.2 s fade. Nobody waits that long for a sentence.
+
+**The sidebar.** It held a photo, five icons and a quote. The icons moved to the footer. The rest did not move anywhere.
+
+## The numbers
+
+| Metric                           | 2020 site | This site |
+| -------------------------------- | --------- | --------- |
+| JavaScript on first load         | 180 KB    | 4 KB      |
+| Time to interactive (slow 4G)    | 4.1 s     | 0.9 s     |
+| Dependencies                     | 1,412     | 38        |
+
+The stack, for the record:
+
+```ts title="astro.config.mjs"
+export default defineConfig({
+  site: 'https://thoughtlessmind.dev',
+  output: 'static',
+  integrations: [react(), expressiveCode(), mdx(), sitemap(), pagefind()],
+});
+```
+
+## What comes next
+
+I will write more here. The goal is one useful post a month, not a feed. The first few are already in the queue: a Core Web Vitals checklist, a note on the 16 ms rendering budget, and a look at what the second visit to a site should feel like.

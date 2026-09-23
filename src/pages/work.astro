@@ -1,0 +1,206 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import SiteCaseStudy from '../components/SiteCaseStudy.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) => a.data.order - b.data.order;
+const all = await getCollection('projects');
+const featured = all.filter((p) => p.data.featured && !p.data.archived).sort(byOrder);
+// Full index: live projects by order, archived ones last.
+const index = [...all.filter((p) => !p.data.archived).sort(byOrder), ...all.filter((p) => p.data.archived).sort(byOrder)];
+const pad = (n: number) => String(n).padStart(2, '0');
+const description = 'A production-minded site rebuild and focused tools for everyday frontend problems.';
+---
+
+<BaseLayout title="Work" description={description}>
+  <header class="container-site page-head">
+    <h1 class="page-title flicker">Work</h1>
+    <p class="page-head__dek">{description}</p>
+  </header>
+
+  <section class="container-site section work__section" aria-labelledby="featured-title" data-reveal-group>
+    <SectionHeading index="01" label="Featured" title="Featured modules" id="featured-title" class="reveal" />
+    <div class="reveal"><SiteCaseStudy /></div>
+    <ul class="work__modules">
+      {featured.map((p, i) => <ProjectCard project={p} index={i + 1} long class="reveal" />)}
+    </ul>
+  </section>
+
+  <section class="container-site section" aria-labelledby="index-title" data-reveal-group>
+    <SectionHeading index="02" label="Index" title="Every project" id="index-title" class="reveal" />
+    <p class="work__prompt reveal" aria-hidden="true"><span>$</span> ls -la ~/work</p>
+    <table class="work__table reveal">
+      <caption class="sr-only">All projects in display order, archived projects last.</caption>
+      <thead>
+        <tr>
+          <th scope="col">Idx</th>
+          <th scope="col">Year</th>
+          <th scope="col">Name</th>
+          <th scope="col" class="work__col-stack">Stack</th>
+          <th scope="col"><span class="sr-only">Links</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          index.map((p, i) => {
+            const { title, summary, year, stack, repo, live, archived } = p.data;
+            return (
+              <tr class:list={{ 'is-archived': archived }}>
+                <td class="work__idx">{pad(i + 1)}</td>
+                <td>{year}</td>
+                <td class="work__name">
+                  <span class="work__title">{title}</span>
+                  {archived && <span class="tag">archived</span>}
+                  <span class="work__summary">{summary}</span>
+                  <span class="work__stack-inline">{stack.join(' / ')}</span>
+                </td>
+                <td class="work__col-stack">{stack.join(' / ')}</td>
+                <td class="work__links">
+                  {repo && (
+                    <a href={repo} class="link tap" rel="noopener" target="_blank">
+                      Repo<span class="sr-only"> of {title}</span> <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                  {live && (
+                    <a href={live} class="link tap" rel="noopener" target="_blank">
+                      Live<span class="sr-only"> {title}</span> <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                </td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+    <p class="label work__total reveal">Total {index.length}</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .work__section {
+    padding-top: 0;
+  }
+  .work__modules {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 720px) {
+    .work__modules {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .work__prompt {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text-muted);
+  }
+  .work__prompt span {
+    color: var(--accent);
+  }
+
+  .work__table {
+    width: 100%;
+    margin-top: 1rem;
+    border-collapse: collapse;
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+  }
+  .work__table :is(th, td) {
+    padding: 0.875rem 1rem 0.875rem 0;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+  .work__table thead th {
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    border-bottom-color: var(--border-strong);
+  }
+  .work__table tbody tr {
+    transition: background-color var(--dur-1) var(--ease-out);
+  }
+  .work__table tbody tr:hover {
+    background: var(--surface);
+  }
+  .work__table tbody td {
+    color: var(--text-muted);
+  }
+  .work__table tbody .work__idx {
+    color: var(--accent);
+  }
+  .work__table tbody .work__name {
+    color: var(--text);
+  }
+  .work__title {
+    font-weight: 500;
+    margin-right: 0.75em;
+  }
+  .work__summary {
+    display: block;
+    margin-top: 0.25rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+  }
+  .work__stack-inline {
+    display: block;
+    margin-top: 0.375rem;
+    color: var(--text-subtle);
+  }
+  .work__col-stack {
+    display: none;
+  }
+  .work__table .work__links {
+    white-space: nowrap;
+    text-align: right;
+    padding-right: 0;
+  }
+  .work__links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+  .work__links a + a {
+    margin-left: 1rem;
+  }
+  /* Dimmed by colour, not opacity, so archived rows keep AA contrast. */
+  .work__table .is-archived :is(td, .work__name, .work__summary) {
+    color: var(--text-subtle);
+  }
+  .work__total {
+    margin-top: 1rem;
+    color: var(--text-subtle);
+  }
+
+  @media (min-width: 900px) {
+    .work__col-stack {
+      display: table-cell;
+    }
+    .work__stack-inline {
+      display: none;
+    }
+  }
+  @media (max-width: 559px) {
+    .work__links a {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .work__links a + a {
+      margin-left: 0;
+    }
+  }
+</style>

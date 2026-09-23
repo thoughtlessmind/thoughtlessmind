@@ -1,0 +1,61 @@
+---
+title: A practical Core Web Vitals checklist
+description: LCP, INP, and CLS, one metric at a time. What each measures, what usually breaks it, and the fix I apply first.
+pubDate: 2026-07-12
+tags: [performance]
+series: Frontend performance field notes
+seriesOrder: 1
+draft: true
+---
+
+Core Web Vitals are three numbers Google collects from real Chrome users and folds into search ranking. They also happen to be a decent proxy for whether a page feels fast. This is the checklist I run on a page before I open a profiler. It is ordered by how often each item turns out to be the problem.
+
+## Largest Contentful Paint
+
+LCP is the time until the biggest text block or image in the viewport has rendered. Target: under 2.5 seconds at the 75th percentile.
+
+- Find the LCP element. In DevTools, the Performance panel labels it; in the field, `PerformanceObserver` reports it. It is usually a hero image or a heading.
+- If it is an image, make sure the browser can discover it from the HTML, not from CSS or JavaScript. Give it `fetchpriority="high"` and never `loading="lazy"`.
+- If it is text, the blocker is almost always a web font. Preload the one file used above the fold and set `font-display: swap` so the text paints in a fallback first.
+- Check the server. A 600 ms time to first byte eats a quarter of the budget before the browser has seen a byte of HTML.
+
+```html title="index.html"
+<link rel="preload" as="font" type="font/woff2" href="/fonts/newsreader.woff2" crossorigin />
+<img src="/hero.jpg" width="1200" height="630" fetchpriority="high" alt="The hero image" />
+```
+
+## Interaction to Next Paint
+
+INP measures the delay between a user interaction and the next frame the browser paints, taking the worst interaction on the page with a small allowance for outliers. Target: under 200 milliseconds.
+
+- Look for long tasks. Anything over 50 ms on the main thread delays every click that lands during it.
+- Split hydration. A framework that hydrates the whole page on load will block the first click for as long as hydration takes. Islands or selective hydration bound that cost.
+- Move work off the click. Update the UI first, then do the expensive part in a later task with `scheduler.yield()` or a `setTimeout`.
+- Watch third-party scripts. Tag managers and chat widgets are the most common cause of INP regressions that nobody on the team wrote.
+
+## Cumulative Layout Shift
+
+CLS totals how much visible content moves without the user asking. Target: under 0.1.
+
+- Every image and embed gets `width` and `height` attributes, or an `aspect-ratio` in CSS, so the browser reserves the space before the bytes arrive.
+- Fonts: use `size-adjust` on the fallback face so the swap does not reflow the paragraph.
+- Anything injected above existing content (banners, consent dialogs) should be positioned, not inserted into the flow.
+- Do not animate `top`, `height`, or `margin`. Animate `transform`.
+
+## Measure in the field
+
+Lab numbers from Lighthouse are a starting point. The score that matters comes from real users on real devices, and the cheapest way to see it is the `web-vitals` library sending to whatever analytics you already have.
+
+```ts title="vitals.ts"
+import { onCLS, onINP, onLCP } from 'web-vitals';
+
+function report({ name, value, id }: { name: string; value: number; id: string }) {
+  navigator.sendBeacon('/vitals', JSON.stringify({ name, value, id, path: location.pathname }));
+}
+
+onCLS(report);
+onINP(report);
+onLCP(report);
+```
+
+Run the checklist, ship the fix, then wait 28 days: that is the window the Chrome UX Report uses, and nothing in search will move before it.

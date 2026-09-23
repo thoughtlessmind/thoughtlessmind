@@ -1,0 +1,92 @@
+---
+import { SITE } from '../consts';
+// Same files global.css pulls in (geist-pixel index.css = ELSH file; martian-mono standard.css), so the preload is reused.
+import pixelWoff2 from '@fontsource-variable/geist-pixel/files/geist-pixel-latin-elsh-normal.woff2?url';
+import martianWoff2 from '@fontsource-variable/martian-mono/files/martian-mono-latin-standard-normal.woff2?url';
+
+export interface Props {
+  title: string;
+  description?: string;
+  /** Absolute path under the site, e.g. `/og/hello-world.png`. Defaults to `/og/default.png`. */
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date | string;
+  modifiedTime?: Date | string;
+  tags?: string[];
+  noindex?: boolean;
+  jsonLd?: object | object[];
+  /** Override the computed canonical URL (articles first published elsewhere). */
+  canonical?: string;
+}
+
+const {
+  title,
+  description = SITE.description,
+  image = '/og/default.png',
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+  tags = [],
+  noindex = false,
+  jsonLd,
+  canonical: canonicalOverride,
+} = Astro.props;
+
+const path = Astro.url.pathname;
+const isHome = path === '/';
+const fullTitle = isHome ? SITE.title : `${title} · ${SITE.name}`;
+const canonical = new URL(path.endsWith('/') ? path : `${path}/`, Astro.site);
+const canonicalHref = canonicalOverride ?? canonical.href;
+const ogImage = new URL(image, Astro.site);
+const iso = (d?: Date | string) => (d instanceof Date ? d.toISOString() : d);
+const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const xHandle = `@${new URL(SITE.socials.x).pathname.split('/').filter(Boolean)[0]}`;
+// Dark `--bg` at render (dark is the default); theme.js switches it to the light `--bg` when needed.
+const themeColor = '#0a0b0d';
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="author" content={SITE.name} />
+<meta name="generator" content={Astro.generator} />
+<link rel="canonical" href={canonicalHref} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta name="theme-color" content={themeColor} />
+
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content="en_IN" />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={isHome ? SITE.title : title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={isHome ? SITE.title : title} />
+{type === 'article' && publishedTime && <meta property="article:published_time" content={iso(publishedTime)} />}
+{type === 'article' && modifiedTime && <meta property="article:modified_time" content={iso(modifiedTime)} />}
+{type === 'article' && <meta property="article:author" content={SITE.name} />}
+{type === 'article' && tags.map((t) => <meta property="article:tag" content={t} />)}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={isHome ? SITE.title : title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:creator" content={xHandle} />
+
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+<link rel="alternate" type="application/rss+xml" title={`${SITE.name} — Writing`} href="/rss.xml" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+
+<link rel="preload" as="font" type="font/woff2" href={pixelWoff2} crossorigin />
+<link rel="preload" as="font" type="font/woff2" href={martianWoff2} crossorigin />
+
+{ld.map((o) => <script is:inline type="application/ld+json" set:html={JSON.stringify(o)} />)}

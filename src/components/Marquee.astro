@@ -1,0 +1,56 @@
+---
+/** Stack tape under the hero. The second copy exists only to make the loop seamless, so it is aria-hidden. */
+const items = [
+  'TypeScript',
+  'React',
+  'CSS',
+  'Astro',
+  'WebGL',
+  'Performance',
+  'Accessibility',
+  'Chrome extensions',
+  'Design systems',
+  'Node',
+];
+---
+
+<div class="marquee tape">
+  <div class="marquee__track">
+    {
+      [false, true].map((copy) => (
+        <ul class="tape__list" aria-label={copy ? undefined : 'Focus areas'} aria-hidden={copy ? 'true' : undefined}>
+          {items.map((item) => (
+            <li>
+              {item}
+              <span class="tape__sep" aria-hidden="true">▲</span>
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .tape {
+    overflow: hidden;
+    border-block: 1px solid var(--border);
+    background: var(--bg-elevated);
+  }
+  /* Track and list layout (flex rows, gap, seam padding, animation) come from global .marquee. */
+  .tape__list li {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-block: 0.875rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-label);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-muted);
+  }
+  .tape__sep {
+    color: var(--accent);
+  }
+</style>

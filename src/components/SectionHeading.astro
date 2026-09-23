@@ -1,0 +1,80 @@
+---
+/**
+ * Section header: `// 0N` index (accent) + label + a hairline that fills to the right edge + optional link,
+ * then the title. Omit `title` when the page renders its own heading under the label row (home "Transmit").
+ */
+interface Props {
+  /** "01" → renders `// 01`. */
+  index: string;
+  label: string;
+  title?: string;
+  href?: string;
+  linkLabel?: string;
+  level?: 'h1' | 'h2' | 'h3';
+  id?: string;
+  class?: string;
+}
+const { index, label, title, href, linkLabel = 'All', level: Tag = 'h2', id, class: className } = Astro.props;
+---
+
+<div class:list={['section-heading', className]}>
+  <div class="section-heading__bar">
+    <p class="label section-heading__label">
+      <span class="section-heading__index">// {index}</span>
+      <span data-scramble>{label}</span>
+    </p>
+    <span class="section-heading__rule" aria-hidden="true"></span>
+    {
+      href && (
+        <a href={href} class="label link section-heading__link tap">
+          <span data-scramble="hover">{linkLabel}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      )
+    }
+  </div>
+  {title && <Tag id={id} class="section-heading__title">{title}</Tag>}
+</div>
+
+<style>
+  .section-heading {
+    margin-bottom: 2.5rem;
+  }
+  .section-heading__bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-heading__label {
+    display: flex;
+    gap: 1.25em;
+    flex-shrink: 0;
+    margin: 0;
+    color: var(--text-muted);
+  }
+  .section-heading__index {
+    color: var(--accent);
+  }
+  .section-heading__rule {
+    flex: 1;
+    min-width: 1.5rem;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-heading__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .section-heading__link:hover,
+  .section-heading__link:focus-visible {
+    color: var(--accent);
+  }
+  .section-heading__title {
+    max-width: 24ch;
+    margin-top: 1rem;
+  }
+</style>

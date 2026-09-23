@@ -1,0 +1,79 @@
+---
+/** Trajectory as a log: one vertical hairline, square nodes, the current node filled in accent. */
+import { SITE } from '../consts';
+
+const entries = [
+  { year: String(SITE.since), text: 'Started building for the web. First answers on Stack Overflow.' },
+  { year: '2020', text: `Frontend Engineer, ${SITE.previousCompany}. Conversion-rate optimisation product.` },
+  { year: '2021', text: 'Published css-only-tooltip on npm. 900+ GitHub contributions that year.' },
+  { year: '2023', text: 'Built Diver, a Chrome extension for inspecting page layout.' },
+  { year: 'Now', text: `${SITE.role}, ${SITE.company}.`, now: true },
+];
+---
+
+<ol class="timeline">
+  {
+    entries.map((e) => (
+      <li class:list={['timeline__item', { 'is-now': e.now }]}>
+        <span class="timeline__year">{e.year}</span>
+        <span class="timeline__text">{e.text}</span>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .timeline {
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 1.75rem;
+    list-style: none;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    left: 3.5px;
+    width: 1px;
+    background: var(--border-strong);
+  }
+  .timeline__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 5ch minmax(0, 1fr);
+    gap: 1rem;
+    align-items: baseline;
+  }
+  .timeline__item + .timeline__item {
+    margin-top: 1.25rem;
+  }
+  .timeline__item::before {
+    content: '';
+    position: absolute;
+    top: 0.45rem;
+    left: -1.75rem;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg);
+  }
+  .timeline__item.is-now::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .timeline__year {
+    font-family: var(--font-ui);
+    font-size: var(--text-label);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-subtle);
+  }
+  .is-now .timeline__year {
+    color: var(--accent);
+  }
+  .timeline__text {
+    color: var(--text);
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+import WritingLayout from '../../../layouts/WritingLayout.astro';
+import { getAllTags, getPublishedPosts, getSeries, slugify } from '../../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return [...getSeries(posts)].map(([name, list]) => ({ params: { series: slugify(name) }, props: { name, list } }));
+}
+
+const { name, list } = Astro.props;
+const all = await getPublishedPosts();
+const n = list.length;
+---
+
+<WritingLayout
+  title={name}
+  heading={name}
+  description={`A series in ${n} ${n === 1 ? 'part' : 'parts'}. Read them in order.`}
+  posts={list}
+  tags={getAllTags(all)}
+  active=""
+  allCount={all.length}
+  groupYears={false}
+  numbered
+  showTags={false}
+  breadcrumb
+/>

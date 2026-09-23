@@ -1,0 +1,19 @@
+---
+import WritingLayout from '../../layouts/WritingLayout.astro';
+import { getAllTags, getPublishedPosts, getSeries } from '../../lib/posts';
+
+const posts = await getPublishedPosts();
+const tags = getAllTags(posts);
+const series = getSeries(posts);
+---
+
+<WritingLayout
+  title="Writing"
+  heading="Writing"
+  description="Notes on JavaScript, React, performance, and the discipline of leaving things out."
+  posts={posts}
+  tags={tags}
+  active="all"
+  allCount={posts.length}
+  series={series}
+/>

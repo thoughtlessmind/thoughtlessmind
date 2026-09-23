@@ -1,0 +1,304 @@
+---
+import { getCollection } from 'astro:content';
+import { SITE } from '../consts';
+import Icon from './Icon.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import CommandPalette from './CommandPalette';
+import { formatDate, getPublishedPosts } from '../lib/posts';
+
+// Compare without trailing slashes so dev (`ignore`) and build (`always`) both match.
+const trim = (p: string) => p.replace(/\/+$/, '');
+const path = trim(Astro.url.pathname);
+const isActive = (href: string) => path === trim(href) || path.startsWith(`${trim(href)}/`);
+const nav = SITE.nav.map((item, i) => ({ ...item, idx: String(i + 1).padStart(2, '0'), current: isActive(item.href) }));
+
+// Palette data (serialised into the island): pages, latest 20 posts, projects.
+const paletteProps = {
+  pages: [{ label: 'Home', href: '/' }, ...SITE.nav],
+  posts: (await getPublishedPosts())
+    .filter((p) => !p.data.draft)
+    .slice(0, 20)
+    .map((p) => ({
+      title: p.data.title,
+      href: p.data.external ?? `/writing/${p.id}/`,
+      date: formatDate(p.data.pubDate),
+      draft: p.data.draft,
+    })),
+  projects: (await getCollection('projects'))
+    .sort((a, b) => a.data.order - b.data.order)
+    .map((p) => ({ label: p.data.title, href: p.data.live ?? p.data.repo ?? '/work/' })),
+};
+---
+
+<header class="site-header" data-site-header>
+  <div class="container-site site-header__row">
+    <a href="/" class="wordmark" aria-label={`${SITE.name}, home`}>
+      <span aria-hidden="true"><span class="wordmark__br">[</span> tm<span class="caret"></span> <span class="wordmark__br">]</span></span>
+    </a>
+
+    <nav class="site-nav" aria-label="Primary">
+      <ul class="nav-list">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="nav-link" aria-current={item.current ? 'page' : undefined}>
+                <span class="nav-link__idx" aria-hidden="true">{item.idx}</span>
+                <span data-scramble="hover">{item.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <p class="header-clock label">
+        <span aria-hidden="true">NDL&nbsp;</span><span class="sr-only">New Delhi time</span><span data-clock
+          >--:--:--</span
+        > IST
+      </p>
+      <button type="button" class="icon-btn search-btn" data-open-palette aria-keyshortcuts="Meta+K">
+        <Icon name="search" size={16} />
+        <kbd class="kbd search-kbd" aria-hidden="true">⌘K</kbd>
+        <span class="sr-only">Search</span>
+      </button>
+      <ThemeToggle />
+      <button type="button" class="menu-btn" data-menu-toggle aria-expanded="false" aria-controls="site-menu">
+        <span class="menu-btn__open">Menu</span>
+        <span class="menu-btn__close">Close</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="site-menu" class="site-menu" hidden>
+    <nav class="container-site" aria-label="Primary, mobile">
+      <ul class="site-menu__list">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="site-menu__link" aria-current={item.current ? 'page' : undefined}>
+                <span class="site-menu__idx" aria-hidden="true">{item.idx}</span>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+<!-- Outside the header: backdrop-filter would trap the fixed overlay inside it. -->
+<CommandPalette client:idle {...paletteProps} />
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: var(--header-h);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header__row {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    height: 100%;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    white-space: pre;
+  }
+  .wordmark__br {
+    color: var(--text-subtle);
+    transition: color var(--dur-1) var(--ease-out);
+  }
+  .wordmark:hover .wordmark__br {
+    color: var(--accent);
+  }
+
+  .nav-list,
+  .site-menu__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .nav-list {
+    display: flex;
+    gap: 1.75rem;
+  }
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: 2.75rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    font-weight: 500;
+    font-stretch: 87.5%;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--dur-1) var(--ease-out);
+  }
+  .nav-link__idx {
+    color: var(--text-subtle);
+  }
+  .nav-link:hover {
+    color: var(--text);
+  }
+  .nav-link[aria-current='page'],
+  .nav-link[aria-current='page'] .nav-link__idx {
+    color: var(--accent);
+  }
+  .nav-link[aria-current='page']::before {
+    content: '▸' / '';
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+  }
+  .header-clock {
+    margin-right: 1rem;
+    white-space: nowrap;
+  }
+  .search-btn {
+    gap: 0.5rem;
+    padding-inline: 0.625rem;
+  }
+
+  .menu-btn {
+    display: none;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .menu-btn__close,
+  .menu-btn[aria-expanded='true'] .menu-btn__open {
+    display: none;
+  }
+  .menu-btn[aria-expanded='true'] .menu-btn__close {
+    display: inline;
+  }
+
+  /* Full-height sheet under the sticky header. Absolute, not fixed: the header's backdrop-filter is the
+     containing block for fixed descendants. */
+  .site-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: calc(100dvh - var(--header-h));
+    overflow-y: auto;
+    background: var(--bg);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .site-menu:not([hidden]) {
+      animation: flicker-soft var(--dur-flicker) var(--ease-step) both;
+    }
+  }
+  .site-menu__list {
+    padding-block: 1rem;
+  }
+  .site-menu__link {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .site-menu__idx {
+    font-family: var(--font-ui);
+    font-size: var(--text-label);
+    color: var(--text-subtle);
+  }
+  .site-menu__link[aria-current='page'],
+  .site-menu__link[aria-current='page'] .site-menu__idx {
+    color: var(--accent);
+  }
+
+  @media (max-width: 899px) {
+    .header-clock {
+      display: none;
+    }
+  }
+  @media (max-width: 767px) {
+    .site-nav,
+    .search-kbd {
+      display: none;
+    }
+    .menu-btn {
+      display: inline-flex;
+    }
+  }
+</style>
+
+<script>
+  const panel = () => document.getElementById('site-menu');
+  const menuBtn = () => document.querySelector<HTMLElement>('[data-menu-toggle]');
+
+  function setMenu(open: boolean, returnFocus = false) {
+    const p = panel();
+    const b = menuBtn();
+    if (!p || !b || p.hidden === !open) return;
+    p.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+    if (open) p.querySelector<HTMLElement>('a')?.focus();
+    else if (returnFocus) b.focus();
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as Element | null;
+    if (t?.closest?.('[data-open-palette]')) {
+      setMenu(false);
+      window.dispatchEvent(new CustomEvent('open-palette'));
+      return;
+    }
+    if (t?.closest?.('[data-menu-toggle]')) {
+      setMenu(panel()?.hidden ?? false);
+      return;
+    }
+    if (!t?.closest?.('[data-site-header]')) setMenu(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel()?.hidden === false) setMenu(false, true);
+  });
+
+  // Tabbing out of the header closes the sheet.
+  document.addEventListener('focusin', (e) => {
+    if (!(e.target as Element | null)?.closest?.('[data-site-header]')) setMenu(false);
+  });
+
+  matchMedia('(min-width: 768px)').addEventListener('change', (e) => {
+    if (e.matches) setMenu(false);
+  });
+</script>

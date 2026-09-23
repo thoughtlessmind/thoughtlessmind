@@ -1,0 +1,111 @@
+---
+title: TypeScript narrowing patterns I reach for every week
+description: Discriminated unions, type predicates, in checks, and exhaustive switches. The four ways I turn a wide type into the one I need.
+pubDate: 2026-06-14
+tags: [typescript]
+draft: true
+---
+
+Narrowing is how TypeScript goes from "this could be one of several things" to "this is exactly that thing". Most of the type errors I fix in review come from code that knows what a value is but never told the compiler. These four patterns cover almost all of it.
+
+## Discriminated unions
+
+Give every variant a literal field with a different value, and a `switch` on that field narrows the whole object.
+
+```ts title="result.ts"
+type Result =
+  | { kind: 'ok'; value: number }
+  | { kind: 'error'; message: string }
+  | { kind: 'loading' };
+
+function render(r: Result): string {
+  switch (r.kind) {
+    case 'ok':
+      return `Value: ${r.value}`; // r is the ok variant here
+    case 'error':
+      return `Error: ${r.message}`; // and the error variant here
+    case 'loading':
+      return 'Loading';
+  }
+}
+```
+
+This is the pattern I use for anything that can be in more than one state: fetch results, form status, reducer actions. The discriminant is usually called `kind`, `type`, or `status`. Pick one and keep it.
+
+## Type predicates
+
+When the check lives in a function, the return type `x is T` tells the compiler what a `true` result means.
+
+```ts title="guards.ts"
+interface User {
+  id: string;
+  email: string;
+}
+
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as User).id === 'string' &&
+    typeof (value as User).email === 'string'
+  );
+}
+
+const data: unknown = await response.json();
+if (isUser(data)) {
+  data.email; // User
+}
+```
+
+A predicate is a promise you make to the compiler. If the body does not actually check every field, the type is a lie and the runtime error lands somewhere far from the cause. For anything coming over the network I prefer a schema library, but a hand-written predicate is fine for two fields.
+
+The same shape works with `filter`: `items.filter(isUser)` returns `User[]`, where a plain boolean callback would return the original type.
+
+## `in` and `instanceof`
+
+Two built-in checks that narrow without any extra code.
+
+`in` narrows on the presence of a property, which is handy when the variants have no shared discriminant:
+
+```ts title="shapes.ts"
+type Shape = { radius: number } | { width: number; height: number };
+
+function area(s: Shape): number {
+  if ('radius' in s) return Math.PI * s.radius ** 2;
+  return s.width * s.height;
+}
+```
+
+`instanceof` narrows class instances, which matters most in `catch` blocks, where the error is `unknown` until you prove otherwise:
+
+```ts title="fetch.ts"
+try {
+  await load();
+} catch (e) {
+  if (e instanceof DOMException && e.name === 'AbortError') return;
+  throw e;
+}
+```
+
+## Exhaustive switch with `never`
+
+The last pattern is for the future. When you add a variant to a union, every `switch` over it should fail to compile until it handles the new case. Assigning the leftover value to `never` in the `default` branch does that.
+
+```ts title="exhaustive.ts"
+function label(r: Result): string {
+  switch (r.kind) {
+    case 'ok':
+      return 'Done';
+    case 'error':
+      return 'Failed';
+    case 'loading':
+      return 'Working';
+    default: {
+      const unreachable: never = r;
+      throw new Error(`Unhandled: ${JSON.stringify(unreachable)}`);
+    }
+  }
+}
+```
+
+Add a `cancelled` variant to `Result` and this function turns red. That is the point: the compiler finds the places you forgot, before a user does.

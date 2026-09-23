@@ -1,0 +1,69 @@
+---
+title: "The rendering budget: 16 milliseconds, explained with orbits"
+description: A 60 Hz screen gives you 16.7 ms per frame. What the browser spends it on, why long tasks break the rhythm, and how to yield.
+pubDate: 2026-07-26
+tags: [performance, thinking]
+series: Frontend performance field notes
+seriesOrder: 2
+draft: true
+---
+
+A screen refreshing at 60 Hz draws a new frame every 16.7 milliseconds. Whatever the browser cannot finish in that window slips to the next one, and the user sees a stutter. That number is the budget. Everything about smooth interfaces comes down to spending less than it.
+
+## Where 16 milliseconds comes from
+
+One second divided by 60 frames is 16.67 ms. On a 120 Hz phone it is 8.3 ms. The browser does not get all of it: compositing and handing the frame to the display takes a slice, so the practical budget for your code is closer to 10 ms per frame.
+
+I find it useful to think of a frame as an orbit. A satellite in a stable orbit passes the same point at the same interval, every time. Miss the interval once and you have not lost the satellite, but the timing is off, and the tracking station notices. Miss it repeatedly and the whole schedule falls apart. Frames are the same. One dropped frame is invisible. A pattern of them is jank.
+
+## What happens inside a frame
+
+In order, the browser runs:
+
+1. Input handlers and any queued JavaScript.
+2. `requestAnimationFrame` callbacks.
+3. Style recalculation: which rules apply to which elements.
+4. Layout: where every box goes.
+5. Paint: filling pixels into layers.
+6. Composite: stacking the layers on the GPU.
+
+Steps 3 to 5 are the expensive ones, and they run again whenever JavaScript changes something they depend on. Reading `offsetHeight` right after writing a style forces layout to run early, inside your script, and then again in the frame. That is layout thrashing, and it is the most common way a loop over 200 elements turns into a 40 ms task.
+
+## Long tasks break the orbit
+
+A task over 50 ms is a long task. While it runs, nothing else can: no input handling, no animation frame, no paint. A click that lands 5 ms into a 300 ms task waits 295 ms for a response.
+
+The fix is not to make the work disappear; it is to break it into pieces that fit inside a frame and let the browser breathe between them.
+
+```ts title="chunked.ts"
+async function processAll(items: Item[]) {
+  let sliceStart = performance.now();
+
+  for (const item of items) {
+    process(item);
+
+    // Give the browser a frame back after ~8 ms of work.
+    if (performance.now() - sliceStart > 8) {
+      await yieldToMain();
+      sliceStart = performance.now();
+    }
+  }
+}
+
+function yieldToMain(): Promise<void> {
+  const s = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
+  if (s?.yield) return s.yield();
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+```
+
+`scheduler.yield()` puts the continuation at the front of the queue, so the loop resumes as soon as pending input is handled. The `setTimeout` fallback goes to the back, which is slower but still lets the frame through.
+
+## Staying inside the budget
+
+- Animate `transform` and `opacity`. They skip layout and paint and run on the compositor.
+- Batch reads before writes. Read every measurement first, then apply every style.
+- Keep handlers short. Record what happened, update state, and schedule the heavy part for later.
+- Measure with the Performance panel and look for the red corners on tasks. Those are the missed orbits.
+
+Sixteen milliseconds sounds small until you remember the browser does this 60 times a second for as long as the tab is open. The budget is not a constraint on one frame. It is a rhythm to keep.

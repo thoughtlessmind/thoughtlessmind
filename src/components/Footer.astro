@@ -1,0 +1,108 @@
+---
+import { SITE } from '../consts';
+import Terminal from './Terminal.astro';
+
+const build = new Date().toISOString().slice(0, 10);
+
+const socials = [
+  { short: 'GH', label: 'GitHub', href: SITE.socials.github },
+  { short: 'IN', label: 'LinkedIn', href: SITE.socials.linkedin },
+  { short: 'X', label: 'X', href: SITE.socials.x },
+  { short: 'SO', label: 'Stack Overflow', href: SITE.socials.stackoverflow },
+  { short: 'DEV', label: 'dev.to', href: SITE.socials.devto },
+  { short: 'RSS', label: 'RSS feed', href: '/rss.xml' },
+];
+---
+
+<footer class="site-footer">
+  <div class="container-site">
+    <div class="hud footer-frame">
+      <div class="footer-id">
+        <p>Built by {SITE.name} in New Delhi.</p>
+        <p class="label">{SITE.coords}</p>
+      </div>
+
+      <ul class="footer-socials" aria-label="Elsewhere">
+        {
+          socials.map((s) => (
+            <li>
+              <a
+                href={s.href}
+                class="footer-social tap"
+                aria-label={s.label}
+                rel={s.href.startsWith('http') ? 'me noopener' : undefined}
+              >
+                {s.short}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="footer-status">
+        <p class="label dot-status">All systems nominal</p>
+        <p class="label">Build <time datetime={build}>{build}</time></p>
+      </div>
+    </div>
+  </div>
+</footer>
+<Terminal />
+
+<style>
+  .site-footer {
+    margin-top: calc(var(--spacing-section) / 2);
+    padding-bottom: 2rem;
+  }
+  .footer-frame {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: start;
+    gap: 2rem 3rem;
+    padding: 1.75rem clamp(1.25rem, 3vw, 2rem);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+  }
+  .footer-id {
+    display: grid;
+    gap: 0.5rem;
+    font-size: var(--text-small);
+    color: var(--text-muted);
+  }
+  .footer-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .footer-social {
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-decoration: underline 1px transparent;
+    text-underline-offset: 0.35em;
+    transition:
+      color var(--dur-1) var(--ease-out),
+      text-decoration-color var(--dur-1) var(--ease-out);
+  }
+  .footer-social:hover,
+  .footer-social:focus-visible {
+    color: var(--text);
+    text-decoration-color: var(--signal);
+  }
+  .footer-status {
+    display: grid;
+    justify-items: end;
+    gap: 0.625rem;
+  }
+  @media (max-width: 767px) {
+    .footer-frame {
+      grid-template-columns: 1fr;
+    }
+    .footer-status {
+      justify-items: start;
+    }
+  }
+</style>

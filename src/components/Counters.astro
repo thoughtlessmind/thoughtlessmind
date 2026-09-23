@@ -1,0 +1,64 @@
+---
+/**
+ * Row of big Geist Pixel counters. The final value is in the HTML; fx.ts rolls the digits when in view.
+ * `value` is the digit string as shown ("07" keeps its leading zero), `suffix` follows it ("k+").
+ */
+interface Props {
+  items: { value: string; suffix?: string; label: string }[];
+  class?: string;
+}
+const { items, class: className } = Astro.props;
+---
+
+<ul class:list={['counters', className]}>
+  {
+    items.map((i) => (
+      <li class="counters__item">
+        <span class="counters__value" data-count-to={i.value} data-count-suffix={i.suffix}>
+          {`${i.value}${i.suffix ?? ''}`}
+        </span>
+        <span class="label counters__label">{i.label}</span>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .counters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border);
+  }
+  .counters__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .counters__value {
+    font-family: var(--font-display);
+    /* Five cells share one row from 720px, so the numerals track the viewport rather than --text-h1. */
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .counters__label {
+    color: var(--text-subtle);
+  }
+  @media (min-width: 720px) {
+    .counters {
+      grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+      border-bottom: 1px solid var(--border);
+    }
+    .counters__item {
+      padding-left: 1.25rem;
+      border-bottom: 0;
+      border-left: 1px solid var(--border);
+    }
+  }
+</style>
