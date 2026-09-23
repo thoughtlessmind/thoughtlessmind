@@ -54,7 +54,7 @@ const files = {
 <dialog class="term-dialog" aria-label="Terminal" aria-modal="true" data-terminal data-files={JSON.stringify(files)} transition:persist="terminal">
   <section class="hud term">
     <header class="term__bar">
-      <p class="label term__title">tm-sh <span class="term__sep" aria-hidden="true">·</span> <span data-term-cwd>~</span></p>
+      <p class="label term__title">sh <span class="term__sep" aria-hidden="true">·</span> <span data-term-cwd>~</span></p>
       <button type="button" class="btn btn-sm" data-terminal-close aria-label="Close terminal">Esc</button>
     </header>
     <div class="term__out" role="log" aria-live="polite" aria-label="Output"></div>
@@ -408,7 +408,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
       ['user', SITE.name],
       ['host', new URL(SITE.url).host],
       ['os', 'Astro 7 (static)'],
-      ['shell', 'tm-sh'],
+      ['shell', 'sh'],
       ['uptime', uptime(SINCE)],
       ['stack', 'TS · React · Astro · R3F'],
       ['location', SITE.location],
@@ -551,7 +551,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
     const [name, ...args] = text.split(/\s+/);
     const cmd = COMMANDS[name.toLowerCase()];
     if (cmd) void cmd(args, text);
-    else print(`tm-sh: command not found: ${name}. Try help.`, 'is-muted');
+    else print(`sh: command not found: ${name}. Try help.`, 'is-muted');
   }
 
   function complete() {
@@ -602,7 +602,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
     input.focus();
     if (!out.childElementCount) {
       n = 0;
-      print('tm-sh on thoughtlessmind.dev\nType help for commands. Esc closes.', 'is-muted');
+      print('sh on thoughtlessmind.dev\nType help for commands. Esc closes.', 'is-muted');
     }
     egg('terminal');
   }

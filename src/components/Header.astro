@@ -33,7 +33,13 @@ const paletteProps = {
 <header class="site-header" data-site-header>
   <div class="container-site site-header__row">
     <a href="/" class="wordmark" aria-label={`${SITE.name}, home`}>
-      <span aria-hidden="true"><span class="wordmark__br">[</span> tm<span class="caret"></span> <span class="wordmark__br">]</span></span>
+      <span class="wordmark__br" aria-hidden="true">[</span>
+      <svg class="wordmark__mark" viewBox="0 0 25.98 30" aria-hidden="true">
+        <path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45" />
+        <path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65" />
+        <path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8" />
+      </svg>
+      <span class="wordmark__br" aria-hidden="true">]</span>
     </a>
 
     <nav class="site-nav" aria-label="Primary">
@@ -111,13 +117,17 @@ const paletteProps = {
   .wordmark {
     display: inline-flex;
     align-items: center;
+    gap: 0.5rem;
     min-height: 2.75rem;
     font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-weight: 600;
-    color: var(--text);
     text-decoration: none;
-    white-space: pre;
+  }
+  .wordmark__mark {
+    height: 1.375rem;
+    width: auto;
+    fill: var(--accent);
   }
   .wordmark__br {
     color: var(--text-subtle);

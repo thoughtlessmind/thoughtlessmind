@@ -270,7 +270,7 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
       }}>
       <div className="palette hud" role="dialog" aria-modal="true" aria-label="Search" onKeyDown={onKeyDown}>
         <div className="palette__field">
-          <span className="palette__prompt" aria-hidden="true">tm:~$</span>
+          <span className="palette__prompt" aria-hidden="true">~$</span>
           <label className="sr-only" htmlFor="palette-search">Search the site</label>
           <input
             id="palette-search"

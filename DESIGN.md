@@ -211,7 +211,9 @@ Scene:
 ## 6. Chrome
 
 **Header** (sticky, `--header-h` 56px, `--bg` at 85% + 12px backdrop blur, bottom hairline):
-`[ tm▍ ]` wordmark with blinking caret (brackets `--text-subtle`, accent on hover; links home) · nav `01 WORK  02 WRITING  03 ABOUT`
+`[ ⬡ ]` logo: the three overlapping hexagons from the old site, hard-cornered, filled `--accent` at .45/.65/.8 so the
+overlaps build to a solid core (22px tall; brackets `--text-subtle`, accent on hover; links home). Favicons and touch
+icons are the same mark on a transparent background (`public/favicon.svg`) · nav `01 WORK  02 WRITING  03 ABOUT`
 (index in `--text-subtle`, active item in `--accent` with a `▸` marker, hover scramble) · right side: `NDL 14:32:07 IST` live
 clock (hidden < 900px), search button (icon + `⌘K` kbd; opens the palette), theme toggle `[DRK|LGT]`: one native button,
 `aria-pressed` = light, the lit segment filled in `--accent` by CSS off `html[data-theme]` so it is right before JS runs.
@@ -282,7 +284,7 @@ share, series nav, older/newer, author box, related.
 at 7%, jumped in steps, flat brightness), `// ERROR 404 · NO CARRIER`, `> return home`, links to Writing and Work, and a hint
 that the home telemetry knows where the signals are.
 
-**⌘K palette** (⌘K / Ctrl+K or the header button): a `.hud` terminal prompt: `tm:~$` prefix, mono input ("search writing,
+**⌘K palette** (⌘K / Ctrl+K or the header button): a `.hud` terminal prompt: `~$` prefix, mono input ("search writing,
 pages, actions"), grouped results (Pages · Writing via Pagefind, falling back to title filtering · Projects · Actions: copy
 link, open terminal, switch theme, RSS) with an orange selection bar (inset 2px accent on `--accent-soft`),
 `↑ ↓ navigate  ↵ open  esc close` hints. Esc works wherever focus is in it: the first clears a non-empty query, the
