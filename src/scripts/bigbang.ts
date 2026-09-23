@@ -291,7 +291,17 @@ function collect(copies: HTMLElement): Piece[] {
         const copy = el.cloneNode(true) as HTMLElement | SVGElement;
         copy.removeAttribute('id');
         copy.removeAttribute('loading');
-        copy.style.cssText = `${at};max-width:none;color:${s.color};fill:${s.fill};stroke:${s.stroke}`;
+        if (copy instanceof HTMLImageElement && el instanceof HTMLImageElement) {
+          copy.src = el.currentSrc || el.src; // the source the original chose, whatever its sizes
+          copy.removeAttribute('srcset');
+          copy.removeAttribute('sizes');
+        }
+        // Its styles, inline: rules that match through an ancestor (.card img) no longer reach the clone, and
+        // scoped rules that do still match (by class) must not move it.
+        copy.style.cssText =
+          `${at};position:absolute;margin:0;translate:none;rotate:none;scale:none;max-width:none;` +
+          `color:${s.color};fill:${s.fill};stroke:${s.stroke};object-fit:${s.objectFit};` +
+          `object-position:${s.objectPosition};filter:${s.filter}`;
         add(copy, 'item', r, alpha(el));
         continue;
       }
@@ -305,10 +315,19 @@ function collect(copies: HTMLElement): Piece[] {
           !clear(s.getPropertyValue(`border-${d}-color`)),
       );
       if (!fill && !line && !hud) continue;
-      const box = document.createElement('div');
-      if (hud) box.className = 'hud';
-      box.style.cssText = `${props(s, BOX)};${at}`;
-      add(box, fill ? 'box' : 'frame', r, alpha(el), fill ? s.backgroundColor : '');
+      // A wrapped inline box (prose code) paints one piece per line, with no inner-side borders or corners.
+      // ponytail: left-to-right only; the site is.
+      const frags = s.display === 'inline' ? [...el.getClientRects()] : [r];
+      const look = props(s, BOX);
+      frags.forEach((f, i) => {
+        if (!seen(f, clip(el.parentElement))) return;
+        const open = i > 0 ? 'border-left-width:0;border-top-left-radius:0;border-bottom-left-radius:0;' : '';
+        const shut = i < frags.length - 1 ? 'border-right-width:0;border-top-right-radius:0;border-bottom-right-radius:0;' : '';
+        const box = document.createElement('div');
+        if (hud) box.className = 'hud';
+        box.style.cssText = `${look};${open}${shut}left:${f.left}px;top:${f.top}px;width:${f.width}px;height:${f.height}px`;
+        add(box, fill ? 'box' : 'frame', f, alpha(el), fill ? s.backgroundColor : '');
+      });
     }
   }
 
@@ -392,12 +411,14 @@ function afterglow(c: HTMLCanvasElement) {
 }
 
 export function bigBang() {
-  if (run) return;
+  if (run || document.hidden) return; // a background tab: nobody is watching, and rAF would not run
   if (calm.matches) {
     toast(STILL);
     return;
   }
+  // Top-layer UI and the open mobile menu sheet would sit over the copies (or hide what they copy): close them.
   for (const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) d.close();
+  document.querySelector<HTMLElement>('[data-menu-toggle][aria-expanded="true"]')?.click();
   const { el, copies, point, flash, glow, disp, blur } = layer();
   const cx = innerWidth / 2;
   const cy = innerHeight / 2;
@@ -429,9 +450,10 @@ export function bigBang() {
     watchdog: window.setTimeout(() => finish(), WATCHDOG),
   };
   try {
-    // Scroll locked with the gutter kept: the layout the copies are measured in is the one they swap back into.
+    // Scroll locked with a classic scrollbar's gutter kept (only if one shows): the layout the copies are measured
+    // in is the one they swap back into.
+    if (innerWidth > root.clientWidth) root.style.scrollbarGutter = 'stable';
     root.style.overflow = 'hidden';
-    root.style.scrollbarGutter = 'stable';
     run.pieces = collect(copies);
     aim(run);
     for (const s of space) s.style.transformOrigin = `${cx}px ${cy}px`;

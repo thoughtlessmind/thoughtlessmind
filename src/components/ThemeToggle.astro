@@ -11,14 +11,14 @@
   </span>
 </button>
 
-<dialog class="bb-dialog" data-bb-dialog aria-labelledby="bb-title" aria-describedby="bb-body bb-note">
+<dialog class="bb-dialog" data-bb-dialog aria-labelledby="bb-title" aria-describedby="bb-body bb-note bb-count">
   <div class="bb-dialog__panel hud hud--solid">
     <p class="label bb-dialog__label" id="bb-title">Warning · no light mode in space</p>
     <p class="bb-dialog__body" id="bb-body">
       Space is dark everywhere. The only way to get light is to start the universe over.
     </p>
     <p class="bb-dialog__note" id="bb-note">Contains one bright flash.</p>
-    <p class="label bb-dialog__count" role="timer">
+    <p class="label bb-dialog__count" id="bb-count" role="timer">
       Big bang in <span class="bb-dialog__digit" data-bb-count>3</span>
     </p>
     <form method="dialog" class="bb-dialog__actions">
@@ -134,10 +134,13 @@
       timer = n > 0 ? window.setTimeout(tick, 1000) : window.setTimeout(() => dialog.close('go'), 300);
     };
     timer = window.setTimeout(tick, 1000);
+    const onHide = () => document.hidden && dialog.close(); // a countdown nobody watches does not go off
+    document.addEventListener('visibilitychange', onHide);
     dialog.addEventListener(
       'close',
       () => {
         clearTimeout(timer);
+        document.removeEventListener('visibilitychange', onHide);
         if (dialog.returnValue === 'go' && dialog.isConnected) bang.then((m) => m.bigBang()).catch(() => {});
       },
       { once: true },
