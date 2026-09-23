@@ -368,7 +368,6 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
   let n = 0; // lines printed in the current block: staggers the typing animation
 
   const cwd = () => '~' + location.pathname.replace(/\/+$/, '');
-  const root = document.documentElement;
 
   function line(parts: (string | Node)[], cls = '') {
     const el = document.createElement('div');
@@ -412,7 +411,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
       ['uptime', uptime(SINCE)],
       ['stack', 'TS · React · Astro · R3F'],
       ['location', SITE.location],
-      ['theme', root.dataset.theme ?? 'dark'],
+      ['theme', 'dark'],
       ['resolution', `${innerWidth}x${innerHeight}`],
       ['eggs', `${found().length}/${EGGS.length}`],
     ];
@@ -491,11 +490,10 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
       print(`${time({ weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} ${clock()} IST`),
     ping,
     theme: ([t]) => {
-      const cur = root.dataset.theme === 'light' ? 'light' : 'dark';
       if (t && t !== 'dark' && t !== 'light') return print('usage: theme [dark|light]', 'is-muted');
-      const next = t ?? (cur === 'light' ? 'dark' : 'light');
-      if (next !== cur) document.querySelector<HTMLElement>('[data-theme-toggle]')?.click();
-      print(`Theme: ${next}.`);
+      if (t === 'dark') return print('Already dark. Space has no other theme.');
+      print('There is no light mode in space. Stand by.');
+      document.querySelector<HTMLElement>('[data-theme-toggle]')?.click();
     },
     hire: ([flag]) => {
       const mail = `mailto:${SITE.email}`;

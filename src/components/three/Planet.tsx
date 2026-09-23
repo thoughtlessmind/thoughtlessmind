@@ -33,8 +33,7 @@ const PARALLAX = (6 * Math.PI) / 180; // max tilt from the pointer
 export const SPAN = 4.5; // anchor side / SPAN = px per world unit (sphere radius 1, ring outer 2.4)
 const BURST = 0.18; // s
 const HEADER = 56; // px, sticky header height: the corner planet sits below it
-const DARK_STARS = new THREE.Vector2(0.16, 0.5); // star alpha range per theme
-const LIGHT_STARS = new THREE.Vector2(0.08, 0.26);
+const STAR_ALPHA = new THREE.Vector2(0.16, 0.5); // star alpha range
 // Warp. One speed curve drives everything: cubic ease-in to PEAK, cubic ease-out to WARP.
 // Stars fly along rays from the planet in log-radius (perspective), nearer stars faster: outbound from
 // their rest spot until the peak, then cross-faded to an inbound ghost that lands back on it.
@@ -609,7 +608,7 @@ export default function Planet({ pointer, palette, tide }: Props) {
       uDpr: planetMat.uniforms.uDpr,
       uTime: planetMat.uniforms.uTime,
       uHole: { value: new THREE.Vector3() },
-      uAlpha: { value: (pal.dark ? DARK_STARS : LIGHT_STARS).clone() },
+      uAlpha: { value: STAR_ALPHA.clone() },
       uDensity: { value: 1 },
       uFly: { value: new THREE.Vector4() },
       uFlyMix: { value: new THREE.Vector2() },
@@ -617,8 +616,9 @@ export default function Planet({ pointer, palette, tide }: Props) {
       uSink: planetMat.uniforms.uSink,
     });
     starMat.side = THREE.DoubleSide;
+    planetMat.blending = starMat.blending = THREE.AdditiveBlending;
     return { planet, stars, planetMat, starMat, sim: makeSim(planet) };
-    // Initial palette only; theme changes are lerped in useFrame.
+    // The palette is read once: one theme.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -703,7 +703,6 @@ export default function Planet({ pointer, palette, tide }: Props) {
     const kMove = 1 - Math.exp(-dt / 0.12);
     const kColor = 1 - Math.exp(-dt / 0.08);
     const u = scene.planetMat.uniforms;
-    const pal = palette.current;
     const ptr = pointer.current;
 
     // Placement: anchor rect (home hero) blending into the corner slot as the anchor scrolls away.
@@ -849,16 +848,7 @@ export default function Planet({ pointer, palette, tide }: Props) {
     }
     scene.planet.instanceCount = bursting ? 3 : 1;
 
-    // Theme: colours ease over ~250ms; blending switches with the theme (additive on dark, ink on light).
-    (u.uInk.value as THREE.Vector3).lerp(pal.ink, kColor);
-    (u.uHot.value as THREE.Vector3).lerp(pal.hot, kColor);
-    (u.uCold.value as THREE.Vector3).lerp(pal.cold, kColor);
-    const blending = pal.dark ? THREE.AdditiveBlending : THREE.NormalBlending;
-    scene.planetMat.blending = blending;
-    scene.starMat.blending = blending;
-
     const s = scene.starMat.uniforms;
-    (s.uAlpha.value as THREE.Vector2).lerp(pal.dark ? DARK_STARS : LIGHT_STARS, kColor);
     s.uDensity.value = Math.min(1, (w * h) / (1440 * 900));
     // Stars hide behind the disc; as the sphere is torn away they show through.
     s.uHole.value.set(st.x, h - st.y, st.opacity > 0.5 ? scale * (1 - scene.sim.lostSphere / SPHERE) : 0);

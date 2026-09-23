@@ -1,14 +1,31 @@
 ---
-// Two-state [DRK|LGT] switch. One native button: pressed = light. The lit segment is CSS off html[data-theme],
-// so it is right before any JS runs; the script only flips the theme and keeps aria-pressed honest.
+// [DRK|LGT]. There is no light mode in space: DRK is always lit, and LGT opens a warning that counts down 3 → 0,
+// then runs the big bang (src/scripts/bigbang.ts, fetched on the first click while the countdown runs). Abort or
+// Esc cancels. ⌘K "Light theme" and the terminal's `theme light` click this button.
 ---
 
-<button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false">
-  <span class="sr-only">Light theme</span>
+<button type="button" class="theme-toggle" data-theme-toggle aria-haspopup="dialog">
+  <span class="sr-only">Try light theme</span>
   <span class="theme-toggle__face" aria-hidden="true">
     [<span data-opt="dark">DRK</span>|<span data-opt="light">LGT</span>]
   </span>
 </button>
+
+<dialog class="bb-dialog" data-bb-dialog aria-labelledby="bb-title" aria-describedby="bb-body bb-note">
+  <div class="bb-dialog__panel hud hud--solid">
+    <p class="label bb-dialog__label" id="bb-title">Warning · no light mode in space</p>
+    <p class="bb-dialog__body" id="bb-body">
+      Space is dark everywhere. The only way to get light is to start the universe over.
+    </p>
+    <p class="bb-dialog__note" id="bb-note">Contains one bright flash.</p>
+    <p class="label bb-dialog__count" role="timer">
+      Big bang in <span class="bb-dialog__digit" data-bb-count>3</span>
+    </p>
+    <form method="dialog" class="bb-dialog__actions">
+      <button class="btn btn-sm" value="abort" autofocus>Abort</button>
+    </form>
+  </div>
+</dialog>
 
 <style>
   .theme-toggle {
@@ -29,40 +46,101 @@
   [data-opt] {
     padding: 0.125rem 0.3125rem;
     color: var(--text-muted);
-    transition:
-      background-color var(--dur-1) var(--ease-out),
-      color var(--dur-1) var(--ease-out);
+    transition: color var(--dur-1) var(--ease-out);
   }
-  .theme-toggle:hover [data-opt] {
+  .theme-toggle:hover [data-opt='light'] {
     color: var(--text);
   }
-  :global(:root:not([data-theme='light'])) [data-opt='dark'],
-  :global([data-theme='light']) [data-opt='light'] {
+  [data-opt='dark'] {
     background: var(--accent);
     color: var(--accent-fg);
+  }
+
+  /* A modal <dialog> is fixed to the viewport by the UA; the .hud frame is on the panel, not the dialog (a top-layer
+     element must stay position: fixed). Same veil as the terminal and the ⌘K palette. */
+  .bb-dialog {
+    width: min(100% - 2 * var(--spacing-gutter), 28rem);
+    max-width: none;
+    max-height: none;
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+  }
+  .bb-dialog::backdrop {
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  .bb-dialog__panel {
+    padding: 1.5rem;
+  }
+  .bb-dialog__label {
+    color: var(--accent);
+  }
+  .bb-dialog__body {
+    margin-top: 0.75rem;
+    color: var(--text-muted);
+  }
+  .bb-dialog__note {
+    margin-top: 0.5rem;
+    font-size: var(--text-small);
+    color: var(--text-subtle);
+  }
+  .bb-dialog__count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+  .bb-dialog__digit {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--text);
+  }
+  .bb-dialog__actions {
+    margin-top: 1.25rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .bb-dialog[open] .bb-dialog__panel {
+      animation: flicker-on var(--dur-flicker) var(--ease-step) both;
+    }
   }
 </style>
 
 <script>
   const root = document.documentElement;
+  let timer = 0;
 
-  const sync = () => {
-    const light = String(root.dataset.theme === 'light');
-    for (const b of document.querySelectorAll('[data-theme-toggle]')) b.setAttribute('aria-pressed', light);
-  };
+  // A navigation mid-countdown takes the dialog with it: nothing may run on the next page.
+  document.addEventListener('astro:before-swap', () => clearTimeout(timer));
 
   document.addEventListener('click', (e) => {
     if (!(e.target as Element | null)?.closest?.('[data-theme-toggle]')) return;
-    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
-    root.classList.add('theme-transition');
-    window.setTimeout(() => root.classList.remove('theme-transition'), 240);
-    root.dataset.theme = next;
-    try {
-      localStorage.setItem('theme', next);
-    } catch {}
+    const dialog = document.querySelector<HTMLDialogElement>('[data-bb-dialog]');
+    const digit = dialog?.querySelector('[data-bb-count]');
+    if (!dialog || !digit || dialog.open || root.classList.contains('bb')) return;
+    const bang = import('../scripts/bigbang'); // fetched while the countdown runs
+    bang.catch(() => {});
+    let n = 3;
+    digit.textContent = String(n);
+    dialog.returnValue = '';
+    dialog.showModal();
+    const tick = () => {
+      digit.textContent = String(--n);
+      timer = n > 0 ? window.setTimeout(tick, 1000) : window.setTimeout(() => dialog.close('go'), 300);
+    };
+    timer = window.setTimeout(tick, 1000);
+    dialog.addEventListener(
+      'close',
+      () => {
+        clearTimeout(timer);
+        if (dialog.returnValue === 'go' && dialog.isConnected) bang.then((m) => m.bigBang()).catch(() => {});
+      },
+      { once: true },
+    );
   });
-
-  // The palette (or anything else) may set data-theme directly.
-  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-  document.addEventListener('astro:page-load', sync);
 </script>

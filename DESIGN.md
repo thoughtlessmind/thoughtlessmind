@@ -42,9 +42,9 @@ Labels, nav, buttons and tags are uppercase Martian Mono. Headings and body are 
 
 ## 2. Colour
 
-Two themes. **Dark is the default** (no stored choice → dark). `data-theme="dark" | "light"` on `<html>`.
+One theme, dark "signal". There is no light mode in space: the header's `[DRK|LGT]` toggle warns and runs the big
+bang instead (§4).
 
-Dark, "signal":
 | Token | Value | Use |
 |---|---|---|
 | `--bg` | `#0a0b0d` | page |
@@ -65,30 +65,9 @@ Dark, "signal":
 | `--code-bg` | `#0d0f12` | |
 | `--glitch-blend` | `screen` | blend mode of the glitch copies |
 
-Light, "blueprint paper" (same roles, print-like):
-| Token | Value |
-|---|---|
-| `--bg` | `#edebe5` |
-| `--bg-elevated` | `#f6f5f1` |
-| `--surface` | `#e2dfd7` |
-| `--border` | `#cdc9bf` |
-| `--border-strong` | `#9b968b` |
-| `--field-dot` / `--field-vignette` | `rgb(17 18 20 / 0.34)` / `rgb(255 255 255 / 0.55)` (grain shared) |
-| `--text` | `#111214` |
-| `--text-muted` | `#44474d` |
-| `--text-subtle` | `#595d64` |
-| `--accent` | `#b33504` (5.14:1 on `--bg`; the first pick `#c73a05` failed AA) |
-| `--accent-hover` | `#962b03` |
-| `--accent-fg` | `#ffffff` |
-| `--accent-soft` | `rgb(179 53 4 / 0.1)` |
-| `--signal` | `#006d7d` (5.06:1; darkened from `#00788a` for AA) |
-| `--ok` | `#2e7d0a` |
-| `--code-bg` | `#e6e3db` |
-| `--glitch-blend` | `multiply` |
-
 Colour rules: orange is rare and meaningful (one primary CTA per view, the active state, focus, bracket corners).
 Cyan appears only in motion (glitch split, hover underline) and small accents. Lime only on status dots.
-`theme.js` also keeps `<meta name="theme-color">` in step (`#0a0b0d` / `#edebe5`).
+`<meta name="theme-color">` is `#0a0b0d` (`Head.astro`).
 
 ## 3. Shape, space, surfaces
 
@@ -119,7 +98,8 @@ final value; JS only animates it.
 
 Safety: no element larger than ~25% of the viewport may flash, and nothing flashes more than 3 times per second
 (WCAG 2.3.1). Flicker is an opacity dip, not a black/white flash; large areas (`main`, the mobile menu) use the gentler
-`flicker-soft`, whose dip never goes below 0.6.
+`flicker-soft`, whose dip never goes below 0.6. The one exception is the big bang's single bright flash (below): one
+rise and one fall, never more than one in any second, behind a warning that says so.
 
 | Effect | Trigger | Spec |
 |---|---|---|
@@ -136,7 +116,7 @@ Safety: no element larger than ~25% of the viewport may flash, and nothing flash
 | **Live clock** | `data-clock` | `HH:MM:SS` in Asia/Kolkata (markup adds ` IST`), updates each second, tabular nums. |
 | **Uptime** | `data-uptime-since="2019-03"` | Renders `07y 06m` style difference from that month to now. Server renders a build-time value first. |
 | **Pointer coords** | `data-pointer-coords` | `X 0412 · Y 0233` from the pointer position, fine pointers only, rAF-throttled. |
-| **Theme switch** | `[data-theme-toggle]` | `html.theme-transition` eases background, text and border colours over 240ms. |
+| **Big bang** | `[data-theme-toggle]` (LGT), ⌘K "Light theme", terminal `theme light` | There is no light mode. A modal (`ThemeToggle.astro`) warns "no light mode in space · contains one bright flash" and counts 3 → 0 (Abort or Esc cancel), then about 11s (`src/scripts/bigbang.ts`, lazy; maths in `src/scripts/fall.ts`). **Crunch** 0–3.4s: copies of every visible word, box and image (the DOM is untouched; `html.bb` hides it; copies keep paint order per container, so the sticky header stays on top) free-fall into the centre on a point-mass curve (the centre drains first, the corners arrive at 3.4s), spiralling clockwise as they spin up and stretched along their fall line by tides; frames go first; text and fills blueshift to white-hot; what has fallen in churns in a molten blob that grows with it, fused by a goo filter over the last 1.5s (CSS blur on coarse pointers or slow frames), and collapses into the point over the last 0.3s; space (the dust, the sky) scales to a point on the same curve and brightens. **Singularity** to 4.1s: one 2px white point that trembles. **Bang**: light bursts out (200ms), cools along the blackbody curve through 3,000 K orange (recombination) to transparent (2.4s), with a faint blurred mottle as its afterglow; dark ages to 7.1s. **First stars**: `signal:dawn` ignites the dust, brightest first (2.4s). **Structure** 8–11s: copies condense in place, smallest first, the planet last; then the swap back to the originals, the toast "Universe rebooted · still dark", focus on the toggle. Esc skips; a resize, the tab hidden, a navigation or an error end it at once. Reduced motion: the modal and countdown, then the toast "Still dark · space has no light mode". |
 | **Page transitions** | Astro `ClientRouter` | Old page: 160ms `steps(3)` fade out (`--dur-page-out`); the new page is held until it is gone, then fx.ts adds `.flicker` to `main` on `astro:after-swap` (the soft variant above). |
 
 All data-attribute behaviour lives in one module, `src/scripts/fx.ts`, re-initialised on `astro:page-load` and cleaned up
@@ -172,13 +152,12 @@ Scene:
   and the ring two, one orange/cyan split over the whole planet at the 1s peak, exact return to rest; every frame rendered
   while it runs; ignored while one runs). `signal:pulse` `{x, y}` on the disc or the ring's ellipse fires a glitch burst
   (at most every 0.4s). While the WebGL scene runs on a page, `<html data-scene="on">` is set so other code can tell.
-- Theme: dark uses additive blending; light uses normal blending with ink-coloured points and orange rim. Colours are read
-  from the tokens and ease over ~250ms on a theme change.
+- Colours are read once from the tokens; additive blending.
 - Cost: capped at ~30fps via `invalidate()` (`frameloop="demand"`), `dpr` 1–1.5 (dropped to 1 for good after sustained slow
   frames), paused when the tab is hidden.
 - **Black hole** (home page, `three/BlackHole.tsx` + the tide sim in `Planet.tsx` + `three/bend.ts`): a small hole,
-  horizon 0.15 planet units, drawn as one quad shaded per point cell like the planet: a shadow (`--bg` on dark, ink on
-  light), a thin photon ring, and a disk seen ~17° from above, turning clockwise, brighter on its approaching (right)
+  horizon 0.15 planet units, drawn as one quad shaded per point cell like the planet: a shadow (`--bg`), a thin
+  photon ring, and a disk seen ~17° from above, turning clockwise, brighter on its approaching (right)
   side, orange toward its inner edge, whose near half crosses the shadow and whose far half is lensed into an arc
   over it. Its hit area is Hero's `[data-black-hole]`, a `role="slider"` (value = pull; arrows move it 24px nearer or
   further along the line to the planet, Home rests it, End brings it closest), hidden until the scene binds it.
@@ -216,7 +195,7 @@ overlaps build to a solid core (22px tall; brackets `--text-subtle`, accent on h
 icons are the same mark on a transparent background (`public/favicon.svg`) · nav `01 WORK  02 WRITING  03 ABOUT`
 (index in `--text-subtle`, active item in `--accent` with a `▸` marker, hover scramble) · right side: `NDL 14:32:07 IST` live
 clock (hidden < 900px), search button (icon + `⌘K` kbd; opens the palette), theme toggle `[DRK|LGT]`: one native button,
-`aria-pressed` = light, the lit segment filled in `--accent` by CSS off `html[data-theme]` so it is right before JS runs.
+DRK always lit in `--accent`; LGT opens the big bang's warning (§4).
 < 768px: nav and the `⌘K` kbd hide; a `MENU` / `CLOSE` button opens a full-height sheet under the header with Geist Pixel
 40px links (flicker-soft on open), closed by Esc, an outside click, tabbing out or widening past 768px.
 
@@ -277,7 +256,7 @@ series pages keep reading order with numbered rows and no tag bar.
 40rem measure, headings in Martian Mono, `#` anchors on hover; code, figures and tables break out to 880px at ≥ 960px.
 Reading progress: 2px `--accent` bar fixed under the header plus a `037%` readout, measured through the prose only. TOC as a
 `> section` list (h3 as `-`) with the active item in accent: a sticky right rail at ≥ 1200px, otherwise a `> ON THIS PAGE [+]`
-`<details>`. Code blocks: expressive-code, `github-dark` / `github-light`, radius 0, tab indicator in accent. End stack:
+`<details>`. Code blocks: expressive-code, `github-dark`, radius 0, tab indicator in accent. End stack:
 share, series nav, older/newer, author box, related.
 
 **404**: "Signal lost". Big glitching `404` (Geist Pixel, `data-glitch-burst`) over low-contrast TV static (SVG noise mask
@@ -286,7 +265,7 @@ that the home telemetry knows where the signals are.
 
 **⌘K palette** (⌘K / Ctrl+K or the header button): a `.hud` terminal prompt: `~$` prefix, mono input ("search writing,
 pages, actions"), grouped results (Pages · Writing via Pagefind, falling back to title filtering · Projects · Actions: copy
-link, open terminal, switch theme, RSS) with an orange selection bar (inset 2px accent on `--accent-soft`),
+link, open terminal, light theme, RSS) with an orange selection bar (inset 2px accent on `--accent-soft`),
 `↑ ↓ navigate  ↵ open  esc close` hints. Esc works wherever focus is in it: the first clears a non-empty query, the
 next (or the first, on an empty one) closes. Vimium-style extensions eat Esc in a text field and only blur it, so the
 input dropping focus to nowhere (not a click, not another window) counts as an Esc; the terminal does the same.
@@ -297,7 +276,7 @@ orange 8px left bar, title in Geist Mono bold (64px, 54px when long), muted desc
 
 ## 8. Accessibility and performance
 
-- AA contrast in both themes; focus ring 2px `--accent`, offset 2px, never removed.
+- AA contrast; focus ring 2px `--accent`, offset 2px, never removed.
 - Every animation has a reduced-motion path; motion never hides content from no-JS users.
 - Pixel and mono fonts never carry long reading text.
 - Fonts: preload only the Geist Pixel (ELSH) and Martian Mono (standard) latin files used above the fold (`Head.astro`).
@@ -315,7 +294,7 @@ Global classes (defined only in `src/styles/global.css`):
   `.btn-sm`, `.icon-btn`, `.link`, `.tag` (renders `[text]`), `.kbd`
 - Status: `.dot-status` (lime pulsing dot), `.draft-badge`, `.caret`
 - Motion: `.reveal`, `.flicker`, `.glitch` (needs `data-text`), `.marquee` + `.marquee__track`; state classes set by
-  scripts: `.is-visible`, `.is-glitching`, `.is-dim`, `html.theme-transition`
+  scripts: `.is-visible`, `.is-glitching`, `.is-dim`, `html.bb` (bigbang.ts, while it runs)
 - Background: `.field` (vignette + grain) + `canvas.field-fx` (dust + lens, persisted across navigations)
 
 Data attributes: `data-scramble`, `data-scramble="hover"`, `data-glitch-burst`, `data-count-to` (+ `data-count-suffix`),
@@ -323,14 +302,15 @@ Data attributes: `data-scramble`, `data-scramble="hover"`, `data-glitch-burst`, 
 `data-egg`, `data-egg-hint` / `data-egg-hint-text` (the CURSOR row's arrow + target slot), `data-egg-mark` (the marker
 button), `data-tele` (eggs.ts); `data-tele-grip` (Hero's resize grip); `data-planet-anchor` (Planet.tsx, BlackHole.tsx,
 eggs.ts); `data-black-hole` (the black hole's hit area, BlackHole.tsx);
-`data-theme-toggle`, `data-open-palette`. Page state: `html.js`, `html[data-theme]`, `html[data-scene="on"]`,
+`data-theme-toggle`, `data-open-palette`. Page state: `html.js`, `html[data-scene="on"]`,
 `body[data-page="article"]`.
 
 Events on `window`: `terminal:open` (no detail), `signal:warp` (no detail), `signal:pulse` (`detail: {x, y}` in client px;
 the dust gets a shockwave, the planet glitches if hit), `signal:hole` (`detail: {x, y, r, held}` in client px whenever the
-black hole moves, `null` once it is gone; the dust lenses around it), `open-palette` (no detail).
+black hole moves, `null` once it is gone; the dust lenses around it), `signal:dawn` (`detail: {ms}`: field.ts ignites
+the dust star by star, brightest first; `0` shows it all), `open-palette` (no detail).
 
-Storage: `localStorage.theme` (`light` | `dark`), `localStorage.tele-scale`, `localStorage.eggs` (found ids),
+Storage: `localStorage.tele-scale`, `localStorage.eggs` (found ids),
 `sessionStorage.booted`.
 
 Component-specific styles live in the component's scoped `<style>` (or a CSS file imported by a React island), never in

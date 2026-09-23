@@ -14,10 +14,7 @@
 
 @import "tailwindcss";
 
-/* Dark is the default: anything not inside [data-theme="light"] is dark (also with no JS). */
-@custom-variant dark (&:not(:where([data-theme="light"], [data-theme="light"] *)));
-
-/* ---------- Colour tokens ---------- */
+/* ---------- Colour tokens (one theme: there is no light mode in space) ---------- */
 :root {
   color-scheme: dark;
   --bg: #0a0b0d;
@@ -43,30 +40,6 @@
   --field-vignette: rgb(0 0 0 / 0.5);
   --field-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
   --glitch-blend: screen;
-}
-
-[data-theme="light"] {
-  color-scheme: light;
-  --bg: #edebe5;
-  --bg-elevated: #f6f5f1;
-  --surface: #e2dfd7;
-  --border: #cdc9bf;
-  --border-strong: #9b968b;
-  --text: #111214;
-  --text-muted: #44474d;
-  --text-subtle: #595d64; /* 5.55:1 on bg, 4.97:1 on surface */
-  /* Spec #c73a05 is 4.36:1 on bg (fails AA); #b33504 is 5.14:1 on bg, 4.60:1 on surface, 6.13:1 under white. */
-  --accent: #b33504;
-  --accent-hover: #962b03;
-  --accent-fg: #ffffff;
-  --accent-soft: rgb(179 53 4 / 0.1);
-  --signal: #006d7d; /* spec #00788a is 4.35:1; darkened to 5.06:1 */
-  --ok: #2e7d0a;
-  --code-bg: #e6e3db;
-
-  --field-dot: rgb(17 18 20 / 0.34);
-  --field-vignette: rgb(255 255 255 / 0.55);
-  --glitch-blend: multiply;
 }
 
 /* ---------- Tailwind theme: static tokens (always emitted) ---------- */
@@ -176,13 +149,6 @@
   main:focus { outline: none; }
   /* main/footer stacking above the sky (z 0) lives in three/sky.css; the field backdrop sits at z -1. */
 
-  html.theme-transition,
-  html.theme-transition * {
-    transition:
-      background-color var(--dur-2) var(--ease-out),
-      color var(--dur-2) var(--ease-out),
-      border-color var(--dur-2) var(--ease-out);
-  }
 
   h1, h2, h3, h4, h5, h6 {
     color: var(--text);

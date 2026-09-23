@@ -14,7 +14,7 @@
 // The home page's black hole (three/BlackHole.tsx) is a second lens, with any pointer: `signal:hole` ({x, y, r},
 // client px and its horizon radius, or null once it is gone) is sent whenever it moves. Its Einstein radius and
 // reach scale with it; while it is dragged ({held: true}) it stands in for the pointer's lens.
-// Everywhere else the field is drawn once (and on resize or theme change) and never animates. No
+// Everywhere else the field is drawn once (and on resize) and never animates. No
 // allocation per frame.
 //
 // `signal:dawn` ({ms}) is the big bang's first stars (src/scripts/bigbang.ts): every dot goes dark, then each
@@ -399,10 +399,6 @@ window.addEventListener('signal:dawn', (e) => {
   wake();
 });
 window.addEventListener('resize', resize);
-new MutationObserver(() => {
-  readColors();
-  draw();
-}).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 fine.addEventListener('change', sync);
 calm.addEventListener('change', sync);
 document.addEventListener('visibilitychange', () => {

@@ -41,9 +41,7 @@ export default defineConfig({
   integrations: [
     react(),
     expressiveCode({
-      // Dark first: it is the unconditional base (no-JS default); light applies under [data-theme="light"].
-      themes: ['github-dark', 'github-light'],
-      themeCssSelector: (theme) => `[data-theme="${theme.type}"]`,
+      themes: ['github-dark'], // one theme: there is no light mode in space
       useDarkModeMediaQuery: false,
       useThemedScrollbars: false,
       useThemedSelectionColors: false,

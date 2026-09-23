@@ -61,7 +61,7 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
 
 - Techie and funky: pixel display type, telemetry readouts, digital motion that decodes, flickers and glitches in short
   bursts.
-- Dark by default, plus a light "blueprint paper" theme. Both must pass WCAG AA.
+- Dark only, and it must pass WCAG AA. There is no light mode in space: LGT runs the big bang (below).
 - Colour roles:
   - Launch orange `--accent` is rare: the primary CTA, active state, focus ring and corner brackets.
   - Cyan `--signal` appears only in motion.
@@ -82,13 +82,12 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
 
 ## Design system
 
-- `global.css` holds the tokens (dark in `:root`, light in `[data-theme="light"]`), `@theme static` (fonts, type scale,
+- `global.css` holds the tokens (in `:root`), `@theme static` (fonts, type scale,
   `--dur-*`, layout) and `@theme inline` (colour utilities). It also holds base type, the `.field` vignette + grain, and
   the global classes (`.hud`, `.btn*`, `.link`, `.tag`, `.label`, `.display`, `.page-title`, `.prose`, `.glitch`,
   `.flicker`, `.reveal`, `.marquee`…).
 - Change a colour, radius or duration in `global.css` and nowhere else.
-- Theme: `data-theme` on `<html>`. `localStorage.theme` is `light` or `dark`; absent means dark. `src/scripts/theme.js`
-  sets it before paint, along with `html.js`.
+- `src/scripts/theme.js` sets `html.js` before paint and drops the old `localStorage.theme`.
 - Martian Mono width: use `font-stretch`, not `font-variation-settings`. Geist Pixel uses the square `ELSH` instance.
 
 ## Motion, 3D, easter eggs
@@ -120,9 +119,14 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
   - Warp on the planet core.
   - Launch on the pad left of the telemetry panel.
   - ⌘K "Open terminal" is the accessible path; Ctrl+` (Ctrl+~) toggles it too. See DESIGN.md §10.
-- Window events: `signal:warp`, `signal:pulse` `{x, y}`, `signal:hole` `{x, y, r, held}` | null, `terminal:open`,
-  `open-palette`.
-- Storage: `theme`, `eggs`, `tele-scale` (localStorage), `booted` (sessionStorage).
+- `src/scripts/bigbang.ts` (lazy) + `ThemeToggle.astro`: LGT warns and counts down 3 → 0, then about 11s: copies of
+  the page (the DOM is untouched) fall into a point, one bright flash cools through blackbody colours, the dust
+  ignites (`signal:dawn` to field.ts) and the copies condense, then swap back to the originals. Esc skips; reduced
+  motion gets a toast. The maths is in `src/scripts/fall.ts` (`node --experimental-strip-types src/scripts/fall.check.ts`).
+  DESIGN.md §4.
+- Window events: `signal:warp`, `signal:pulse` `{x, y}`, `signal:hole` `{x, y, r, held}` | null, `signal:dawn` `{ms}`,
+  `terminal:open`, `open-palette`.
+- Storage: `eggs`, `tele-scale` (localStorage), `booted` (sessionStorage).
 
 ## Layout of src
 
@@ -132,7 +136,7 @@ content/      blog/*.mdx, projects/*.md
 layouts/      BaseLayout (head, chrome, scripts, sky, field), WritingLayout (index/tag/series), ArticleLayout
 lib/          posts.ts (published posts, reading time, related, series, dates), person.ts
 pages/        index, work, about, 404, writing/…, og/[...slug].png.ts, rss.xml.ts, robots.txt.ts, llms.txt.ts
-scripts/      theme.js (inline, no flash), fx.ts, field.ts (dust + lens), eggs.ts, reveal.ts
+scripts/      theme.js (inline: html.js), fx.ts, field.ts (dust + lens), eggs.ts, reveal.ts, bigbang.ts + fall.ts (the big bang)
 styles/       global.css
 ```
 
@@ -141,7 +145,9 @@ styles/       global.css
 - Tokens only: no ad-hoc colours, radii, durations or fonts in components. Exceptions:
   - Canvas, WebGL and OG code can't read CSS, so they keep hex fallbacks.
   - The egg marker is the one circle.
+  - The big bang's blackbody colours, white singularity and circular inflation front (bigbang.ts) are physics, not theme.
 - Every internal link ends with `/`. Astro 7's compiler is strict: close every tag.
 - Every animation needs a `prefers-reduced-motion` path. Nothing may flash more than 3 times a second or over a large area.
+  The big bang's one flash is the only exception.
 - Idle means zero work: stop rAF loops when nothing moves. The three.js chunk (~244 KB gz) stays lazy.
-- Check changes at 1440 and 375 wide, in dark and light, with a clean console, before calling them done.
+- Check changes at 1440 and 375 wide with a clean console before calling them done.

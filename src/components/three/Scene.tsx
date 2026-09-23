@@ -7,8 +7,8 @@ import Planet from './Planet';
 
 /** Normalised (-1..1, y up) and CSS px (y down) pointer. Off-screen until a fine pointer moves. */
 export type Pointer = { x: number; y: number; px: number; py: number };
-/** Theme colours as sRGB 0..1, read from the CSS tokens on <html>. */
-export type Palette = { ink: THREE.Vector3; hot: THREE.Vector3; cold: THREE.Vector3; bg: THREE.Vector3; dark: boolean };
+/** Colours as sRGB 0..1, read once from the CSS tokens on <html> (one theme: there is no light mode in space). */
+export type Palette = { ink: THREE.Vector3; hot: THREE.Vector3; cold: THREE.Vector3; bg: THREE.Vector3 };
 /**
  * The home page's black hole, shared by BlackHole (writes where it is and how hard it pulls) and Planet (tears
  * the planet apart, reports what it swallows and where the planet is drawn). Client CSS px, y down.
@@ -31,10 +31,7 @@ export type Tide = {
 };
 
 // Used only when a token is missing; values from DESIGN.md §2.
-const FALLBACK = {
-  dark: { ink: '#ebe9e4', hot: '#ff5f1f', cold: '#38e1f0' },
-  light: { ink: '#111214', hot: '#b33504', cold: '#006d7d' },
-};
+const FALLBACK = { ink: '#ebe9e4', hot: '#ff5f1f', cold: '#38e1f0' };
 
 let ctx: CanvasRenderingContext2D | null = null;
 /** Any CSS colour syntax (hex, rgb, oklch, color-mix...) -> sRGB, by painting one pixel. */
@@ -52,27 +49,19 @@ function rgb(value: string, fallback: string, out: THREE.Vector3) {
 function readPalette(p: Palette) {
   const css = getComputedStyle(document.documentElement);
   const get = (name: string) => css.getPropertyValue(name).trim();
-  const bg = rgb(get('--bg'), '#0a0b0d', p.bg);
-  p.dark = 0.2126 * bg.x + 0.7152 * bg.y + 0.0722 * bg.z < 0.5;
-  const f = FALLBACK[p.dark ? 'dark' : 'light'];
-  rgb(get('--text'), f.ink, p.ink);
-  rgb(get('--accent'), f.hot, p.hot);
-  rgb(get('--signal'), f.cold, p.cold);
+  rgb(get('--bg'), '#0a0b0d', p.bg);
+  rgb(get('--text'), FALLBACK.ink, p.ink);
+  rgb(get('--accent'), FALLBACK.hot, p.hot);
+  rgb(get('--signal'), FALLBACK.cold, p.cold);
   return p;
 }
 
-/** Theme is not a prop (persisted island): re-read the tokens whenever <html> changes theme. */
+/** Theme is not a prop (persisted island); the tokens never change, so they are read once. */
 function usePalette(): RefObject<Palette> {
   const [palette] = useState(() =>
-    readPalette({ ink: new THREE.Vector3(), hot: new THREE.Vector3(), cold: new THREE.Vector3(), bg: new THREE.Vector3(), dark: true }),
+    readPalette({ ink: new THREE.Vector3(), hot: new THREE.Vector3(), cold: new THREE.Vector3(), bg: new THREE.Vector3() }),
   );
-  const ref = useRef(palette);
-  useEffect(() => {
-    const mo = new MutationObserver(() => readPalette(palette));
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => mo.disconnect();
-  }, [palette]);
-  return ref;
+  return useRef(palette);
 }
 
 /** Fine pointers only. Read from useFrame, never re-renders. */

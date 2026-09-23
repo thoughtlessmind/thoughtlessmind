@@ -26,13 +26,9 @@ interface Props {
   projects: Link[];
 }
 
-/** Same contract as the header toggle: data-theme on <html> plus localStorage.theme. */
-function toggleTheme() {
-  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-  document.documentElement.dataset.theme = next;
-  try {
-    localStorage.theme = next;
-  } catch {}
+/** There is no light mode in space: the header toggle warns, counts down and runs the big bang. */
+function lightTheme() {
+  document.querySelector<HTMLElement>('[data-theme-toggle]')?.click();
 }
 
 const has = (q: string, s: string) => s.toLowerCase().includes(q.toLowerCase());
@@ -202,7 +198,7 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
         label: 'Open terminal',
         run: () => requestAnimationFrame(() => dispatchEvent(new CustomEvent('terminal:open'))),
       },
-      { id: 'theme', label: 'Switch light / dark theme', run: toggleTheme },
+      { id: 'theme', label: 'Light theme', run: lightTheme },
       { id: 'rss', label: 'Open RSS', href: '/rss.xml' },
     ];
     const groups: Group[] = [

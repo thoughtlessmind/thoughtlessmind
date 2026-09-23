@@ -185,10 +185,10 @@ export default function BlackHole({ tide, palette }: Props) {
       uGulp: { value: 0 },
       uInk: { value: pal.ink.clone() },
       uHot: { value: pal.hot.clone() },
-      uShadow: { value: (pal.dark ? pal.bg : pal.ink).clone() },
+      uShadow: { value: pal.bg.clone() },
     });
     return { geometry, mat, bend: createBend() };
-    // Initial palette only; theme changes are lerped in useFrame.
+    // The palette is read once: one theme.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const st = useMemo(makeState, []);
@@ -301,7 +301,6 @@ export default function BlackHole({ tide, palette }: Props) {
     const T = tide.current;
     const s = st;
     const u = scene.mat.uniforms;
-    const pal = palette.current;
     T.on = measure(s);
     if (!T.on) {
       T.pull = 0;
@@ -402,7 +401,6 @@ export default function BlackHole({ tide, palette }: Props) {
 
     const { width: w, height: hh } = state.size;
     const dpr = state.viewport.dpr;
-    const kc = 1 - Math.exp(-dt / 0.08);
     u.uSink.value.set(x, hh - y, R);
     u.uRes.value.set(w, hh);
     u.uDpr.value = dpr;
@@ -410,9 +408,6 @@ export default function BlackHole({ tide, palette }: Props) {
     u.uTime.value = t;
     u.uFeed.value = Math.max(T.fed, s.held ? 0.25 : 0);
     u.uGulp.value = gulp;
-    (u.uInk.value as THREE.Vector3).lerp(pal.ink, kc);
-    (u.uHot.value as THREE.Vector3).lerp(pal.hot, kc);
-    (u.uShadow.value as THREE.Vector3).lerp(pal.dark ? pal.bg : pal.ink, kc);
   });
 
   return <mesh geometry={scene.geometry} material={scene.mat} frustumCulled={false} renderOrder={2} />;
