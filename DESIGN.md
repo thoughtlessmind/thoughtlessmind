@@ -152,7 +152,8 @@ not in a prerendering tab. Turning reduced motion on mid-session drops the scene
 Scene:
 - A **ringed planet made of points**: 5,000 points on a Fibonacci sphere (gas-giant bands that wobble with longitude) +
   3,000 points in a ring (radius 1.5–2.4 with a Cassini gap at 2.06–2.14, seen ~20° from above and rolled to rise left).
-  Plus 900 background stars. Two draw calls (stars, planet), custom `ShaderMaterial`, no drei, no postprocessing package.
+  Plus 900 background stars. Two draw calls (stars, planet; a third for the black hole on home), custom `ShaderMaterial`,
+  no drei, no postprocessing package.
 - Look: points are small squares snapped to a 2–3 device-px grid (pixel feel), brightness quantised into 4 levels with an
   ordered **Bayer 4×4 dither**. Lit from upper-left: lit side in `--text` colour, terminator and lit limb in launch orange,
   a thin cyan fringe on the dark limb, the planet's shadow across the ring with an orange penumbra. **Scanline**: the
@@ -175,6 +176,34 @@ Scene:
   from the tokens and ease over ~250ms on a theme change.
 - Cost: capped at ~30fps via `invalidate()` (`frameloop="demand"`), `dpr` 1–1.5 (dropped to 1 for good after sustained slow
   frames), paused when the tab is hidden.
+- **Black hole** (home page, `three/BlackHole.tsx` + the tide sim in `Planet.tsx` + `three/bend.ts`): a small hole,
+  horizon 0.15 planet units, drawn as one quad shaded per point cell like the planet: a shadow (`--bg` on dark, ink on
+  light), a thin photon ring, and a disk seen ~17° from above, turning clockwise, brighter on its approaching (right)
+  side, orange toward its inner edge, whose near half crosses the shadow and whose far half is lensed into an arc
+  over it. Its hit area is Hero's `[data-black-hole]`, a `role="slider"` (value = pull; arrows move it 24px nearer or
+  further along the line to the planet, Home rests it, End brings it closest), hidden until the scene binds it.
+  - **Moves**: anywhere in `<main>` (it scrolls with the page), with any pointer, never onto the planet: wherever the
+    planet is drawn, its centre keeps 3.2 horizon radii + 6px off the planet's outline (disc or rolled ring ellipse,
+    whichever reaches further). It is heavy: a drag pulls it on a damped spring (9 rad/s, ζ 0.8) and, let go, it
+    glides to a stop; its mass grows to 4× as it eats the planet, which slows both. It rests lower left of the planet,
+    just out of reach.
+  - **Pull**: full at that closest point, fading to none 9 horizon radii further out. While it pulls: a glitch burst
+    as the pull takes hold, the ring loosens, the planet stretches toward the hole, and points tear off, outer ring
+    first, then the inner rings, then the sphere, near side first (about 20s for the whole planet at full pull, ≤ 500
+    points/s). Once the near side of the sphere is gone its far side and the ring behind it show through.
+  - **Gulps**: torn points drift off, then plunge at near free-fall speed, flattening into the disk plane with a last
+    clockwise curl; nothing settles into orbit. At 1.3 horizon radii they stop and hang, dimming and reddening (as a
+    distant observer sees infalling matter), until the hole gulps: every 0.45s, or at once when 30 are waiting, all of
+    them go, the horizon swells (up to +22%) and the photon ring and disk flare. The hole grows with what it has eaten
+    (up to +35%). Out of reach, the planet re-forms in reverse (sphere first), each point flickering on (the
+    `.flicker` steps), in ~4s. Leaving the page resets it.
+  - **Lensing**: stars bend around it (point lens) and never show through the shadow; the dust too (field.ts, a second
+    lens: Einstein radius 2.2 and reach 10 horizon radii; it stands in for the pointer's lens while dragged). Text
+    blocks it passes over (`bend.ts`: up to 4, found with `elementsFromPoint`) get an SVG filter: inside 9 horizon
+    radii they are displaced like a point lens with a little frame-dragging swirl, a clear core of ~2.3 radii lets the
+    hole show through, and every 0.8–1.6s a 160ms burst splits the bent part orange/cyan, dims and jolts it (two
+    steps). The filters come off as it leaves. The DOM text is untouched.
+  - Every frame is rendered while it moves, points are in flight or it gulps; otherwise the 30fps cap holds.
 - Static fallback (no WebGL / reduced motion / weak device / chunk error): a CSS-only dithered disc (four lit steps +
   orange terminator) and tilted ring with its gap, drawn as a 3px dot grid in the top-right corner at 45% opacity over a
   sparse fixed star field (`three/sky.css`). No animation.
@@ -289,12 +318,14 @@ Global classes (defined only in `src/styles/global.css`):
 Data attributes: `data-scramble`, `data-scramble="hover"`, `data-glitch-burst`, `data-count-to` (+ `data-count-suffix`),
 `data-boot`, `data-clock`, `data-uptime-since`, `data-pointer-coords` (all fx.ts); `data-reveal-group` (reveal.ts);
 `data-egg`, `data-egg-hint` / `data-egg-hint-text` (the CURSOR row's arrow + target slot), `data-egg-mark` (the marker
-button), `data-tele` (eggs.ts); `data-tele-grip` (Hero's resize grip); `data-planet-anchor` (Planet.tsx, eggs.ts);
+button), `data-tele` (eggs.ts); `data-tele-grip` (Hero's resize grip); `data-planet-anchor` (Planet.tsx, BlackHole.tsx,
+eggs.ts); `data-black-hole` (the black hole's hit area, BlackHole.tsx);
 `data-theme-toggle`, `data-open-palette`. Page state: `html.js`, `html[data-theme]`, `html[data-scene="on"]`,
 `body[data-page="article"]`.
 
 Events on `window`: `terminal:open` (no detail), `signal:warp` (no detail), `signal:pulse` (`detail: {x, y}` in client px;
-the dust gets a shockwave, the planet glitches if hit), `open-palette` (no detail).
+the dust gets a shockwave, the planet glitches if hit), `signal:hole` (`detail: {x, y, r, held}` in client px whenever the
+black hole moves, `null` once it is gone; the dust lenses around it), `open-palette` (no detail).
 
 Storage: `localStorage.theme` (`light` | `dark`), `localStorage.tele-scale`, `localStorage.eggs` (found ids),
 `sessionStorage.booted`.

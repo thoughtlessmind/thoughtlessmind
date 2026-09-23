@@ -109,13 +109,19 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
   - It never loads on articles, weak devices, save-data or reduced motion; a CSS fallback shows instead (`three/sky.css`).
   - While running it sets `html[data-scene="on"]`.
   - It keeps WebGL for the planet only. The 2D dust measured < 1 ms/frame, so it stays 2D.
+- `components/three/BlackHole.tsx` + Hero's `[data-black-hole]`: a small, heavy, draggable black hole on the home page,
+  only while the scene runs. It goes anywhere in `<main>` but onto the planet; the closer, the harder it pulls.
+  - The pull tears the planet apart, outer ring first; torn points plunge, hang at the horizon and are gulped
+    (`Planet.tsx` "Tide"). Out of reach, the planet re-forms. It gets heavier as it eats.
+  - It lenses the stars, the dust (field.ts, via `signal:hole`) and nearby text (`three/bend.ts`, SVG filters).
 - `src/scripts/eggs.ts` + `Terminal.astro`: eggs are hidden at coordinates on the home hero and found with the telemetry
   `CURSOR` readout. Near an egg a direction arrow and its coordinates show; on it, a click marker appears.
   - Terminal at X 0772 · Y 0286.
   - Warp on the planet core.
   - Launch on the pad left of the telemetry panel.
   - ⌘K "Open terminal" is the accessible path. See DESIGN.md §10.
-- Window events: `signal:warp`, `signal:pulse` `{x, y}`, `terminal:open`, `open-palette`.
+- Window events: `signal:warp`, `signal:pulse` `{x, y}`, `signal:hole` `{x, y, r, held}` | null, `terminal:open`,
+  `open-palette`.
 - Storage: `theme`, `eggs`, `tele-scale` (localStorage), `booted` (sessionStorage).
 
 ## Layout of src

@@ -2,12 +2,33 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
+import BlackHole from './BlackHole';
 import Planet from './Planet';
 
 /** Normalised (-1..1, y up) and CSS px (y down) pointer. Off-screen until a fine pointer moves. */
 export type Pointer = { x: number; y: number; px: number; py: number };
 /** Theme colours as sRGB 0..1, read from the CSS tokens on <html>. */
-export type Palette = { ink: THREE.Vector3; hot: THREE.Vector3; cold: THREE.Vector3; dark: boolean };
+export type Palette = { ink: THREE.Vector3; hot: THREE.Vector3; cold: THREE.Vector3; bg: THREE.Vector3; dark: boolean };
+/**
+ * The home page's black hole, shared by BlackHole (writes where it is and how hard it pulls) and Planet (tears
+ * the planet apart, reports what it swallows and where the planet is drawn). Client CSS px, y down.
+ */
+export type Tide = {
+  on: boolean; // a hole is on this page
+  x: number;
+  y: number;
+  scale: number; // px per planet unit in the hero (the hole's size and gravity scale with it)
+  r: number; // horizon radius, px
+  pull: number; // 0..1
+  held: boolean; // being dragged
+  fed: number; // 0..1: the disk flares after a gulp; Planet bumps it, BlackHole decays it
+  eaten: number; // 0..1: share of the planet swallowed (the hole grows and gets heavier with it)
+  gulpAt: number; // clock s of the last gulp, -1 before any
+  gulpSize: number; // 0..1
+  px: number; // where the planet is drawn now: centre and px per planet unit (0 before its first frame)
+  py: number;
+  ps: number;
+};
 
 // Used only when a token is missing; values from DESIGN.md §2.
 const FALLBACK = {
@@ -31,7 +52,7 @@ function rgb(value: string, fallback: string, out: THREE.Vector3) {
 function readPalette(p: Palette) {
   const css = getComputedStyle(document.documentElement);
   const get = (name: string) => css.getPropertyValue(name).trim();
-  const bg = rgb(get('--bg'), '#0a0b0d', new THREE.Vector3());
+  const bg = rgb(get('--bg'), '#0a0b0d', p.bg);
   p.dark = 0.2126 * bg.x + 0.7152 * bg.y + 0.0722 * bg.z < 0.5;
   const f = FALLBACK[p.dark ? 'dark' : 'light'];
   rgb(get('--text'), f.ink, p.ink);
@@ -43,7 +64,7 @@ function readPalette(p: Palette) {
 /** Theme is not a prop (persisted island): re-read the tokens whenever <html> changes theme. */
 function usePalette(): RefObject<Palette> {
   const [palette] = useState(() =>
-    readPalette({ ink: new THREE.Vector3(), hot: new THREE.Vector3(), cold: new THREE.Vector3(), dark: true }),
+    readPalette({ ink: new THREE.Vector3(), hot: new THREE.Vector3(), cold: new THREE.Vector3(), bg: new THREE.Vector3(), dark: true }),
   );
   const ref = useRef(palette);
   useEffect(() => {
@@ -161,6 +182,22 @@ function Loop({ onReady }: { onReady: () => void }) {
 export default function Scene({ onReady }: { onReady: () => void }) {
   const palette = usePalette();
   const pointer = usePointer();
+  const tide = useRef<Tide>({
+    on: false,
+    x: 0,
+    y: 0,
+    scale: 1,
+    r: 0,
+    pull: 0,
+    held: false,
+    fed: 0,
+    eaten: 0,
+    gulpAt: -1,
+    gulpSize: 0,
+    px: 0,
+    py: 0,
+    ps: 0,
+  });
 
   return (
     <Canvas
@@ -172,7 +209,8 @@ export default function Scene({ onReady }: { onReady: () => void }) {
       onCreated={({ gl }) => gl.domElement.setAttribute('aria-hidden', 'true')}
     >
       <Loop onReady={onReady} />
-      <Planet pointer={pointer} palette={palette} />
+      <BlackHole tide={tide} palette={palette} />
+      <Planet pointer={pointer} palette={palette} tide={tide} />
     </Canvas>
   );
 }

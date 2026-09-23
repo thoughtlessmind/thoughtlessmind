@@ -10,6 +10,10 @@
 // pile into a faint, slightly warm Einstein ring, joined by dust the lens magnifies into view. The field is
 // a pure function of the lens position and strength (no trail); rAF runs only until the ease converges. A
 // window `signal:pulse` ({x, y}, client px) sends a shockwave that shoves dots outward as it passes.
+//
+// The home page's black hole (three/BlackHole.tsx) is a second lens, with any pointer: `signal:hole` ({x, y, r},
+// client px and its horizon radius, or null once it is gone) is sent whenever it moves. Its Einstein radius and
+// reach scale with it; while it is dragged ({held: true}) it stands in for the pointer's lens.
 // Everywhere else the field is drawn once (and on resize or theme change) and never animates. No
 // allocation per frame.
 
@@ -32,6 +36,8 @@ const WAVE_MS = 800;
 const WAVE_AMP = 12; // px peak shove
 const WAVE_LEAD = 28; // px rising front (keeps dots from overtaking each other: AMP * 1.54 / LEAD < 1)
 const WAVE_TAIL = 96; // px settling tail behind the front
+const HOLE_E = 2.2; // the hole's Einstein radius, horizon radii
+const HOLE_REACH = 10; // and its lens radius
 
 const R2 = RADIUS * RADIUS;
 const E4 = 4 * EINSTEIN * EINSTEIN;
@@ -96,6 +102,13 @@ let ty = 0;
 let s = 0; // lens strength, eased toward target
 let target = 0;
 const waves = Array.from({ length: 3 }, () => ({ x: 0, y: 0, t0: 0, r: 0, a: 0, live: false }));
+let hx = 0; // the black hole: centre, horizon radius, strength eased toward hTarget
+let hy = 0;
+let hr = 0;
+let hs = 0;
+let hTarget = 0;
+let ox = 0; // push from the last lens() call
+let oy = 0;
 let raf = 0;
 let last = 0;
 
@@ -163,31 +176,46 @@ function resize() {
   draw();
 }
 
+/** Push (into ox, oy) of the dot at (x0, y0) by a lens at (cx, cy); returns its ring glow, 0..k. */
+function lens(x0: number, y0: number, cx: number, cy: number, k: number, r2: number, e4: number, e: number) {
+  ox = oy = 0;
+  const dx = x0 - cx;
+  const dy = y0 - cy;
+  const d2 = dx * dx + dy * dy;
+  if (d2 >= r2 || d2 === 0) return 0;
+  const d = Math.sqrt(d2);
+  const u = 1 - d2 / r2;
+  const push = k * u * u * (Math.sqrt(d2 + e4) - d) * 0.5;
+  ox = (dx / d) * push;
+  oy = (dy / d) * push;
+  const q = Math.max(0, (d + push - k * e) / RING);
+  return q < 1 ? k * (1 - q) : 0;
+}
+
 function draw() {
   if (!canvas || !ctx) return;
-  const lens = s > 0.001;
+  const pointer = s > 0.001;
+  const hole = hs > 0.001 && hr > 0;
+  const hR = hr * HOLE_REACH;
+  const hE = hr * HOLE_E;
   const wave = waves[0].live || waves[1].live || waves[2].live;
   let m = 0;
   for (let i = 0; i < n; i++) {
-    if (level[i] === DUST && !lens && !wave) continue;
+    if (level[i] === DUST && !pointer && !hole && !wave) continue;
     const x0 = restX[i];
     const y0 = restY[i];
     let x = x0;
     let y = y0;
     let g = 0;
-    if (lens) {
-      const dx = x0 - lx;
-      const dy = y0 - ly;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < R2 && d2 > 0) {
-        const d = Math.sqrt(d2);
-        const u = 1 - d2 / R2;
-        const push = s * u * u * (Math.sqrt(d2 + E4) - d) * 0.5;
-        x += (dx / d) * push;
-        y += (dy / d) * push;
-        const q = Math.max(0, (d + push - s * EINSTEIN) / RING);
-        if (q < 1) g = s * (1 - q);
-      }
+    if (pointer) {
+      g = lens(x0, y0, lx, ly, s, R2, E4, EINSTEIN);
+      x += ox;
+      y += oy;
+    }
+    if (hole) {
+      g = Math.max(g, lens(x0, y0, hx, hy, hs, hR * hR, 4 * hE * hE, hE));
+      x += ox;
+      y += oy;
     }
     if (wave) {
       for (let j = 0; j < waves.length; j++) {
@@ -245,6 +273,9 @@ function frame(now: number) {
   } else busy = true;
   if (Math.abs(target - s) < 0.004) s = target;
   else busy = true;
+  hs += (hTarget - hs) * (1 - Math.exp(-dt / FADE));
+  if (Math.abs(hTarget - hs) < 0.004) hs = hTarget;
+  else busy = true;
   for (let j = 0; j < waves.length; j++) {
     const p = waves[j];
     if (!p.live) continue;
@@ -263,7 +294,7 @@ function frame(now: number) {
 }
 
 function wake() {
-  if (live && !raf && !document.hidden) raf = requestAnimationFrame(frame);
+  if ((live || hTarget || hs) && !raf && !document.hidden) raf = requestAnimationFrame(frame);
 }
 
 function sync() {
@@ -275,6 +306,7 @@ function sync() {
     resize();
   }
   const on = !!ctx && fine.matches && !calm.matches && document.body.dataset.page !== 'article';
+  if (calm.matches) hs = hTarget = 0;
   if (on === live) return;
   live = on;
   if (on) return;
@@ -311,6 +343,19 @@ window.addEventListener('signal:pulse', (e) => {
   if (!live || !d || !Number.isFinite(d.x) || !Number.isFinite(d.y)) return;
   const p = waves.find((w) => !w.live) ?? waves.reduce((a, b) => (a.t0 < b.t0 ? a : b));
   Object.assign(p, { x: d.x, y: d.y, t0: performance.now(), r: 0, a: 1, live: true });
+  wake();
+});
+window.addEventListener('signal:hole', (e) => {
+  const d = (e as CustomEvent<{ x: number; y: number; r: number; held?: boolean } | null>).detail;
+  if (!d || !ctx || calm.matches) {
+    hTarget = 0;
+  } else {
+    hx = d.x;
+    hy = d.y;
+    hr = d.r;
+    hTarget = 1;
+    if (d.held) target = 0; // the pointer is on the hole: one lens, not two
+  }
   wake();
 });
 window.addEventListener('resize', resize);
