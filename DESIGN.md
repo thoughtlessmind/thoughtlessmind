@@ -164,7 +164,7 @@ Scene:
   copy and a cyan copy (the planet is instanced 3× only then). Points within ~110px of the pointer brighten slightly (a
   "scanner" hover).
 - Layout: the planet is drawn over the home hero's `[data-planet-anchor]` (≥ 900px: right column, up to 540px square; below:
-  its own band above the copy). As the hero scrolls away it shrinks into the top-right corner slot (15% of the width,
+  its own band under the CTAs). As the hero scrolls away it shrinks into the top-right corner slot (15% of the width,
   130–230px, under the header) and fades from full (0.55 < 768px) to 0.08; it renders at scroll rate while it moves. On other
   non-article pages it sits in that corner at 0.12 (thousands of points stack into few pixels under additive blending). On
   articles the sky fades out and the loop parks after 1.5s.
@@ -239,8 +239,8 @@ socials as `GH  IN  X  SO  DEV  RSS` mono links (cyan underline on hover). Right
    ±5%, Home / End, Enter or double-click resets), range 0.85×–1.8×, clamped so it stays 56px clear of the copy column and
    never rises above the hero. The scale is kept in `localStorage.tele-scale` and applied before paint by an inline script.
    It grows up-left inside a fixed slot so the hero never reflows.
-   Mobile (< 900px): one column: the planet gets its own band (`min(62vw, 15rem)`) above the copy so no text sits on the
-   points, then the copy, then the compact panel. < 600px the boot log is hidden so the name stays above the fold.
+   Mobile (< 900px): one column: the copy, then the planet in its own band (`min(62vw, 15rem)`; the black hole rests in the room below it) so no
+   text sits on the points, then the compact panel. < 600px the boot log is hidden so the name stays above the fold.
 2. Marquee tape (`--bg-elevated`, hairlines above and below): TYPESCRIPT ▲ REACT ▲ CSS ▲ ASTRO ▲ WEBGL ▲ PERFORMANCE ▲ ACCESSIBILITY ▲ CHROME EXTENSIONS ▲ DESIGN SYSTEMS ▲ NODE.
 3. `// 01 SHIPPED` "Selected work" (`ALL WORK →`): this site as the case study (`M-00` HUD panel: facts list + build
    pipeline readout + source link), then featured projects as module cards in a 2-column grid (≥ 720px): `M-01` index +

@@ -125,16 +125,18 @@ const boot = [
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'planet' 'copy' 'telemetry';
+    grid-template-areas: 'copy' 'planet' 'telemetry';
     gap: 2.5rem;
     padding-block: 2.5rem 3.5rem;
   }
 
-  /* Mobile: its own band above the copy, so no text sits on the points. Empty on purpose; the canvas behind the page draws here. */
+  /* Mobile: its own band under the CTAs, so no text sits on the points. Empty on purpose; the canvas behind the page
+     draws here. The planet fills only the middle of the band, so it tucks into the gap above; the room below is where
+     the black hole rests (lower left of the planet), clear of the telemetry panel. */
   .hero__planet {
     grid-area: planet;
     height: min(62vw, 15rem);
-    margin-bottom: -1rem;
+    margin-block: -1rem 0.5rem;
     pointer-events: none;
   }
 
@@ -444,7 +446,7 @@ const boot = [
       width: var(--planet);
       height: auto;
       aspect-ratio: 1;
-      margin-bottom: 0;
+      margin-block: 0;
     }
     /* The slot holds the compact size (1em = --text-label): width + (rows x 2em + row borders) + padding + border. */
     .hero__tele {
