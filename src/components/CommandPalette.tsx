@@ -87,6 +87,7 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const close = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLDivElement>(null);
+  const pressed = useRef(0); // time of the last mousedown in the palette (a click's blur lands in the same task)
 
   const show = useCallback(() => {
     const active = document.activeElement;
@@ -101,6 +102,13 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
     setOpen(false);
     (opener.current as HTMLElement | null)?.focus?.();
   }, []);
+  // First Esc clears the query, the next one closes.
+  const escape = () => {
+    if (q) {
+      setQ('');
+      input.current?.focus();
+    } else hide();
+  };
 
   useEffect(() => {
     if (dead.current) return;
@@ -109,6 +117,9 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
         e.preventDefault();
         if (open) hide();
         else show();
+      } else if (e.key === 'Escape' && open) {
+        e.preventDefault(); // window-level, so it works wherever focus is
+        escape();
       }
     };
     const onOpen = () => show();
@@ -121,7 +132,7 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
       window.removeEventListener('open-palette', onOpen);
       document.removeEventListener('astro:before-swap', onSwap);
     };
-  }, [open, show, hide]);
+  }, [open, q, show, hide]);
 
   // Scroll lock + focus while open.
   useEffect(() => {
@@ -184,7 +195,7 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
           }));
     const actions: Item[] = [
       { id: 'copy', label: copied ? 'Copied' : 'Copy current link', run: copyLink, keep: true },
-      // The one keyboard path to the terminal (otherwise a hidden coordinate egg). Ask for it after the palette
+      // A path to the terminal besides Ctrl+` and the hidden coordinate egg. Ask for it after the palette
       // has closed and handed focus back, so the terminal returns focus to the palette's opener.
       {
         id: 'terminal',
@@ -231,8 +242,7 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     const n = flat.length;
-    if (e.key === 'Escape') hide();
-    else if (e.key === 'ArrowDown') setSel(n ? (cur + 1) % n : 0);
+    if (e.key === 'ArrowDown') setSel(n ? (cur + 1) % n : 0);
     else if (e.key === 'ArrowUp') setSel(n ? (cur - 1 + n) % n : 0);
     else if (e.key === 'Home') setSel(0);
     else if (e.key === 'End') setSel(Math.max(0, n - 1));
@@ -252,7 +262,12 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
 
   if (!open) return null;
   return (
-    <div className="palette-overlay" onMouseDown={(e) => e.target === e.currentTarget && hide()}>
+    <div
+      className="palette-overlay"
+      onMouseDown={(e) => {
+        pressed.current = Date.now();
+        if (e.target === e.currentTarget) hide();
+      }}>
       <div className="palette hud" role="dialog" aria-modal="true" aria-label="Search" onKeyDown={onKeyDown}>
         <div className="palette__field">
           <span className="palette__prompt" aria-hidden="true">tm:~$</span>
@@ -264,6 +279,12 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            onBlur={(e) => {
+              // Vimium-style extensions swallow Esc in a text field and only blur it. Focus dropping to nowhere
+              // (not a click in the palette, not another window) is that Esc.
+              if (e.relatedTarget || Date.now() - pressed.current < 100) return;
+              setTimeout(() => input.current && document.hasFocus() && document.activeElement === document.body && escape());
+            }}
             placeholder="search writing, pages, actions"
             autoComplete="off"
             spellCheck={false}

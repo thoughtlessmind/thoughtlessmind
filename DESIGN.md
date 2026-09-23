@@ -1,13 +1,13 @@
 # thoughtlessmind.dev — design v3 "SIGNAL"
 
-The site is a live signal console run by one frontend engineer. Dark by default, phosphor-on-black, hard edges,
+The site is a live signal console run by one web engineer. Dark by default, phosphor-on-black, hard edges,
 pixel display type, telemetry readouts, and digital motion that flickers, decodes and glitches, but only in short,
 deliberate bursts. It should feel like a well-built instrument, not a hacker-movie cliché: no green-on-black Matrix
 rain, no neon purple synthwave, no fake "hacking" text. Every readout shows a real fact about Rajiv.
 
 Why it fits him: he builds developer-grade tools (a no-JS tooltip library, a Chrome extension that outlines every
 element on a page, a playlist timer), he's a CSS and React person who reads about rockets and orbital mechanics.
-So the metaphor is **mission control for a frontend engineer**: telemetry, launch orange, a ringed planet made of
+So the metaphor is **mission control for a web engineer**: telemetry, launch orange, a ringed planet made of
 points, a field of dust that bends around the cursor like a gravitational lens, and a set of easter eggs for people who poke at things
 (a real terminal, a rocket launch, a warp drive).
 
@@ -152,7 +152,7 @@ not in a prerendering tab. Turning reduced motion on mid-session drops the scene
 Scene:
 - A **ringed planet made of points**: 5,000 points on a Fibonacci sphere (gas-giant bands that wobble with longitude) +
   3,000 points in a ring (radius 1.5–2.4 with a Cassini gap at 2.06–2.14, seen ~20° from above and rolled to rise left).
-  Plus 900 background stars. Two draw calls (stars, planet; a third for the black hole on home), custom `ShaderMaterial`,
+  Plus 900 background stars (slow drift, no pointer parallax: only the dust answers the cursor). Two draw calls (stars, planet; a third for the black hole on home), custom `ShaderMaterial`,
   no drei, no postprocessing package.
 - Look: points are small squares snapped to a 2–3 device-px grid (pixel feel), brightness quantised into 4 levels with an
   ordered **Bayer 4×4 dither**. Lit from upper-left: lit side in `--text` colour, terminator and lit limb in launch orange,
@@ -229,11 +229,10 @@ socials as `GH  IN  X  SO  DEV  RSS` mono links (cyan underline on hover). Right
    header − 24rem))` on the right with the telemetry panel under it). Boot log (4 muted lines: `> init signal.v3 ........ ok`,
    `> mount /work /writing /about .. ok`, `> locate operator ....... 28.61N 77.21E`, `> status .................. shipping`),
    status label `● ONLINE — SYS://THOUGHTLESSMIND`, `<h1>` "Rajiv Kumar" in Geist Pixel display (two lines, `.flicker`,
-   `.glitch` + `data-glitch-burst`), a role line `frontend engineer` (Martian Mono, h3 size, decodes in view) + caret, lead
-   paragraph (Geist): "I build interfaces that load fast and read clearly. Seven years of React and TypeScript, currently
-   shipping at swipejobs." CTAs: primary `[ VIEW WORK ]` (→ `#work`), ghost `> ping me` (mailto). Telemetry panel
+   `.glitch` + `data-glitch-burst`), a role line `web engineer` (Martian Mono, h3 size, decodes in view) + caret, lead
+   paragraph (Geist): "I build interfaces that load fast and read clearly. Seven years of React and TypeScript." CTAs: primary `[ VIEW WORK ]` (→ `#work`), ghost `> ping me` (mailto). Telemetry panel
    (`.hud.hud--solid`) with rows: `LOC 28.6139° N, 77.2090° E` · `LOCAL <clock> IST` · `UPTIME <since 2019-03>` ·
-   `STACK TS / REACT / ASTRO / R3F` · `STATUS SHIPPING @ SWIPEJOBS` · `CURSOR <pointer coords>` (+ the egg hint, §10; the
+   `STACK TS / REACT / ASTRO / R3F` · `CURSOR <pointer coords>` (+ the egg hint, §10; the
    CURSOR row is hidden on coarse pointers). One line per cell, ellipsised, so nothing reflows.
    The panel is secondary: compact by default (11px, every size in em off `--tele-scale`, 32em wide) and user-resizable at
    ≥ 900px with a fine pointer. Its free top-left corner bracket is a grip (`role="slider"`, drag up-left to grow, arrow keys
@@ -286,7 +285,9 @@ that the home telemetry knows where the signals are.
 **⌘K palette** (⌘K / Ctrl+K or the header button): a `.hud` terminal prompt: `tm:~$` prefix, mono input ("search writing,
 pages, actions"), grouped results (Pages · Writing via Pagefind, falling back to title filtering · Projects · Actions: copy
 link, open terminal, switch theme, RSS) with an orange selection bar (inset 2px accent on `--accent-soft`),
-`↑ ↓ navigate  ↵ open  esc close` hints.
+`↑ ↓ navigate  ↵ open  esc close` hints. Esc works wherever focus is in it: the first clears a non-empty query, the
+next (or the first, on an empty one) closes. Vimium-style extensions eat Esc in a text field and only blur it, so the
+input dropping focus to nowhere (not a click, not another window) counts as an Esc; the terminal does the same.
 
 **OG images** (`/og/<slug>.png`, `/og/default.png`; 1200×630, CanvasKit at build): `--bg` ground with a faint 48px grid,
 orange 8px left bar, title in Geist Mono bold (64px, 54px when long), muted description, a hairline footer with
@@ -337,7 +338,7 @@ The ⌘K palette's styles live in `src/components/palette.css`; the sky containe
 
 ## 10. Easter eggs
 
-For people who poke at things. No keyboard triggers: the eggs are hidden at coordinates on the home hero, found with the
+For people who poke at things. No keyboard triggers (the terminal's Ctrl+` is a shortcut, not a find): the eggs are hidden at coordinates on the home hero, found with the
 `CURSOR` readout in the telemetry panel (fine pointers only).
 
 How a coordinate egg is found: within 200px of an active egg point the `CURSOR` row appends, on the same line, a muted
@@ -353,7 +354,7 @@ All facts are real, all motion has a reduced-motion path, and found eggs are kep
 
 | Egg | Trigger | What happens |
 |---|---|---|
-| **Terminal** | Coordinate egg at client **X 0772 · Y 0286** (his longitude/latitude ×10), or the ⌘K "Open terminal" action (the accessible path) | A Quake-style console that drops from under the header (`src/components/Terminal.astro`: a native modal `<dialog>` in a `.hud`, persisted across navigations so `cd` keeps the scrollback). `rajiv@thoughtlessmind:~$` prompt with the cwd in cyan, output lines type in, history (↑↓), Tab completion (commands and arguments), Ctrl+L clears, Esc or a click outside closes, ⌘K hands over to the palette. Commands: help, whoami, ls, cat (about.txt, projects.txt, socials.txt, stack.txt), cd (work · writing · about · ~), open (github · linkedin · x · so · devto · rss), neofetch, uptime, date, ping (three real timed fetches of `/robots.txt`), theme [dark\|light], hire [--send] (alias contact), launch, warp, sudo, rm, echo, history, eggs, clear, exit. |
+| **Terminal** | Coordinate egg at client **X 0772 · Y 0286** (his longitude/latitude ×10), the ⌘K "Open terminal" action (the accessible path), or Ctrl+` (Ctrl+~, same key on macOS and Windows; toggles) | A console centred over the page on the palette's blurred veil, `--container-wide` at most (`src/components/Terminal.astro`: a native modal `<dialog>` in a `.hud`, persisted across navigations so `cd` keeps the scrollback). `rajiv@thoughtlessmind:~$` prompt with the cwd in cyan, output lines type in, history (↑↓), Tab completion (commands and arguments), Ctrl+L clears, Esc or a click outside closes, ⌘K hands over to the palette. Commands: help, whoami, ls, cat (about.txt, projects.txt, socials.txt, stack.txt), cd (work · writing · about · ~), open (github · linkedin · x · so · devto · rss), neofetch, uptime, date, ping (three real timed fetches of `/robots.txt`), theme [dark\|light], hire [--send] (alias contact), launch, warp, sudo, rm, echo, history, eggs, clear, exit. |
 | **Warp** | Coordinate egg at the live centre of `[data-planet-anchor]` (only when `html[data-scene="on"]`), or `warp` in the terminal | Dispatches `signal:warp`; otherwise (or under reduced motion) "Warp drive offline on this page". |
 | **Launch** | Coordinate egg at the "launch pad", 32px left of the telemetry panel and 16px above its bottom edge (level with the CURSOR row, in the gap Hero keeps clear), or `launch` in the terminal | HUD toast countdown `T-3 · T-2 · T-1 · LIFTOFF` (700ms steps), then a pixel rocket (6px pixels, two-frame flame) rises from the bottom of the viewport under the pad and out the top in 1.6s with a stepped-fade exhaust trail, drawn in a manual popover canvas so it flies over an open terminal; `signal:pulse` fires at its launch point (the dust gets a shockwave). Reduced motion: the toast only. |
 | **Console** | Opening DevTools (production, or `?console`) | A styled pixel `RK` greeting with the email, a hint, and a `hi()` function (calling it finds the egg). |

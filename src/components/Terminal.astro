@@ -1,7 +1,8 @@
 ---
 /**
- * The main easter egg: a Quake-style console that drops from under the header. Opened by the window event
- * `terminal:open`, sent by a hidden coordinate in the home hero (eggs.ts) and the ⌘K "Open terminal" action.
+ * The main easter egg: a console that opens as a centred modal over a blurred page. Opened by the window event
+ * `terminal:open`, sent by a hidden coordinate in the home hero (eggs.ts) and the ⌘K "Open terminal" action,
+ * and toggled by Ctrl+` (Ctrl+~; the same physical key on macOS and Windows).
  * A native modal <dialog> (focus, Esc, inert page); it persists across ClientRouter navigations so `cd` keeps
  * the scrollback.
  * Also holds the live region for egg toasts (src/scripts/eggs.ts).
@@ -21,7 +22,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
 const files = {
   'about.txt': [
     SITE.name,
-    `${SITE.role} at ${SITE.company}, ${SITE.location}.`,
+    `${SITE.role}, ${SITE.location}.`,
     `Building for the web since ${SITE.since}, mostly React and TypeScript in production:`,
     'design systems, dashboards and the plumbing that keeps them fast.',
     'Off duty: rockets, physics and whatever sport is on.',
@@ -51,53 +52,53 @@ const files = {
 ---
 
 <dialog class="term-dialog" aria-label="Terminal" aria-modal="true" data-terminal data-files={JSON.stringify(files)} transition:persist="terminal">
-  <div class="container-site">
-    <section class="hud term">
-      <header class="term__bar">
-        <p class="label term__title">tm-sh <span class="term__sep" aria-hidden="true">·</span> <span data-term-cwd>~</span></p>
-        <button type="button" class="btn btn-sm" data-terminal-close aria-label="Close terminal">Esc</button>
-      </header>
-      <div class="term__out" role="log" aria-live="polite" aria-label="Output"></div>
-      <p class="term__prompt">
-        <span class="term__ps1" aria-hidden="true"><span class="term__host">rajiv@thoughtlessmind:</span><span class="term__path" data-term-cwd>~</span>$</span>
-        <span class="term__field">
-          <input
-            class="term__input"
-            id="term-input"
-            type="text"
-            aria-label="Command"
-            placeholder=" "
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-            enterkeyhint="send"
-            autofocus
-          />
-          <span class="caret" aria-hidden="true"></span>
-        </span>
-      </p>
-    </section>
-  </div>
+  <section class="hud term">
+    <header class="term__bar">
+      <p class="label term__title">tm-sh <span class="term__sep" aria-hidden="true">·</span> <span data-term-cwd>~</span></p>
+      <button type="button" class="btn btn-sm" data-terminal-close aria-label="Close terminal">Esc</button>
+    </header>
+    <div class="term__out" role="log" aria-live="polite" aria-label="Output"></div>
+    <p class="term__prompt">
+      <span class="term__ps1" aria-hidden="true"><span class="term__host">rajiv@thoughtlessmind:</span><span class="term__path" data-term-cwd>~</span>$</span>
+      <span class="term__field">
+        <input
+          class="term__input"
+          id="term-input"
+          type="text"
+          aria-label="Command"
+          placeholder=" "
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          enterkeyhint="send"
+          autofocus
+        />
+        <span class="caret" aria-hidden="true"></span>
+      </span>
+    </p>
+  </section>
 </dialog>
 <div class="egg-toasts" role="status" aria-live="polite" data-egg-toasts></div>
 
 <style is:global>
   /* Component styles, global because the output lines, toasts and rocket are created by script. */
+  /* A modal <dialog> is fixed to the viewport by the UA; margin: auto centres it (preflight zeroes the UA's). */
   .term-dialog {
-    position: fixed;
-    inset: var(--header-h) 0 auto;
-    width: 100%;
+    width: min(100% - 2 * var(--spacing-gutter), var(--container-wide));
     max-width: none;
     max-height: none;
-    margin: 0;
+    margin: auto;
     padding: 0;
     border: 0;
     background: transparent;
     color: var(--text);
     overflow: visible;
   }
+  /* Same veil as the ⌘K palette overlay. */
   .term-dialog::backdrop {
-    background: transparent;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
   }
   .term {
     display: flex;
@@ -358,6 +359,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
   let cursor = 0;
   let opener: HTMLElement | null = null;
   let reopen = false;
+  let pressed = 0; // time of the last mousedown in the dialog (a click's blur lands in the same task)
   let files: Record<string, string> = {};
   let ac: AbortController | undefined;
   let d: HTMLDialogElement;
@@ -461,7 +463,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
 
   const COMMANDS: Record<string, Cmd> = {
     help: () => print(HELP),
-    whoami: () => print(`rajiv\n${SITE.name} · ${SITE.role} at ${SITE.company} · ${SITE.location}`),
+    whoami: () => print(`rajiv\n${SITE.name} · ${SITE.role} · ${SITE.location}`),
     ls: () => print([...Object.keys(files), 'work/', 'writing/', 'about/'].join('  ')),
     cat: ([f]) => {
       if (!f) return print('usage: cat <file>. Try ls.', 'is-muted');
@@ -617,9 +619,32 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
     files = JSON.parse(d.dataset.files ?? '{}');
 
     addEventListener('terminal:open', () => open(), { signal });
+    // Ctrl+` (or Ctrl+~) toggles, like an editor's terminal: the physical key, or the character on other layouts.
+    addEventListener(
+      'keydown',
+      (e) => {
+        const tilde = e.code === 'Backquote' || e.key === '`' || e.key === '~';
+        if (!e.ctrlKey || e.metaKey || e.altKey || !tilde || e.repeat) return;
+        e.preventDefault();
+        if (d.open) d.close();
+        else open();
+      },
+      { signal },
+    );
     d.querySelector('[data-terminal-close]')?.addEventListener('click', () => d.close(), { signal });
     // Outside the panel (backdrop or gutter) closes; pointerdown so a text selection dragged out does not.
     d.addEventListener('pointerdown', (e) => !(e.target as Element).closest('.term') && d.close(), { signal });
+    d.addEventListener('mousedown', () => (pressed = Date.now()), { signal });
+    // Vimium-style extensions swallow Esc in a text field and only blur it. Focus dropping to nowhere
+    // (not a click, not another window) is that Esc.
+    input.addEventListener(
+      'blur',
+      (e) => {
+        if (e.relatedTarget || Date.now() - pressed < 100) return;
+        setTimeout(() => d.open && document.hasFocus() && document.activeElement === document.body && d.close());
+      },
+      { signal },
+    );
     // Clicking the output (without selecting text) puts you back at the prompt.
     out.addEventListener('click', () => !getSelection()?.toString() && input.focus(), { signal });
     input.addEventListener('keydown', onInputKey, { signal });

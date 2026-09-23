@@ -1,6 +1,6 @@
 # thoughtlessmind.dev
 
-Personal site of Rajiv Kumar (*thoughtlessmind*), a senior frontend engineer in New Delhi. It is a portfolio and blog
+Personal site of Rajiv Kumar (*thoughtlessmind*), a senior web engineer in New Delhi. It is a portfolio and blog
 that should show ~7 years of frontend craft through the site itself: static, fast, accessible, playful in the details.
 No backend, no login, no comments by design. `README.md` is the GitHub profile README: never overwrite it.
 
@@ -52,11 +52,11 @@ the file. ` ```ts title="file.ts" ` gives a code block a filename tab and a copy
 as a module card on home and /work (keep it to about 3). A project with `image` spans both card columns.
 
 **Facts**: `src/consts.ts` (name, role, company, email, socials, coords, since, nav) and `src/lib/person.ts` (JSON-LD).
-Use real facts only; never invent numbers or titles.
+Use real facts only; never invent numbers or titles. Never name the current employer anywhere; the role reads "web engineer".
 
 ## Design direction: v3 "SIGNAL"
 
-Mission control for a frontend engineer. The motif pool is his interests: astronomy, rockets, orbital mechanics,
+Mission control for a web engineer. The motif pool is his interests: astronomy, rockets, orbital mechanics,
 physics, sport, problem solving. It should feel like a well-built instrument, not a hacker cliché.
 
 - Techie and funky: pixel display type, telemetry readouts, digital motion that decodes, flickers and glitches in short
@@ -119,7 +119,7 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
   - Terminal at X 0772 · Y 0286.
   - Warp on the planet core.
   - Launch on the pad left of the telemetry panel.
-  - ⌘K "Open terminal" is the accessible path. See DESIGN.md §10.
+  - ⌘K "Open terminal" is the accessible path; Ctrl+` (Ctrl+~) toggles it too. See DESIGN.md §10.
 - Window events: `signal:warp`, `signal:pulse` `{x, y}`, `signal:hole` `{x, y, r, held}` | null, `terminal:open`,
   `open-palette`.
 - Storage: `theme`, `eggs`, `tele-scale` (localStorage), `booted` (sessionStorage).

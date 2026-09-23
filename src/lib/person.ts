@@ -8,7 +8,6 @@ export const person = (url: string = SITE.url) => ({
   url,
   email: `mailto:${SITE.email}`,
   jobTitle: SITE.role,
-  worksFor: { '@type': 'Organization', name: SITE.company },
   address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
   sameAs: Object.values(SITE.socials).filter(Boolean),
 });

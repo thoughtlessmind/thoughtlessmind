@@ -219,7 +219,6 @@ const starVertex = /* glsl */ `
   uniform vec2 uRes;
   uniform float uDpr;
   uniform float uTime;
-  uniform vec2 uShift;   // pointer parallax, CSS px at depth 1
   uniform vec3 uHole;    // planet centre (CSS px, y up) + radius: stars behind the disc are hidden
   uniform vec2 uAlpha;
   uniform float uDensity; // share of stars shown: fewer on small screens
@@ -234,7 +233,7 @@ const starVertex = /* glsl */ `
     // position: quad corner (x -1 tail .. 1 head, y side); z picks the outbound (0) or inbound (1) ghost.
     float w = position.z < 0.5 ? 1.0 - uFlyMix.x : uFlyMix.x;
     if (w <= 0.0 || fract(aSeed * 37.13) > uDensity) HIDE
-    vec2 px = aStar.xy * uRes + uShift * aStar.z;
+    vec2 px = aStar.xy * uRes;
     px.x = mod(px.x + uTime * 1.2 * aStar.z, uRes.x); // slow drift
     // Point lens around the black hole, r' = (r + sqrt(r^2 + 4E^2)) / 2, back to rest by 10 horizon radii.
     vec2 ds = px - uSink.xy;
@@ -609,7 +608,6 @@ export default function Planet({ pointer, palette, tide }: Props) {
       uRes: planetMat.uniforms.uRes,
       uDpr: planetMat.uniforms.uDpr,
       uTime: planetMat.uniforms.uTime,
-      uShift: { value: new THREE.Vector2() },
       uHole: { value: new THREE.Vector3() },
       uAlpha: { value: (pal.dark ? DARK_STARS : LIGHT_STARS).clone() },
       uDensity: { value: 1 },
@@ -644,7 +642,6 @@ export default function Planet({ pointer, palette, tide }: Props) {
       spin: new THREE.Quaternion(),
       e: new THREE.Euler(),
       m: new THREE.Matrix4(),
-      stars: new THREE.Vector2(),
       place: { t: 0, dt: 0, cx: 0, cy: 0, scale: 1, h: 1, sphere: [], ring: [], scatter: 0, tide: new THREE.Vector3(), tearing: false } as Place,
     }),
     [],
@@ -862,7 +859,6 @@ export default function Planet({ pointer, palette, tide }: Props) {
 
     const s = scene.starMat.uniforms;
     (s.uAlpha.value as THREE.Vector2).lerp(pal.dark ? DARK_STARS : LIGHT_STARS, kColor);
-    (s.uShift.value as THREE.Vector2).lerp(st.stars.set(ptr.x * 14, ptr.y * 14), kMove * 0.5);
     s.uDensity.value = Math.min(1, (w * h) / (1440 * 900));
     // Stars hide behind the disc; as the sphere is torn away they show through.
     s.uHole.value.set(st.x, h - st.y, st.opacity > 0.5 ? scale * (1 - scene.sim.lostSphere / SPHERE) : 0);

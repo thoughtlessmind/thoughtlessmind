@@ -9,11 +9,10 @@ import Timeline from '../components/Timeline.astro';
 import { SITE } from '../consts';
 import { person } from '../lib/person';
 
-const dek = 'Frontend engineer. Seven years in, still curious about what runs underneath.';
+const dek = 'Web engineer. Seven years in, still curious about what runs underneath.';
 const id = [
   ['Name', SITE.name],
   ['Role', SITE.role],
-  ['Company', SITE.company],
   ['Base', SITE.location],
   ['Coords', SITE.coords],
   ['Active', `Since ${SITE.since}`],
@@ -31,7 +30,7 @@ const stack = [
 const experience = [
   {
     status: 'current',
-    meta: [SITE.role, SITE.company, 'HR tech'],
+    meta: [SITE.role, 'HR tech'],
     text: 'An HR-tech platform that matches workers with jobs. I work on its web frontends in React and TypeScript.',
   },
   {
@@ -149,7 +148,7 @@ const elsewhere: { name: IconName; label: string; href: string }[] = [
     <section class="about__block" aria-labelledby="now-title" data-reveal-group>
       <SectionHeading index="05" label="Now" title="Currently" id="now-title" class="reveal" />
       <p class="about__measure reveal">
-        Shipping frontend at {SITE.company}. Rebuilding this site with Astro and React Three Fiber. Reading about orbital
+        Rebuilding this site with Astro and React Three Fiber. Reading about orbital
         mechanics for no practical reason.
       </p>
     </section>
