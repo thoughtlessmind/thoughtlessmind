@@ -38,7 +38,7 @@ type Run = {
   t0: number; // performance.now() at T-0
   last: number; // the previous frame's timestamp
   step: number; // the next entry in STEPS
-  slow: number; // consecutive slow frames
+  ft: number; // frame time, ms, eased
   liquid: 'goo' | 'blur';
   crushed: boolean; // the crunch's last frame is drawn
   point: HTMLElement; // the singularity
@@ -97,8 +97,9 @@ const TURN = Math.PI * 2;
 const BANG = 4.1; // s: the singularity lets go
 const FRAME_FADE = 0.6; // s: frames and hairlines, the weakest-bound structure, are torn off first
 const LIQUID = 1.5; // s: the goo filter ramps in over the crunch's last stretch
-const SLOW_MS = 24; // a frame slower than this…
-const SLOW_RUN = 10; // …this many times in a row swaps the goo for a CSS blur
+// Frame time, eased over ~10 frames (one 50ms hiccup lifts it to ~20ms): past this the goo gives way to a CSS blur.
+// Not "N slow frames in a row": frame pacing slips a fast frame in every few, which would reset any such count.
+const SLOW_MS = 24;
 const BLUE = [232, 242, 255]; // blueshift target, #e8f2ff
 const BLOB = 30; // px: the molten blob's radius once everything has fallen in (it grows with what has)
 const KMIN = 0.14; // an arrived copy's size in the blob
@@ -407,7 +408,7 @@ export function bigBang() {
     t0: 0,
     last: 0,
     step: 0,
-    slow: 0,
+    ft: 16.7,
     liquid: matchMedia('(pointer: coarse)').matches ? 'blur' : 'goo',
     crushed: false,
     point,
@@ -518,7 +519,7 @@ function place(p: Piece, t: number, blob: number, c: number) {
 /** The goo filter over the crunch's last LIQUID seconds; a CSS blur on coarse pointers or slow frames. */
 function liquid(r: Run, t: number) {
   const u = Math.min(1, Math.max(0, (t - (CRUNCH - LIQUID)) / LIQUID));
-  if (r.liquid === 'goo' && r.slow >= SLOW_RUN) r.liquid = 'blur';
+  if (r.liquid === 'goo' && r.ft > SLOW_MS) r.liquid = 'blur';
   const s = r.copies.style;
   if (u === 0 || t > CRUNCH) {
     s.filter = '';
@@ -627,7 +628,7 @@ function frame(now: number) {
   if (!r) return;
   try {
     const t = (now - r.t0) / 1000;
-    r.slow = now - r.last > SLOW_MS ? r.slow + 1 : 0;
+    r.ft += (Math.min(now - r.last, 50) - r.ft) * 0.1;
     r.last = now;
     if (!r.crushed) {
       crunch(r, Math.min(t, CRUNCH + 0.1)); // a late frame still draws the crunch's end
