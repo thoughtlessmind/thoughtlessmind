@@ -16,6 +16,10 @@
 // reach scale with it; while it is dragged ({held: true}) it stands in for the pointer's lens.
 // Everywhere else the field is drawn once (and on resize or theme change) and never animates. No
 // allocation per frame.
+//
+// `signal:dawn` ({ms}) is the big bang's first stars (src/scripts/bigbang.ts): every dot goes dark, then each
+// ignites once over ms, brightest level first, flickering on with the .flicker steps; rAF runs only until the
+// last one is lit, on every page. ms 0 (or reduced motion) shows the whole field at once.
 
 const TILE = 20; // cells per tile side (480px at 24px)
 const EMPTY = 0.3; // share of empty cells
@@ -38,6 +42,9 @@ const WAVE_LEAD = 28; // px rising front (keeps dots from overtaking each other:
 const WAVE_TAIL = 96; // px settling tail behind the front
 const HOLE_E = 2.2; // the hole's Einstein radius, horizon radii
 const HOLE_REACH = 10; // and its lens radius
+const IGNITE_MS = 420; // one star flickering on (the .flicker keyframes)…
+const IGNITE = [0, 0.8, 0.2, 1, 0.6]; // …each held a fifth of it, then 1
+const DAWN_AT = [0.45, 0.25, 0, 0.45]; // earliest ignition per level (0 dim, 1, 2 bright, 3 dust), share of the dawn
 
 const R2 = RADIUS * RADIUS;
 const E4 = 4 * EINSTEIN * EINSTEIN;
@@ -111,6 +118,10 @@ let ox = 0; // push from the last lens() call
 let oy = 0;
 let raf = 0;
 let last = 0;
+let dawn0 = 0; // performance.now() when the stars began to ignite; 0 when they are not igniting
+let dawnMs = 0;
+let ignite = new Float32Array(0); // per dot: ms after dawn0 when it starts to flicker on
+let shine = new Float32Array(0); // per dot: its alpha this frame, while igniting
 
 function rgba(name: string, css: CSSStyleDeclaration) {
   ctx!.fillStyle = '#000';
@@ -159,6 +170,8 @@ function resize() {
     drawY = new Int32Array(cap);
     bucket = new Uint8Array(cap);
     lit = new Int32Array(cap);
+    ignite = new Float32Array(cap);
+    shine = new Float32Array(cap);
   }
   n = 0;
   for (let oy = 0; oy < h; oy += tilePx) {
@@ -199,6 +212,7 @@ function draw() {
   const hR = hr * HOLE_REACH;
   const hE = hr * HOLE_E;
   const wave = waves[0].live || waves[1].live || waves[2].live;
+  const t = dawn0 ? performance.now() - dawn0 : -1; // ms into the dawn, -1 when none
   let m = 0;
   for (let i = 0; i < n; i++) {
     if (level[i] === DUST && !pointer && !hole && !wave) continue;
@@ -235,6 +249,12 @@ function draw() {
     }
     const k = Math.min(GLOW - 1, Math.round(g * (GLOW - 1)));
     if (level[i] === DUST && k === 0) continue;
+    if (t >= 0) {
+      const p = (t - ignite[i]) / IGNITE_MS;
+      const a = p >= 1 ? 1 : p <= 0 ? 0 : IGNITE[Math.floor(p * IGNITE.length)];
+      if (a === 0) continue;
+      shine[i] = a;
+    }
     drawX[i] = Math.round(x * dpr);
     drawY[i] = Math.round(y * dpr);
     bucket[i] = level[i] * GLOW + k;
@@ -253,9 +273,11 @@ function draw() {
         ctx.fillStyle = colors[b];
         set = true;
       }
+      if (t >= 0) ctx.globalAlpha = shine[i];
       ctx.fillRect(drawX[i] - o, drawY[i] - o, sz, sz);
     }
   }
+  ctx.globalAlpha = 1;
 }
 
 function frame(now: number) {
@@ -288,13 +310,17 @@ function frame(now: number) {
     p.a = 1 - t;
     busy = true;
   }
+  if (dawn0) {
+    if (now - dawn0 >= dawnMs) dawn0 = 0; // the last star is lit: this draw is the full field
+    else busy = true;
+  }
   draw();
   if (busy) raf = requestAnimationFrame(frame);
   else last = 0;
 }
 
 function wake() {
-  if ((live || hTarget || hs) && !raf && !document.hidden) raf = requestAnimationFrame(frame);
+  if ((live || hTarget || hs || dawn0) && !raf && !document.hidden) raf = requestAnimationFrame(frame);
 }
 
 function sync() {
@@ -356,6 +382,20 @@ window.addEventListener('signal:hole', (e) => {
     hTarget = 1;
     if (d.held) target = 0; // the pointer is on the hole: one lens, not two
   }
+  wake();
+});
+// Contract: window.dispatchEvent(new CustomEvent('signal:dawn', { detail: { ms } })). Drawn synchronously, so the
+// caller can show the canvas on the next line: dark (the first frame of a dawn) or, with ms 0, the full field.
+window.addEventListener('signal:dawn', (e) => {
+  const ms = Math.max(0, Number((e as CustomEvent<{ ms: number }>).detail?.ms) || 0);
+  dawn0 = 0;
+  if (ms && !calm.matches) {
+    const span = Math.max(0, ms - IGNITE_MS);
+    for (let i = 0; i < n; i++) ignite[i] = (DAWN_AT[level[i]] + Math.random() * 0.55) * span;
+    dawn0 = performance.now();
+    dawnMs = ms;
+  }
+  draw();
   wake();
 });
 window.addEventListener('resize', resize);
