@@ -10,6 +10,7 @@
 //
 //   signal:dawn   window CustomEvent { ms }: field.ts ignites the stars (ms 0: all at once)
 import { toast } from './eggs';
+import { CRUNCH, START, fallTime, radius, spin, stretch } from './fall';
 
 type Kind = 'word' | 'frame' | 'box' | 'item'; // frame: a box with no fill (hairlines, .hud frames)
 type Rect = { left: number; top: number; width: number; height: number };
@@ -22,12 +23,29 @@ type Piece = {
   w: number;
   h: number;
   o: number; // opacity, ancestors included
-  color: string; // words: the computed colour
+  color: string; // words: the computed colour; filled boxes: the background colour
+  dx: number; // its centre's offset from the viewport centre at T-0…
+  dy: number;
+  r0: number; // …as a distance and an angle
+  a0: number;
+  T: number; // s it takes to fall in
+  turns: number; // how far it spirals in, clockwise
+  rgb: number[] | null; // words and filled boxes: [r, g, b, a], for the blueshift
+  ra: number; // where it settles in the blob, as a share of the blob's radius
+  gone: boolean; // swallowed
 };
 type Run = {
   t0: number; // performance.now() at T-0
   last: number; // the previous frame's timestamp
   step: number; // the next entry in STEPS
+  slow: number; // consecutive slow frames
+  liquid: 'goo' | 'blur';
+  crushed: boolean; // the crunch's last frame is drawn
+  point: HTMLElement; // the singularity
+  disp: Element | null; // the liquid filter's feDisplacementMap and feGaussianBlur
+  blur: Element | null;
+  cx: number; // the viewport centre, client px
+  cy: number;
   layer: HTMLElement;
   copies: HTMLElement;
   pieces: Piece[];
@@ -72,10 +90,30 @@ const BOX = [
   '--hud-w',
 ];
 const SKIP = '.sr-only, [hidden], dialog:not([open]), script, style, template, noscript, video, canvas';
+const TURN = Math.PI * 2;
+const BANG = 4.1; // s: the singularity lets go
+const FRAME_FADE = 0.6; // s: frames and hairlines, the weakest-bound structure, are torn off first
+const LIQUID = 1.5; // s: the goo filter ramps in over the crunch's last stretch
+const SLOW_MS = 24; // a frame slower than this…
+const SLOW_RUN = 10; // …this many times in a row swaps the goo for a CSS blur
+const BLUE = [232, 242, 255]; // blueshift target, #e8f2ff
+const BLOB = 30; // px: the molten blob's radius once everything has fallen in (it grows with what has)
+const KMIN = 0.14; // an arrived copy's size in the blob
+const CHURN = 6; // rad/s an arrived copy keeps turning in the blob
+const COLLAPSE = 0.3; // s: the blob collapses into the point over the crunch's end
+// Liquid: static noise wobbles the copies (only its scale animates, so the noise is never regenerated), then a
+// blur and an alpha threshold fuse neighbours into one molten blob; the crisp copy is drawn back over it.
+const LIQUID_SVG =
+  '<svg width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="bb-liquid" color-interpolation-filters="sRGB">' +
+  '<feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="7" result="noise"/>' +
+  '<feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" result="wobble"/>' +
+  '<feGaussianBlur in="wobble" stdDeviation="0" result="soft"/>' +
+  '<feColorMatrix in="soft" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 18 -7" result="goo"/>' +
+  '<feComposite in="wobble" in2="goo" operator="atop"/></filter></svg>';
 
 // [time in s from T-0, what happens]: run in order, once each, from the frame loop.
-// Until the crunch lands: hold the copies for 2s, then swap back.
-const STEPS: [number, (r: Run) => void][] = [[2, () => finish()]];
+// Until the bang lands: the crunch and the singularity, then swap back.
+const STEPS: [number, (r: Run) => void][] = [[BANG, () => finish()]];
 
 const root = document.documentElement;
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
@@ -156,7 +194,10 @@ function collect(copies: HTMLElement): Piece[] {
   let pieces: Piece[] = [];
   let words: Word[] = [];
   const add = (el: HTMLElement | SVGElement, kind: Kind, r: Rect, o: number, color = '') =>
-    pieces.push({ el, kind, x: r.left, y: r.top, w: r.width, h: r.height, o, color });
+    pieces.push({
+      el, kind, x: r.left, y: r.top, w: r.width, h: r.height, o, color,
+      dx: 0, dy: 0, r0: 0, a0: 0, T: 1, turns: 0, rgb: null, ra: 0, gone: false,
+    });
   const range = document.createRange();
 
   for (const top of document.querySelectorAll<HTMLElement>('body > header, body > main, body > footer')) {
@@ -214,7 +255,7 @@ function collect(copies: HTMLElement): Piece[] {
       const box = document.createElement('div');
       if (hud) box.className = 'hud';
       box.style.cssText = `${props(s, BOX)};${at}`;
-      add(box, fill ? 'box' : 'frame', r, alpha(el));
+      add(box, fill ? 'box' : 'frame', r, alpha(el), fill ? s.backgroundColor : '');
     }
   }
 
@@ -259,15 +300,18 @@ function layer() {
   const el = document.createElement('div');
   el.className = 'bb-layer';
   el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = LIQUID_SVG;
   const copies = document.createElement('div');
   copies.className = 'bb-copies';
-  el.append(copies);
+  const point = document.createElement('div');
+  point.className = 'bb-point';
+  el.append(copies, point);
   document.body.append(el);
   if ('showPopover' in el) {
     el.popover = 'manual';
     el.showPopover();
   }
-  return { el, copies };
+  return { el, copies, point, disp: el.querySelector('feDisplacementMap'), blur: el.querySelector('feGaussianBlur') };
 }
 
 export function bigBang() {
@@ -277,13 +321,23 @@ export function bigBang() {
     return;
   }
   for (const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) d.close();
-  const { el, copies } = layer();
+  const { el, copies, point, disp, blur } = layer();
+  const cx = innerWidth / 2;
+  const cy = innerHeight / 2;
   const space = [...document.querySelectorAll<HTMLElement>('canvas.field-fx, .sky')];
   const ac = new AbortController();
   run = {
     t0: 0,
     last: 0,
     step: 0,
+    slow: 0,
+    liquid: matchMedia('(pointer: coarse)').matches ? 'blur' : 'goo',
+    crushed: false,
+    point,
+    disp,
+    blur,
+    cx,
+    cy,
     layer: el,
     copies,
     pieces: [],
@@ -298,6 +352,8 @@ export function bigBang() {
     root.style.overflow = 'hidden';
     root.style.scrollbarGutter = 'stable';
     run.pieces = collect(copies);
+    aim(run);
+    for (const s of space) s.style.transformOrigin = `${cx}px ${cy}px`;
     root.classList.add('bb');
     listen(ac.signal);
     run.t0 = run.last = performance.now();
@@ -306,6 +362,105 @@ export function bigBang() {
     finish(true);
     throw e;
   }
+}
+
+/** Where each copy falls from: its offset from the centre, its fall time and its spiral. */
+function aim(r: Run) {
+  const rMax = Math.hypot(r.cx, r.cy);
+  for (const p of r.pieces) {
+    p.dx = p.x + p.w / 2 - r.cx;
+    p.dy = p.y + p.h / 2 - r.cy;
+    p.r0 = Math.hypot(p.dx, p.dy);
+    p.a0 = Math.atan2(p.dy, p.dx);
+    p.T = fallTime(p.r0, rMax);
+    p.turns = 0.5 + 0.6 * Math.random();
+    p.ra = Math.sqrt(Math.random()); // uniform over the blob's disc
+    // rgb(r, g, b[, a]) in 0–255, or color(srgb r g b[ / a]) in 0–1 (what color-mix() computes to).
+    const c = p.color ? p.color.match(/[\d.]+/g)?.map(Number) : undefined;
+    const k = p.color.startsWith('color(') ? 255 : 1;
+    p.rgb = c && c.length >= 3 ? [c[0] * k, c[1] * k, c[2] * k, c[3] ?? 1] : null;
+  }
+}
+
+/** Big crunch: space shrinks to a point and blueshifts, frames tear off, every copy falls in and fuses. */
+function crunch(r: Run, t: number) {
+  // A closed universe recollapses on the free-fall curve: the scale factor of space is radius().
+  const a = radius(t / CRUNCH);
+  for (const el of r.space) {
+    el.style.transform = `scale(${a})`;
+    el.style.filter = `brightness(${1 + 2 * (1 - a)})`;
+  }
+  // What has fallen in piles up into a molten blob that grows with it, then all of it collapses into the point.
+  let fallen = 0;
+  for (const p of r.pieces) if (p.kind !== 'frame' && t >= START + p.T) fallen++;
+  const blob = BLOB * Math.sqrt(fallen / Math.max(1, r.pieces.length));
+  const c = Math.min(1, Math.max(0, (CRUNCH - t) / COLLAPSE));
+  for (const p of r.pieces) place(p, t, blob, c);
+  liquid(r, t);
+}
+
+/**
+ * One copy at t: free fall into the centre, spinning up (angular momentum kept), stretched by the tides; once in,
+ * it churns in the blob (radius `blob`) until the collapse (`c` runs 1 → 0) takes everything into the point.
+ */
+function place(p: Piece, t: number, blob: number, c: number) {
+  if (p.gone) return;
+  const s = p.el.style;
+  if (p.kind === 'frame') {
+    s.opacity = String(p.o * Math.max(0, 1 - t / FRAME_FADE));
+    if (t >= FRAME_FADE) return void (p.gone = true);
+  }
+  const tau = (t - START) / p.T;
+  if (tau <= 0) return;
+  if (c === 0) {
+    s.opacity = '0';
+    p.gone = true;
+    return;
+  }
+  const f = radius(tau); // 0 once it has arrived
+  // Clockwise on screen (y down), the black hole disk's hand.
+  const th = p.a0 + TURN * p.turns * spin(tau) + Math.max(0, tau - 1) * p.T * CHURN;
+  const d = Math.max(p.r0 * f, blob * p.ra) * c;
+  const k = Math.max(KMIN, Math.min(1, 2.5 * f)) * c; // it shrinks over the last stretch in
+  const st = stretch(f);
+  // Stretched along the line to the centre, squeezed across it, turned with its orbit (rotate(th)…rotate(-a0)).
+  s.transform = `translate(${d * Math.cos(th) - p.dx}px, ${d * Math.sin(th) - p.dy}px) rotate(${th}rad) scale(${st * k}, ${k / Math.sqrt(st)}) rotate(${-p.a0}rad)`;
+  if (p.kind !== 'frame') s.opacity = String(p.o * Math.min(1, c * 3));
+  if (p.rgb) {
+    const m = (1 - f) ** 2; // blueshift: text and fills alike get hotter and bluer as they are compressed
+    const [cr, cg, cb, ca] = p.rgb;
+    const v = `rgb(${cr + (BLUE[0] - cr) * m} ${cg + (BLUE[1] - cg) * m} ${cb + (BLUE[2] - cb) * m} / ${ca})`;
+    if (p.kind === 'word') s.color = v;
+    else s.backgroundColor = v;
+  }
+}
+
+/** The goo filter over the crunch's last LIQUID seconds; a CSS blur on coarse pointers or slow frames. */
+function liquid(r: Run, t: number) {
+  const u = Math.min(1, Math.max(0, (t - (CRUNCH - LIQUID)) / LIQUID));
+  if (r.liquid === 'goo' && r.slow >= SLOW_RUN) r.liquid = 'blur';
+  const s = r.copies.style;
+  if (u === 0 || t > CRUNCH) {
+    s.filter = '';
+    return;
+  }
+  if (r.liquid === 'goo') {
+    s.filter = 'url(#bb-liquid)';
+    r.disp?.setAttribute('scale', String(30 * u));
+    r.blur?.setAttribute('stdDeviation', String(0.5 + 5.5 * u));
+  } else s.filter = `blur(${4 * u}px)`;
+}
+
+/** Everything is a 2px point at the centre; it trembles and brightens for the last 300ms before the bang. */
+function singularity(r: Run, t: number) {
+  const s = r.point.style;
+  if (t < CRUNCH - 0.2 || t >= BANG) {
+    s.opacity = '0';
+    return;
+  }
+  const q = Math.max(0, (t - (BANG - 0.3)) / 0.3);
+  s.opacity = String(Math.min(1, (t - (CRUNCH - 0.2)) / 0.2));
+  s.transform = `translate(${(Math.random() - 0.5) * 2 * q}px, ${(Math.random() - 0.5) * 2 * q}px) scale(${1 + 2 * q})`;
 }
 
 function listen(signal: AbortSignal) {
@@ -330,7 +485,13 @@ function frame(now: number) {
   if (!r) return;
   try {
     const t = (now - r.t0) / 1000;
+    r.slow = now - r.last > SLOW_MS ? r.slow + 1 : 0;
     r.last = now;
+    if (!r.crushed) {
+      crunch(r, Math.min(t, CRUNCH + 0.1)); // a late frame still draws the crunch's end
+      r.crushed = t > CRUNCH + 0.1;
+    }
+    singularity(r, t);
     while (run && r.step < STEPS.length && t >= STEPS[r.step][0]) STEPS[r.step++][1](r);
     if (run) raf = requestAnimationFrame(frame);
   } catch (e) {
