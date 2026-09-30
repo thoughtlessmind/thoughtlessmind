@@ -730,14 +730,15 @@
   .prose .demo [data-tooltip]:is(:hover, :focus-visible)::before { transform: translate(-50%, -4px) scale(1); }
 
   /* ---------- Big bang (src/scripts/bigbang.ts) ----------
-     While it runs, html.bb hides the page and a manual popover holds copies of what was on screen; only the
-     copies move. After .hud, so a copied frame keeps position: absolute. */
+     While it runs, html.bb hides the page and a manual popover holds copies of what was on screen; the crunch
+     is drawn on .bb-warp (warp.ts), the re-forming by the copies. After .hud, so a copied frame keeps
+     position: absolute. */
   html.bb :is(body > header, body > main, body > footer) { visibility: hidden; }
   .bb-layer {
     position: fixed;
     inset: 0;
     z-index: 90;
-    width: 100%;
+    width: 100vw; /* innerWidth, as the warp and the sky's centre: the point and the flash land on the hole */
     height: 100%;
     margin: 0;
     padding: 0;
@@ -747,6 +748,7 @@
     pointer-events: none;
   }
   .bb-copies { position: absolute; inset: 0; }
+  .bb-warp { position: absolute; left: 0; top: 0; opacity: 0; } /* sized by bigbang.ts */
   .bb-copies > * {
     position: absolute;
     margin: 0;

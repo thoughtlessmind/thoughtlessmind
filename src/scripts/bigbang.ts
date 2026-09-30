@@ -3,56 +3,43 @@
 // first LGT click, so it costs nothing until then.
 //
 // The page's DOM is never changed. Copies of every visible word, box and image go into one top-layer overlay (a
-// manual popover) and html.bb hides the originals; only the copies move. At the end they sit exactly on the
-// originals, and the overlay goes in the same frame the originals come back. Space (canvas.field-fx, .sky) is
-// scaled in place, not copied. Every way out is finish(): the end, Esc, the tab hidden, a resize, a navigation,
-// reduced motion turning on, an error, or the watchdog.
+// manual popover) and html.bb hides the originals. For the crunch the copies and the dust behind them are drawn
+// once into a canvas (raster.ts) and the GPU bends and drains that picture into the hole (warp.ts); the copies come
+// back for the re-forming. At the end they sit exactly on the originals, and the overlay goes in the same frame the
+// originals come back. The sky is scaled in place, not copied. Every way out is finish(): the end, Esc, the tab
+// hidden, a resize, a navigation, reduced motion turning on, an error, or the watchdog.
 //
 //   signal:dawn   window CustomEvent { ms }: field.ts ignites the stars (ms 0: all at once)
 import { toast } from './eggs';
-import { CRUNCH, START, fallTime, radius, spin, stretch } from './fall';
+import { CRUNCH, START, WIND, fallTime, radius, spin } from './fall';
+import { rasterize } from './raster';
+import { createWarp, type Warp } from './warp';
 
-type Kind = 'word' | 'frame' | 'box' | 'item'; // frame: a box with no fill (hairlines, .hud frames)
 type Rect = { left: number; top: number; width: number; height: number };
 type Clip = { l: number; t: number; r: number; b: number };
 type Piece = {
   el: HTMLElement | SVGElement; // the copy
-  kind: Kind;
-  x: number; // its rect at T-0, client px
-  y: number;
-  w: number;
+  w: number; // its size at T-0, px
   h: number;
   o: number; // opacity, ancestors included
-  color: string; // words: the computed colour; filled boxes: the background colour
-  dx: number; // its centre's offset from the viewport centre at T-0…
-  dy: number;
-  r0: number; // …as a distance and an angle
-  a0: number;
-  T: number; // s it takes to fall in
-  turns: number; // how far it spirals in, clockwise
-  rgb: number[] | null; // words and filled boxes: [r, g, b, a], for the blueshift
-  ra: number; // where it settles in the blob, as a share of the blob's radius
-  gone: boolean; // swallowed
 };
 type Run = {
-  t0: number; // performance.now() at T-0
-  last: number; // the previous frame's timestamp
+  t0: number; // performance.now() at T-0; 0 while the page is still being drawn
   step: number; // the next entry in STEPS
-  ft: number; // frame time, ms, eased
-  liquid: 'goo' | 'blur';
   crushed: boolean; // the crunch's last frame is drawn
   point: HTMLElement; // the singularity
-  disp: Element | null; // the liquid filter's feDisplacementMap and feGaussianBlur
-  blur: Element | null;
-  cx: number; // the viewport centre, client px
-  cy: number;
   flash: HTMLElement; // the bang's light
   glow: HTMLCanvasElement; // the afterglow
   skyOpacity: number; // .sky's opacity before the run
+  fieldOpacity: number; // canvas.field-fx's
   layer: HTMLElement;
   copies: HTMLElement;
+  warp: Warp | null; // null: no WebGL2, the copies fall as one sheet
   pieces: Piece[];
   space: HTMLElement[];
+  field: HTMLElement | undefined; // canvas.field-fx, one of space…
+  sky: HTMLElement | undefined; // …and .sky, the other
+  skyT: number; // s the planet takes to fall in, from where it is
   spaceCss: string[]; // their inline styles before the run
   htmlCss: string;
   ac: AbortController;
@@ -61,6 +48,7 @@ type Run = {
 
 const MAX_WORDS = 1500; // ponytail: above this, one copy per line of a text node instead of per word
 const BOX_MAX = 0.6; // share of the viewport a filled box may cover and still be an item (bigger is space)
+const DPR = Math.min(2, devicePixelRatio || 1); // the warp's resolution, capped like the dust's
 const WATCHDOG = 20_000; // ms
 const DONE = 'Universe rebooted · still dark';
 const STILL = 'Still dark · space has no light mode';
@@ -93,18 +81,7 @@ const BOX = [
   '--hud-w',
 ];
 const SKIP = '.sr-only, [hidden], dialog:not([open]), script, style, template, noscript, video, canvas';
-const TURN = Math.PI * 2;
 const BANG = 4.1; // s: the singularity lets go
-const FRAME_FADE = 0.6; // s: frames and hairlines, the weakest-bound structure, are torn off first
-const LIQUID = 1.5; // s: the goo filter ramps in over the crunch's last stretch
-// Frame time, eased over ~10 frames (one 50ms hiccup lifts it to ~20ms): past this the goo gives way to a CSS blur.
-// Not "N slow frames in a row": frame pacing slips a fast frame in every few, which would reset any such count.
-const SLOW_MS = 24;
-const BLUE = [232, 242, 255]; // blueshift target, #e8f2ff
-const BLOB = 30; // px: the molten blob's radius once everything has fallen in (it grows with what has)
-const KMIN = 0.14; // an arrived copy's size in the blob
-const CHURN = 6; // rad/s an arrived copy keeps turning in the blob
-const COLLAPSE = 0.3; // s: the blob collapses into the point over the crunch's end
 const COOL_MS = 2400; // the plasma cools from the bang to transparent
 const GLOW_AT = 1500; // ms after the bang: the afterglow…
 const GLOW_MS = 1200; // …for this long
@@ -149,15 +126,6 @@ const condenseSoft = (o: number): Keyframe[] => [
   { opacity: 0.6 * o, offset: 0.88, easing: STEP },
   { opacity: o, transform: 'scale(1)' },
 ];
-// Liquid: static noise wobbles the copies (only its scale animates, so the noise is never regenerated), then a
-// blur and an alpha threshold fuse neighbours into one molten blob; the crisp copy is drawn back over it.
-const LIQUID_SVG =
-  '<svg width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="bb-liquid" color-interpolation-filters="sRGB">' +
-  '<feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="7" result="noise"/>' +
-  '<feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" result="wobble"/>' +
-  '<feGaussianBlur in="wobble" stdDeviation="0" result="soft"/>' +
-  '<feColorMatrix in="soft" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 18 -7" result="goo"/>' +
-  '<feComposite in="wobble" in2="goo" operator="atop"/></filter></svg>';
 
 // [time in s from T-0, what happens]: run in order, once each, from the frame loop.
 const STEPS: [number, (r: Run) => void][] = [
@@ -246,11 +214,7 @@ function collect(copies: HTMLElement): Piece[] {
   const groups: { z: number; pieces: Piece[]; words: Word[] }[] = [];
   let pieces: Piece[] = [];
   let words: Word[] = [];
-  const add = (el: HTMLElement | SVGElement, kind: Kind, r: Rect, o: number, color = '') =>
-    pieces.push({
-      el, kind, x: r.left, y: r.top, w: r.width, h: r.height, o, color,
-      dx: 0, dy: 0, r0: 0, a0: 0, T: 1, turns: 0, rgb: null, ra: 0, gone: false,
-    });
+  const add = (el: HTMLElement | SVGElement, r: Rect, o: number) => pieces.push({ el, w: r.width, h: r.height, o });
   const range = document.createRange();
 
   for (const top of document.querySelectorAll<HTMLElement>('body > header, body > main, body > footer')) {
@@ -302,7 +266,7 @@ function collect(copies: HTMLElement): Piece[] {
           `${at};position:absolute;margin:0;translate:none;rotate:none;scale:none;max-width:none;` +
           `color:${s.color};fill:${s.fill};stroke:${s.stroke};object-fit:${s.objectFit};` +
           `object-position:${s.objectPosition};filter:${s.filter}`;
-        add(copy, 'item', r, alpha(el));
+        add(copy, r, alpha(el));
         continue;
       }
       const fill = !clear(s.backgroundColor);
@@ -326,7 +290,7 @@ function collect(copies: HTMLElement): Piece[] {
         const box = document.createElement('div');
         if (hud) box.className = 'hud';
         box.style.cssText = `${look};${open}${shut}left:${f.left}px;top:${f.top}px;width:${f.width}px;height:${f.height}px`;
-        add(box, fill ? 'box' : 'frame', f, alpha(el), fill ? s.backgroundColor : '');
+        add(box, f, alpha(el));
       });
     }
   }
@@ -355,7 +319,7 @@ function collect(copies: HTMLElement): Piece[] {
       span.textContent = css(p).whiteSpace.startsWith('pre') ? text : text.replace(/\s+/g, ' ');
       // line-height = the glyph box's height: the baseline lands where the original's is.
       span.style.cssText = `${font(p)};left:${w.r.left}px;top:${w.r.top}px;line-height:${w.r.height}px`;
-      add(span, 'word', w.r, alpha(p), css(p).color);
+      add(span, w.r, alpha(p));
     }
   }
   // The page's layers in paint order: main and the footer (z 1), then the sticky header (z 40). The sort is stable.
@@ -372,7 +336,6 @@ function layer() {
   const el = document.createElement('div');
   el.className = 'bb-layer';
   el.setAttribute('aria-hidden', 'true');
-  el.innerHTML = LIQUID_SVG;
   const copies = document.createElement('div');
   copies.className = 'bb-copies';
   const point = document.createElement('div');
@@ -394,8 +357,6 @@ function layer() {
     point,
     flash,
     glow,
-    disp: el.querySelector('feDisplacementMap'),
-    blur: el.querySelector('feGaussianBlur'),
   };
 }
 
@@ -410,7 +371,7 @@ function afterglow(c: HTMLCanvasElement) {
   g.putImageData(img, 0, 0);
 }
 
-export function bigBang() {
+export async function bigBang() {
   if (run || document.hidden) return; // a background tab: nobody is watching, and rAF would not run
   if (calm.matches) {
     toast(STILL);
@@ -419,47 +380,59 @@ export function bigBang() {
   // Top-layer UI and the open mobile menu sheet would sit over the copies (or hide what they copy): close them.
   for (const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) d.close();
   document.querySelector<HTMLElement>('[data-menu-toggle][aria-expanded="true"]')?.click();
-  const { el, copies, point, flash, glow, disp, blur } = layer();
-  const cx = innerWidth / 2;
-  const cy = innerHeight / 2;
+  const { el, copies, point, flash, glow } = layer();
   const space = [...document.querySelectorAll<HTMLElement>('canvas.field-fx, .sky')];
   const sky = space.find((s) => s.matches('.sky'));
+  const field = space.find((s) => s.matches('canvas.field-fx'));
+  // The planet sits on the hero's anchor, or parked in the top-right corner (about a corner's distance out).
+  const rMax = Math.hypot(innerWidth / 2, innerHeight / 2);
+  const planet = document.querySelector('[data-planet-anchor]')?.getBoundingClientRect();
+  const r0 = planet
+    ? Math.hypot(planet.left + planet.width / 2 - innerWidth / 2, planet.top + planet.height / 2 - innerHeight / 2)
+    : rMax;
   const ac = new AbortController();
-  run = {
+  const r: Run = (run = {
     t0: 0,
-    last: 0,
     step: 0,
-    ft: 16.7,
-    liquid: matchMedia('(pointer: coarse)').matches ? 'blur' : 'goo',
     crushed: false,
     point,
-    disp,
-    blur,
-    cx,
-    cy,
     flash,
     glow,
     skyOpacity: sky ? Number(getComputedStyle(sky).opacity) : 1,
+    fieldOpacity: field ? Number(getComputedStyle(field).opacity) : 1,
     layer: el,
     copies,
+    warp: null,
     pieces: [],
     space,
+    field,
+    sky,
+    skyT: fallTime(r0, rMax),
     spaceCss: space.map((s) => s.style.cssText),
     htmlCss: root.style.cssText,
     ac,
     watchdog: window.setTimeout(() => finish(), WATCHDOG),
-  };
+  });
   try {
     // Scroll locked with a classic scrollbar's gutter kept (only if one shows): the layout the copies are measured
     // in is the one they swap back into.
     if (innerWidth > root.clientWidth) root.style.scrollbarGutter = 'stable';
     root.style.overflow = 'hidden';
-    run.pieces = collect(copies);
-    aim(run);
-    for (const s of space) s.style.transformOrigin = `${cx}px ${cy}px`;
-    root.classList.add('bb');
+    r.pieces = collect(copies);
+    for (const s of space) s.style.transformOrigin = `${innerWidth / 2}px ${innerHeight / 2}px`;
     listen(ac.signal);
-    run.t0 = run.last = performance.now();
+    // The copies sit on the originals while the page is drawn for the GPU (a few ms; Esc or a resize can end it).
+    const page = await rasterize(copies, field instanceof HTMLCanvasElement ? [field] : [], DPR).catch(() => null);
+    if (run !== r) return;
+    r.warp = page && createWarp(page, DPR);
+    if (r.warp) {
+      r.warp.canvas.className = 'bb-warp';
+      // The page was drawn at innerWidth × innerHeight: the same box here, even beside a classic scrollbar's gutter.
+      r.warp.canvas.style.cssText = `width:${innerWidth}px;height:${innerHeight}px`;
+      copies.after(r.warp.canvas);
+    }
+    root.classList.add('bb');
+    r.t0 = performance.now();
     raf = requestAnimationFrame(frame);
   } catch (e) {
     finish(true);
@@ -467,91 +440,33 @@ export function bigBang() {
   }
 }
 
-/** Where each copy falls from: its offset from the centre, its fall time and its spiral. */
-function aim(r: Run) {
-  const rMax = Math.hypot(r.cx, r.cy);
-  for (const p of r.pieces) {
-    p.dx = p.x + p.w / 2 - r.cx;
-    p.dy = p.y + p.h / 2 - r.cy;
-    p.r0 = Math.hypot(p.dx, p.dy);
-    p.a0 = Math.atan2(p.dy, p.dx);
-    p.T = fallTime(p.r0, rMax);
-    p.turns = 0.5 + 0.6 * Math.random();
-    p.ra = Math.sqrt(Math.random()); // uniform over the blob's disc
-    // rgb(r, g, b[, a]) in 0–255, or color(srgb r g b[ / a]) in 0–1 (what color-mix() computes to).
-    const c = p.color ? p.color.match(/[\d.]+/g)?.map(Number) : undefined;
-    const k = p.color.startsWith('color(') ? 255 : 1;
-    p.rgb = c && c.length >= 3 ? [c[0] * k, c[1] * k, c[2] * k, c[3] ?? 1] : null;
-  }
-}
-
-/** Big crunch: space shrinks to a point and blueshifts, frames tear off, every copy falls in and fuses. */
+/** Big crunch: the page bends and drains into the hole; the sky falls in with it. */
 function crunch(r: Run, t: number) {
-  // A closed universe recollapses on the free-fall curve: the scale factor of space is radius().
-  const a = radius(t / CRUNCH);
-  for (const el of r.space) {
-    el.style.transform = `scale(${a})`;
-    el.style.filter = `brightness(${1 + 2 * (1 - a)})`;
-  }
-  // What has fallen in piles up into a molten blob that grows with it, then all of it collapses into the point.
-  let fallen = 0;
-  for (const p of r.pieces) if (p.kind !== 'frame' && t >= START + p.T) fallen++;
-  const blob = BLOB * Math.sqrt(fallen / Math.max(1, r.pieces.length));
-  const c = Math.min(1, Math.max(0, (CRUNCH - t) / COLLAPSE));
-  for (const p of r.pieces) place(p, t, blob, c);
-  liquid(r, t);
-}
-
-/**
- * One copy at t: free fall into the centre, spinning up (angular momentum kept), stretched by the tides; once in,
- * it churns in the blob (radius `blob`) until the collapse (`c` runs 1 → 0) takes everything into the point.
- */
-function place(p: Piece, t: number, blob: number, c: number) {
-  if (p.gone) return;
-  const s = p.el.style;
-  if (p.kind === 'frame') {
-    s.opacity = String(p.o * Math.max(0, 1 - t / FRAME_FADE));
-    if (t >= FRAME_FADE) return void (p.gone = true);
-  }
-  const tau = (t - START) / p.T;
-  if (tau <= 0) return;
-  if (c === 0) {
-    s.opacity = '0';
-    p.gone = true;
+  // The planet can't be copied into the warp (a WebGL canvas reads back blank), so the sky falls in whole, on the
+  // path the page takes at the planet's distance.
+  if (r.sky) sink(r.sky, (t - START) / r.skyT);
+  if (r.warp) {
+    // The GPU's picture of the page (and its dust) fades in over the copies while nothing moves yet, then
+    // replaces them. It lies on top, so opaque text never dips mid-fade; the faint dust under it crossfades, or
+    // doubled up it would brighten and then drop.
+    const u = Math.min(1, t / START);
+    r.warp.canvas.style.opacity = String(u);
+    if (r.field) r.field.style.opacity = String(r.fieldOpacity * (1 - u));
+    if (u === 1) r.copies.style.visibility = 'hidden';
+    r.warp.draw(t);
     return;
   }
-  const f = radius(tau); // 0 once it has arrived
-  // Clockwise on screen (y down), the black hole disk's hand.
-  const th = p.a0 + TURN * p.turns * spin(tau) + Math.max(0, tau - 1) * p.T * CHURN;
-  const d = Math.max(p.r0 * f, blob * p.ra) * c;
-  const k = Math.max(KMIN, Math.min(1, 2.5 * f)) * c; // it shrinks over the last stretch in
-  const st = stretch(f);
-  // Stretched along the line to the centre, squeezed across it, turned with its orbit (rotate(th)…rotate(-a0)).
-  s.transform = `translate(${d * Math.cos(th) - p.dx}px, ${d * Math.sin(th) - p.dy}px) rotate(${th}rad) scale(${st * k}, ${k / Math.sqrt(st)}) rotate(${-p.a0}rad)`;
-  if (p.kind !== 'frame') s.opacity = String(p.o * Math.min(1, c * 3));
-  if (p.rgb) {
-    const m = (1 - f) ** 2; // blueshift: text and fills alike get hotter and bluer as they are compressed
-    const [cr, cg, cb, ca] = p.rgb;
-    const v = `rgb(${cr + (BLUE[0] - cr) * m} ${cg + (BLUE[1] - cg) * m} ${cb + (BLUE[2] - cb) * m} / ${ca})`;
-    if (p.kind === 'word') s.color = v;
-    else s.backgroundColor = v;
-  }
+  // No WebGL2: the page and the dust fall in as one sheet.
+  const tau = (t - START) / (CRUNCH - START);
+  sink(r.copies, tau);
+  if (r.field) sink(r.field, tau);
 }
 
-/** The goo filter over the crunch's last LIQUID seconds; a CSS blur on coarse pointers or slow frames. */
-function liquid(r: Run, t: number) {
-  const u = Math.min(1, Math.max(0, (t - (CRUNCH - LIQUID)) / LIQUID));
-  if (r.liquid === 'goo' && r.ft > SLOW_MS) r.liquid = 'blur';
-  const s = r.copies.style;
-  if (u === 0 || t > CRUNCH) {
-    s.filter = '';
-    return;
-  }
-  if (r.liquid === 'goo') {
-    s.filter = 'url(#bb-liquid)';
-    r.disp?.setAttribute('scale', String(30 * u));
-    r.blur?.setAttribute('stdDeviation', String(0.5 + 5.5 * u));
-  } else s.filter = `blur(${4 * u}px)`;
+/** Something falling in whole about the viewport centre at τ of its fall: turned, shrunk and heated. */
+function sink(el: HTMLElement, tau: number) {
+  const f = radius(tau);
+  el.style.transform = `rotate(${WIND * spin(tau)}rad) scale(${f})`;
+  el.style.filter = `brightness(${1 + 2 * (1 - f)})`;
 }
 
 /** Everything is a 2px point at the centre; it trembles and brightens for the last 300ms before the bang. */
@@ -581,16 +496,13 @@ function bang(r: Run) {
   });
 }
 
-/** Under the white: every copy back on its original, unseen; space back to size, dark until its stars ignite. */
+/** Under the white: the copies back, unseen, on their originals; space back to size, dark until its stars ignite. */
 function reset(r: Run) {
-  for (const p of r.pieces) {
-    const s = p.el.style;
-    s.transform = '';
-    s.opacity = '0';
-    if (p.kind === 'word') s.color = p.color;
-    else if (p.rgb) s.backgroundColor = p.color;
-  }
-  r.copies.style.filter = '';
+  for (const p of r.pieces) p.el.style.opacity = '0';
+  r.copies.style.cssText = '';
+  r.warp?.canvas.remove();
+  r.warp?.destroy();
+  r.warp = null;
   r.space.forEach((el, i) => {
     el.style.cssText = r.spaceCss[i];
     el.style.transition = 'none';
@@ -601,8 +513,7 @@ function reset(r: Run) {
 /** Cosmic dawn: the dust ignites star by star (field.ts draws its dark first frame before this returns). */
 function dawn(r: Run) {
   window.dispatchEvent(new CustomEvent('signal:dawn', { detail: { ms: DAWN_MS } }));
-  const field = r.space.find((el) => el.matches('canvas.field-fx'));
-  if (field) field.style.opacity = '';
+  if (r.field) r.field.style.opacity = '';
 }
 
 /**
@@ -650,8 +561,6 @@ function frame(now: number) {
   if (!r) return;
   try {
     const t = (now - r.t0) / 1000;
-    r.ft += (Math.min(now - r.last, 50) - r.ft) * 0.1;
-    r.last = now;
     if (!r.crushed) {
       crunch(r, Math.min(t, CRUNCH + 0.1)); // a late frame still draws the crunch's end
       r.crushed = t > CRUNCH + 0.1;
@@ -674,6 +583,7 @@ function finish(quiet = false) {
   raf = 0;
   clearTimeout(r.watchdog);
   r.ac.abort();
+  r.warp?.destroy();
   // One frame: the copies go as the originals come back, on the same pixels.
   r.layer.remove();
   root.classList.remove('bb');

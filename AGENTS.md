@@ -120,9 +120,10 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
   - Launch on the pad left of the telemetry panel.
   - ⌘K "Open terminal" is the accessible path; Ctrl+` (Ctrl+~) toggles it too. See DESIGN.md §10.
 - `src/scripts/bigbang.ts` (lazy) + `ThemeToggle.astro`: LGT warns and counts down 3 → 0, then about 11s: copies of
-  the page (the DOM is untouched) fall into a point, one bright flash cools through blackbody colours, the dust
-  ignites (`signal:dawn` to field.ts) and the copies condense, then swap back to the originals. Esc skips; reduced
-  motion gets a toast. The maths is in `src/scripts/fall.ts` (`node --experimental-strip-types src/scripts/fall.check.ts`).
+  the page (the DOM is untouched) are drawn into a canvas (`raster.ts`) and a WebGL2 pass (`warp.ts`) lenses and
+  drains that picture into a black hole, one bright flash cools through blackbody colours, the dust ignites
+  (`signal:dawn` to field.ts) and the copies condense, then swap back to the originals. Esc skips; reduced motion gets
+  a toast. The maths is in `src/scripts/fall.ts` (`node --experimental-strip-types src/scripts/fall.check.ts`).
   DESIGN.md §4.
 - Window events: `signal:warp`, `signal:pulse` `{x, y}`, `signal:hole` `{x, y, r, held}` | null, `signal:dawn` `{ms}`,
   `terminal:open`, `open-palette`.
@@ -136,7 +137,7 @@ content/      blog/*.mdx, projects/*.md
 layouts/      BaseLayout (head, chrome, scripts, sky, field), WritingLayout (index/tag/series), ArticleLayout
 lib/          posts.ts (published posts, reading time, related, series, dates), person.ts
 pages/        index, work, about, 404, writing/…, og/[...slug].png.ts, rss.xml.ts, robots.txt.ts, llms.txt.ts
-scripts/      theme.js (inline: html.js), fx.ts, field.ts (dust + lens), eggs.ts, reveal.ts, bigbang.ts + fall.ts (the big bang)
+scripts/      theme.js (inline: html.js), fx.ts, field.ts (dust + lens), eggs.ts, reveal.ts, bigbang.ts + raster.ts + warp.ts + fall.ts (the big bang)
 styles/       global.css
 ```
 
@@ -145,7 +146,8 @@ styles/       global.css
 - Tokens only: no ad-hoc colours, radii, durations or fonts in components. Exceptions:
   - Canvas, WebGL and OG code can't read CSS, so they keep hex fallbacks.
   - The egg marker is the one circle.
-  - The big bang's blackbody colours, white singularity and circular inflation front (bigbang.ts) are physics, not theme.
+  - The big bang's blackbody colours, white singularity, circular inflation front (bigbang.ts) and the black hole's
+    shadow, ring, heat and redshift colours (warp.ts) are physics, not theme.
 - Every internal link ends with `/`. Astro 7's compiler is strict: close every tag.
 - Every animation needs a `prefers-reduced-motion` path. Nothing may flash more than 3 times a second or over a large area.
   The big bang's one flash is the only exception.
