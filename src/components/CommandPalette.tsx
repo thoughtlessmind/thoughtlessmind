@@ -256,7 +256,9 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
     }
   };
 
-  if (!open) return null;
+  // An empty fragment, not null: Astro's React renderer only claims a component that returns an element, and null
+  // hands it on to the MDX renderer, which calls it outside React ("Invalid hook call" on every SSR in dev).
+  if (!open) return <></>;
   return (
     <div
       className="palette-overlay"
