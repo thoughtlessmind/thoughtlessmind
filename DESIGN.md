@@ -104,8 +104,8 @@ rise and one fall, never more than one in any second, behind a warning that says
 | Effect | Trigger | Spec |
 |---|---|---|
 | **Decode / scramble** | `data-scramble` (once, when ≥ 40% in view); `data-scramble="hover"` (pointerenter/focus of the closest link or button: nav, CTAs, section links) | Characters resolve left→right from random glyphs `!<>-_\/[]{}=+*^?#01ABCDEF` over 700ms (hover: 350ms). Spaces are kept. The element is split into a `.sr-only` copy of the final text plus an `aria-hidden` glyph span with the same character count, so mono widths hold. Targets must be text-only leaves. |
-| **CRT turn-on** | `.flicker` | On load: opacity 0 → 1 with three stutters (0, .8, .2, 1, .6, 1) over 420ms `--ease-step`. On `main` it runs `flicker-soft` (0, .85, .6, 1). |
-| **Glitch** | `.glitch` with `data-text="same text"`, on hover/focus; `data-glitch-burst` adds `.is-glitching` every 5–9s (skipped while the tab is hidden) | Two pseudo-elements copy the text, offset 2–3px in `--accent` and `--signal` with `mix-blend-mode: var(--glitch-blend)`, clipped to 3 horizontal slices that jump in `steps()`, 280ms total. Used on the hero name, the 404 code, project titles and the contact email. |
+| **CRT turn-on** | `.flicker` | On load: opacity 0 → 1 with three stutters (0, .8, .2, 1, .6, 1) over 420ms `--ease-step`. On `main` it runs `flicker-soft` (0, .85, .6, 1). Fill mode `backwards`, never `both`: a held opacity fill keeps the element from ever being an LCP candidate. |
+| **Glitch** | `.glitch` with `data-text="same text"`, on hover/focus; `data-glitch-burst` adds `.is-glitching` every 5–9s (skipped while the tab is hidden) | Two pseudo-elements copy the text, offset 2–3px in `--accent` and `--signal` with `mix-blend-mode: var(--glitch-blend)`, clipped to 3 horizontal slices that jump in `steps()`, 280ms total. At rest the copies sit at opacity 0.001, not 0, so LCP records them at first paint instead of at the first burst (which read as a 5–9s LCP). Used on the hero name, the 404 code, project titles and the contact email. |
 | **Caret** | `.caret` | A 0.6em × 1em `--accent` block (`::after`), blinking 1.1s `steps(1)`. |
 | **Status dot** | `.dot-status` | A 6px round lime dot pulsing to 0.35 opacity every 2.4s. |
 | **Boot log** | `[data-boot]` on home hero | Child lines appear one by one, 70ms apart, each decoding (700ms): about 1s total. Once per session (`sessionStorage.booted`); later visits render lines instantly. Decorative (`aria-hidden`). Hidden < 600px. |
@@ -173,9 +173,9 @@ Scene:
   - **Gulps**: torn points drift off, then plunge at near free-fall speed, flattening into the disk plane with a last
     clockwise curl; nothing settles into orbit. At 1.3 horizon radii they stop and hang, dimming and reddening (as a
     distant observer sees infalling matter), until the hole gulps: every 0.45s, or at once when 30 are waiting, all of
-    them go, the horizon swells (up to +22%) and the photon ring and disk flare. The hole grows with what it has eaten
-    (up to +35%). Out of reach, the planet re-forms in reverse (sphere first), each point flickering on (the
-    `.flicker` steps), in ~4s. Leaving the page resets it.
+    them go, the horizon swells (up to +22%) and the photon ring and disk flare (at most one flare per 1/3s; a gulp
+    sooner goes without one). The hole grows with what it has eaten (up to +35%). Out of reach, the planet re-forms
+    in reverse (sphere first), each point flickering on (the `.flicker` steps), in ~4s. Leaving the page resets it.
   - **Lensing**: stars bend around it (point lens) and never show through the shadow; the dust too (field.ts, a second
     lens: Einstein radius 2.2 and reach 10 horizon radii; it stands in for the pointer's lens while dragged). Text
     blocks it passes over (`bend.ts`: up to 4, found with `elementsFromPoint`) get an SVG filter: inside 9 horizon
@@ -279,7 +279,9 @@ orange 8px left bar, title in Geist Mono bold (64px, 54px when long), muted desc
 - AA contrast; focus ring 2px `--accent`, offset 2px, never removed.
 - Every animation has a reduced-motion path; motion never hides content from no-JS users.
 - Pixel and mono fonts never carry long reading text.
-- Fonts: preload only the Geist Pixel (ELSH) and Martian Mono (standard) latin files used above the fold (`Head.astro`).
+- Fonts: preload only the Geist Pixel (ELSH) and Martian Mono (standard) latin files, the display and UI faces
+  (`Head.astro`). The Geist body face is not preloaded; on posts its swap is a small layout shift (CLS 0.019 on
+  mobile lab runs, 2026-10-07), still well inside "good".
 - The 3D chunk stays lazy and out of the initial bundle; no new runtime dependencies besides fonts.
 - `pnpm check` and `pnpm build` pass; no console errors.
 

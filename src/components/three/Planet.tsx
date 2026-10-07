@@ -455,7 +455,6 @@ function stepSim(s: Sim, T: Tide, f: Place) {
   if (gulp) {
     T.gulpAt = f.t;
     T.gulpSize = Math.min(1, 0.35 + s.hung / 60);
-    T.fed = Math.min(1, T.fed + 0.5 * T.gulpSize);
   }
 
   for (let i = 0; i < n; i++) {

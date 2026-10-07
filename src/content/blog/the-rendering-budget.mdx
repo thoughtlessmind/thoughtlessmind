@@ -1,69 +1,127 @@
 ---
-title: "The rendering budget: 16 milliseconds, explained with orbits"
-description: A 60 Hz screen gives you 16.7 ms per frame. What the browser spends it on, why long tasks break the rhythm, and how to yield.
-pubDate: 2026-07-26
+title: "The rendering budget: 16.7 ms per frame, and a loop that stops"
+description: At 60 Hz the browser has 16.7 ms per frame. What fills it, what breaks it, and the star-field loop on this site that costs about 1 ms, then stops.
+pubDate: 2026-10-07
 tags: [performance, thinking]
 series: Frontend performance field notes
 seriesOrder: 2
-draft: true
+draft: false
 ---
 
-A screen refreshing at 60 Hz draws a new frame every 16.7 milliseconds. Whatever the browser cannot finish in that window slips to the next one, and the user sees a stutter. That number is the budget. Everything about smooth interfaces comes down to spending less than it.
+At 60 Hz a screen shows a new frame every 1000 / 60 = 16.7 ms. That is the rendering budget: the time the browser has to run your code and produce the next frame. web.dev puts your share lower, at about 10 ms, because the browser has its own work in every frame. The cheapest way to stay inside it is to not ask for frames you don't need: the star field behind this site costs about 1 ms per frame while the pointer moves, and nothing once the pointer has been still for about 440 ms.
 
-## Where 16 milliseconds comes from
+## Where the 16.7 ms goes
 
-One second divided by 60 frames is 16.67 ms. On a 120 Hz phone it is 8.3 ms. The browser does not get all of it: compositing and handing the frame to the display takes a slice, so the practical budget for your code is closer to 10 ms per frame.
+The number is arithmetic. `requestAnimationFrame` callbacks generally run at the display's refresh rate, and [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame) names 60 Hz as the most common, with 75, 120 and 144 Hz also widely used. At 120 Hz the budget is 8.3 ms. At 144 Hz it is 6.9 ms.
 
-I find it useful to think of a frame as an orbit. A satellite in a stable orbit passes the same point at the same interval, every time. Miss the interval once and you have not lost the satellite, but the timing is off, and the tracking station notices. Miss it repeatedly and the whole schedule falls apart. Frames are the same. One dropped frame is invisible. A pattern of them is jank.
+Inside that window the browser walks what web.dev calls the [pixel pipeline](https://web.dev/articles/rendering-performance): JavaScript or CSS changes something, then style, layout, paint and composite. Not every change pays for every step:
 
-## What happens inside a frame
+- Changing geometry, like `width` or `top`, makes the browser lay the page out again, repaint what moved and composite the result.
+- A paint-only property, like `color` or `box-shadow`, skips layout.
+- A change that needs neither layout nor paint goes straight to compositing. web.dev calls it the cheapest path, and the one to use for animations and scrolling.
 
-In order, the browser runs:
+The same article says that when your work doesn't fit the budget, the frame rate drops and the page judders. So the budget has two sides: what one frame costs, and how many frames you ask for.
 
-1. Input handlers and any queued JavaScript.
-2. `requestAnimationFrame` callbacks.
-3. Style recalculation: which rules apply to which elements.
-4. Layout: where every box goes.
-5. Paint: filling pixels into layers.
-6. Composite: stacking the layers on the GPU.
+## Long tasks spend several frames at once
 
-Steps 3 to 5 are the expensive ones, and they run again whenever JavaScript changes something they depend on. Reading `offsetHeight` right after writing a style forces layout to run early, inside your script, and then again in the frame. That is layout thrashing, and it is the most common way a loop over 200 elements turns into a 40 ms task.
+The main thread runs one task at a time. web.dev [defines a long task](https://web.dev/articles/optimize-long-tasks) as any task over 50 ms, and [MDN](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming) lists what long tasks cause: delayed input, slow event handling, janky animations and scrolling. 50 ms is three whole frames at 60 Hz. While a task runs, the browser can't respond to input.
 
-## Long tasks break the orbit
+web.dev's advice is to break long tasks into smaller ones and yield to the main thread between them, with `scheduler.yield()` where it exists, so input can be handled in the gaps. The other half is choosing when heavy work runs. Downloading a script queues tasks to parse and compile it, and the biggest script on this site is the three.js chunk (three 0.182 with React Three Fiber 9) behind the planet. It is loaded lazily, and only after three things have happened:
 
-A task over 50 ms is a long task. While it runs, nothing else can: no input handling, no animation frame, no paint. A click that lands 5 ms into a 300 ms task waits 295 ms for a response.
+```tsx title="src/components/three/SkyCanvas.tsx"
+const idle = () =>
+  new Promise<void>((r) => ('requestIdleCallback' in window ? requestIdleCallback(() => r(), { timeout: 4000 }) : setTimeout(r, 1500)));
+// …
+      if (weakDevice()) return setMode('static');
+      await loaded();
+      await document.fonts.ready;
+      await idle();
+```
 
-The fix is not to make the work disappear; it is to break it into pieces that fit inside a frame and let the browser breathe between them.
+The page's `load` event, then the fonts, then an idle callback. The planet appears a moment later than it could. The comment at the top of the file gives the trade: the chunk "never competes with the LCP font".
 
-```ts title="chunked.ts"
-async function processAll(items: Item[]) {
-  let sliceStart = performance.now();
+## A loop that runs only while something moves
 
-  for (const item of items) {
-    process(item);
+The dots behind this site are drawn by `src/scripts/field.ts` on a 2D canvas. On every page except articles like this one, a mouse pointer acts as a gravitational lens: dots near the cursor are pushed outward into a ring, and faint dust that is invisible at rest shows up in the ring. At 1440×900 that is 3,750 points: 1,500 visible stars, plus 2,250 dust points drawn only while a lens is active. The canvas is 2880×1800 device pixels at a device pixel ratio of 2 (the cap).
 
-    // Give the browser a frame back after ~8 ms of work.
-    if (performance.now() - sliceStart > 8) {
-      await yieldToMain();
-      sliceStart = performance.now();
-    }
-  }
+Nothing runs until the pointer moves:
+
+```ts title="src/scripts/field.ts"
+function wake() {
+  if ((live || hTarget || hs || dawn0) && !raf && !document.hidden) raf = requestAnimationFrame(frame);
 }
+// …
+window.addEventListener(
+  'pointermove',
+  (e) => {
+    if (!live || e.pointerType === 'touch') return;
+    tx = e.clientX;
+    ty = e.clientY;
+    // …
+    target = 1;
+    wake();
+  },
+  { passive: true },
+);
+```
 
-function yieldToMain(): Promise<void> {
-  const s = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
-  if (s?.yield) return s.yield();
-  return new Promise((resolve) => setTimeout(resolve, 0));
+The event handler does almost nothing. It records where the pointer is and asks for a frame, but only if none is pending, so several `pointermove` events between two frames still cost one frame. The frame does the work and decides whether it needs another:
+
+```ts title="src/scripts/field.ts"
+function frame(now: number) {
+  raf = 0;
+  const dt = last ? Math.min(now - last, 64) : 16;
+  last = now;
+  const k = 1 - Math.exp(-dt / FOLLOW);
+  lx += (tx - lx) * k;
+  ly += (ty - ly) * k;
+  s += (target - s) * (1 - Math.exp(-dt / FADE));
+  let busy = false;
+  if (Math.abs(tx - lx) < 0.1 && Math.abs(ty - ly) < 0.1) {
+    lx = tx;
+    ly = ty;
+  } else busy = true;
+  if (Math.abs(target - s) < 0.004) s = target;
+  else busy = true;
+  // …
+  draw();
+  if (busy) raf = requestAnimationFrame(frame);
+  else last = 0;
 }
 ```
 
-`scheduler.yield()` puts the continuation at the front of the queue, so the loop resumes as soon as pending input is handled. The `setTimeout` fallback goes to the back, which is slower but still lets the frame through.
+Three details keep it inside the budget:
 
-## Staying inside the budget
+- `requestAnimationFrame` is one-shot. MDN says the callback has to call it again to get another frame, so stopping is just not asking. Once the lens is within 0.1 px of the pointer and its strength has settled, `busy` stays false and the loop ends. The parts cut from the excerpt (the black hole's lens, shockwaves, the big bang's dawn) set `busy` the same way.
+- The ease uses the frame's timestamp. The lens chases the pointer with a 70 ms time constant (`FOLLOW`), computed from `dt`, so it moves at the same speed at 60 Hz and at 120 Hz. MDN warns that animations which ignore the timestamp run faster on high refresh-rate screens. `dt` is clamped to 64 ms, so after a stall the lens covers at most about 60% of the remaining distance in one frame instead of jumping.
+- Nothing is allocated per frame. Positions live in typed arrays sized on resize, and `draw()` fills squares grouped by colour, so `fillStyle` is set at most once for each of its 24 colour buckets.
 
-- Animate `transform` and `opacity`. They skip layout and paint and run on the compositor.
-- Batch reads before writes. Read every measurement first, then apply every style.
-- Keep handlers short. Record what happened, update state, and schedule the heavy part for later.
-- Measure with the Performance panel and look for the red corners on tasks. Those are the missed orbits.
+When the tab is hidden, most browsers already pause `requestAnimationFrame`. The file cancels its frame anyway and resets `last`, so the first frame back uses a 16 ms step instead of the whole time away. On article pages, without a fine pointer, or under reduced motion, the lens never starts: the field is drawn once and stays still, apart from the big bang.
 
-Sixteen milliseconds sounds small until you remember the browser does this 60 times a second for as long as the tab is open. The budget is not a constraint on one frame. It is a rhythm to keep.
+## What it costs, measured
+
+I measured the loop in Chrome 154 on an Apple M5 Mac: the production build served locally, 1440×900 at a device pixel ratio of 2, no CPU throttling, and the 3D planet kept off so only the dust was drawing. A wrapper around `requestAnimationFrame` timed every `frame()` call. A script dispatched a synthetic mouse `pointermove` every 8 ms for 5 seconds, then kept still for 3 seconds. Three runs:
+
+| Run | Callbacks | Mean | p95 | Max | Last frame after the last move |
+|---|---:|---:|---:|---:|---:|
+| 1 | 326 | 0.96 ms | 1.1 ms | 3.5 ms | 430 ms |
+| 2 | 327 | 0.90 ms | 1.1 ms | 1.3 ms | 443 ms |
+| 3 | 326 | 0.68 ms | 1.1 ms | 1.2 ms | 443 ms |
+
+While the pointer moved, frames arrived every 16.7 ms (median) and none were dropped. A frame cost 0.68 to 0.96 ms on average: under 6% of a 16.7 ms frame, and under a tenth of web.dev's 10 ms.
+
+Then the loop stopped. The last frame ran 430 to 443 ms after the last pointer move, and there were no callbacks at all for the remaining ~2.55 s of each run. With the pointer still in the window and nothing else moving, the only thing keeping the loop busy is the lens closing its last gap to 0.1 px. 430 to 443 ms is a little over six of its 70 ms time constants; how many it takes depends on how far behind the pointer the lens was when the pointer stopped.
+
+Two limits on these numbers. The wrapper times main-thread JavaScript, including the canvas calls, but not rasterising or compositing, and the timer resolution was 0.1 ms. And this is one fast Mac at 60 Hz. I haven't measured the loop on a phone.
+
+## The rule behind it
+
+The site's working rules say it in four words: idle means zero work. In practice that comes down to a few habits:
+
+- Request a frame from the event that changed something, not from a loop that is always running.
+- Make every frame prove the next one is needed. Each moving part sets `busy`; if none does, the loop ends.
+- Ease with the timestamp, never the frame count.
+- Keep big parsing and setup work away from the first frames: after `load`, fonts and an idle callback.
+- Measure two things: what a frame costs, and how quiet the page gets once nothing moves.
+
+The planet is the exception on purpose. It animates all the time, so it caps itself instead of stopping: React Three Fiber's `frameloop="demand"`, with the scene rendering about 29 times a second while idle and parking on article pages. The details are in [how I built the draggable black hole](/writing/draggable-black-hole). The next post in this series, [designing for the second visit](/writing/designing-for-the-second-visit), moves from frames to page loads.

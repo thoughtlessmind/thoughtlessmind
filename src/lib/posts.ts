@@ -2,14 +2,14 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 
 export type Post = CollectionEntry<'blog'>;
 
-const byDateDesc = (a: Post, b: Post) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
+const byDateDesc = (a: Post, b: Post) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf() || a.id.localeCompare(b.id);
 
 /**
- * Every post, newest first — drafts included. A draft still renders and is listed (with a "Draft"
- * badge) but is noindex and left out of RSS, llms.txt, the sitemap and Pagefind: see getSyndicatedPosts.
+ * Every post, newest first. Drafts exist only in dev (a "Draft" badge, noindex); a production build leaves
+ * them out entirely: no page, no listing, no tag, no palette entry, no OG image.
  */
 export async function getPublishedPosts(): Promise<Post[]> {
-  return (await getCollection('blog')).sort(byDateDesc);
+  return (await getCollection('blog', ({ data }) => import.meta.env.DEV || !data.draft)).sort(byDateDesc);
 }
 
 /** Posts that feeds, indexes and crawlers may see: no drafts. */

@@ -1,7 +1,7 @@
 export const SITE = {
   name: 'Rajiv Kumar',
   handle: 'thoughtlessmind',
-  title: 'Rajiv Kumar — Web engineer',
+  title: 'Rajiv Kumar (thoughtlessmind) — React & TypeScript web engineer',
   description:
     'Web engineer in New Delhi. Seven years of React and TypeScript, shipping web products that are fast, exact, and quietly good.',
   url: 'https://thoughtlessmind.dev',
@@ -21,9 +21,9 @@ export const SITE = {
   timezone: 'Asia/Kolkata',
   gaId: 'G-CENN0Q2PZR',
   nav: [
-    { label: 'Work', href: '/work/' },
-    { label: 'Writing', href: '/writing/' },
-    { label: 'About', href: '/about/' },
+    { label: 'Work', href: '/work' },
+    { label: 'Writing', href: '/writing' },
+    { label: 'About', href: '/about' },
   ],
 } as const;
 

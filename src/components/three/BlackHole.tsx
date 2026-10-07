@@ -28,6 +28,7 @@ const DAMP = 0.8;
 const GLIDE = 4; // 1/s: how fast it slows once let go, at rest mass
 const STEP = 24; // px per arrow key, toward or away from the planet
 const GULP = 0.32; // s
+const FLARE_GAP = 1 / 3; // s between flares at least: gulps can come every frame, and nothing flashes over 3/s
 // Where it rests, tried in order (angle from the planet's centre, y up): lower left, lower right, upper left, upper right.
 const REST = [-2.4, -0.75, 2.4, 0.75];
 
@@ -135,6 +136,8 @@ function makeState() {
     t: 0,
     b: 0,
     sent: { x: NaN, y: NaN, r: 0, held: false }, // last `signal:hole`
+    flareAt: -1, // clock s of the gulp the flare started on
+    flareSize: 0,
   };
 }
 type State = ReturnType<typeof makeState>;
@@ -395,7 +398,13 @@ export default function BlackHole({ tide, palette }: Props) {
     }
     scene.bend.update(x, y, R, t);
 
-    const gulp = T.gulpAt >= 0 && t - T.gulpAt < GULP ? Math.sin((Math.PI * (t - T.gulpAt)) / GULP) * T.gulpSize : 0;
+    // A gulp restarts the flare (ring and disk) unless one started under FLARE_GAP ago; then it swallows without one.
+    if (t - T.gulpAt < GULP && T.gulpAt - s.flareAt >= FLARE_GAP) {
+      s.flareAt = T.gulpAt;
+      s.flareSize = T.gulpSize;
+      T.fed = Math.min(1, T.fed + 0.5 * T.gulpSize);
+    }
+    const gulp = s.flareAt >= 0 && t - s.flareAt < GULP ? Math.sin((Math.PI * (t - s.flareAt)) / GULP) * s.flareSize : 0;
     if (gulp > 0) invalidate();
     T.fed *= Math.exp(-dt / 0.5);
 

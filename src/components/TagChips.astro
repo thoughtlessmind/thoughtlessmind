@@ -11,7 +11,7 @@ interface Props {
   class?: string;
 }
 const { tags, active, total, allCount = total, class: className } = Astro.props;
-const chips = [{ tag: 'all', count: allCount, href: '/writing/' }, ...tags.map((t) => ({ ...t, href: `/writing/tag/${t.tag}/` }))];
+const chips = [{ tag: 'all', count: allCount, href: '/writing' }, ...tags.map((t) => ({ ...t, href: `/writing/tag/${t.tag}` }))];
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
@@ -96,6 +96,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   @media (max-width: 640px) {
     .tag-chips {
       flex-direction: column-reverse;
+      align-items: stretch;
     }
     .chip-row {
       flex-wrap: nowrap;

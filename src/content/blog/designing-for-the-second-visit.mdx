@@ -1,73 +1,141 @@
 ---
 title: "Designing for the second visit: caching, prefetch and view transitions"
-description: The first load is a benchmark. The second visit is the product. Cache headers, prefetching, and view transitions that make a static site feel instant.
-pubDate: 2026-08-09
+description: "How this site makes the next page cheap: immutable hashed assets, revalidated HTML, prefetch on hover and a router that keeps its canvases."
+pubDate: 2026-10-07
 tags: [performance, tooling]
 series: Frontend performance field notes
 seriesOrder: 3
-draft: true
+draft: false
 ---
 
-Most performance work targets the first visit: the cold cache, the unknown device, the Lighthouse run. That is the visit you can measure. The visit that decides whether someone comes back is the second one, and it is shaped by three things you set once and forget.
+The next page, and the next visit, should cost almost nothing. For the next visit, that is caching: hashed files under `/_astro/` are cached for a year as `immutable`, and HTML is revalidated against an `ETag` on every request. For the next page, it is prefetch and the router: Astro prefetches a link once the pointer rests on it for 80 ms, and its `ClientRouter` swaps the page in place and keeps the canvases behind it. In my local runs, a click on a prefetched link fetched no JavaScript and reached `astro:page-load` in 42 to 48 ms.
 
-## Cache headers that mean it
+Everything below is Astro 7 with a static build. When I measured this, the rebuilt site wasn't deployed, so I checked the cache headers locally against Cloudflare's runtime (`wrangler dev`), not in production. I say which server each number came from.
 
-A static site has two kinds of files: HTML that changes when you publish, and assets with a content hash in the filename that never change. They need opposite headers.
+## Two kinds of files, two cache rules
 
-```text title="_headers"
-/*
-  Cache-Control: public, max-age=0, must-revalidate
+Astro writes the bundled scripts, stylesheets and fonts to `/_astro/` with a content hash in the name, like `Scene.1qKku07X.js`, the three.js chunk. Change the file and the name changes, so a URL under `/_astro/` always means the same bytes. [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control#immutable) calls this the cache-busting pattern, and it is what makes `immutable` safe. The whole policy for those files is one rule:
 
+```text title="public/_headers"
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
-
-/fonts/*
-  Cache-Control: public, max-age=31536000, immutable
 ```
 
-`immutable` tells the browser not to revalidate even on reload. On the second visit, the only request that leaves the device is the HTML, and with an `ETag` it usually comes back as a 304 with no body. Everything else is served from disk.
+`max-age=31536000` is a year. `immutable` tells the browser the response won't change while it is fresh, so it skips the conditional request it would otherwise send when the reader reloads.
 
-The mistake I see most is one blanket `max-age` for the whole site: either too short, so assets re-download, or too long, so readers see stale HTML after a deploy.
+The HTML gets no rule from me. Cloudflare's static assets [attach defaults](https://developers.cloudflare.com/workers/static-assets/headers/) to their responses: `Cache-Control: public, max-age=0, must-revalidate` and an `ETag` that is a hash of the file. The browser may keep a copy but has to ask before reusing it. MDN notes that `max-age=0, must-revalidate` is equivalent to `no-cache`. If the page hasn't changed, the answer is a `304` with no body.
 
-## Prefetch what the reader will click
+I checked this with `wrangler dev` (wrangler 4.148.0) serving the built `dist/`. It is Cloudflare's runtime on my machine, and it applied the `_headers` file. Requests sent `accept-encoding: br, gzip`:
 
-The second page of a session can load before the reader asks for it. Astro, Next and most frameworks ship a prefetch that watches links entering the viewport and fetches them at low priority. On a blog index that means every visible post is already in the cache when the click comes.
+<div class="table-wrap">
 
-For the browsers that support it, Speculation Rules go further and prerender the page in a hidden tab, so navigation is effectively instant.
+| Path | `cache-control` | Encoding | Bytes |
+|---|---|---|---:|
+| `/` | `public, max-age=0, must-revalidate` | br | 12,911 |
+| `/_astro/Scene.1qKku07X.js` | `public, max-age=31536000, immutable` | br | 225,443 |
+| `/_astro/BaseLayout.BjjjzGeS.css` | `public, max-age=31536000, immutable` | br | 11,340 |
+| `/_astro/geist-pixel-latin-elsh-normal.BMhxQSt5.woff2` | `public, max-age=31536000, immutable` | none | 26,440 |
+| `/pagefind/pagefind.js` | `public, max-age=0, must-revalidate` | br | 12,537 |
 
-```html title="index.html"
-<script type="speculationrules">
-  {
-    "prerender": [{ "where": { "href_matches": "/writing/*" }, "eagerness": "moderate" }]
-  }
-</script>
+</div>
+
+The three.js chunk is 225,443 B here because `wrangler dev` compresses with a lower brotli quality than the maximum. At maximum quality (Node's brotli defaults) it is 199,636 B, the figure in my other posts.
+
+Sending the `ETag` back as `If-None-Match` got a `304` for `/`, for a post and for the CSS file. For `/` the body was 0 bytes.
+
+Two rows are worth a second look. The font has no `content-encoding` because woff2 is already compressed. And `/pagefind/pagefind.js`, the search script, has no hash in its name, so it stays on the revalidate default. That is the right rule for a file whose URL doesn't change between builds.
+
+One more round trip I avoid: `/about/` with a trailing slash answers `307` with a redirect to `/about`. No internal link on the site ends with `/`, so links on the site don't pay for that hop.
+
+## Prefetch on hover
+
+The next page can be in the cache before the click. One line in the config turns that on:
+
+```js title="astro.config.mjs"
+export default defineConfig({
+  site,
+  output: 'static',
+  trailingSlash: 'never',
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+  // …
+});
 ```
 
-`moderate` triggers on hover, which is late enough to avoid wasting bandwidth on links nobody uses and early enough that most clicks land on a ready page. Keep prerender off pages with side effects, and remember that prerendered pages run scripts: an analytics call in a prerendered tab counts a visit that did not happen unless you check `document.prerendering` first.
+`prefetchAll` makes every internal link a candidate, and `hover` decides when. In Astro 7.3.1's prefetch script, the hover strategy listens for `mouseenter` and `focusin`, waits 80 ms, then adds a `<link rel="prefetch">` for the URL (or a low-priority `fetch` where that isn't supported). Leaving within the 80 ms cancels it. Focus counts, so keyboard users get the prefetch too. On a data-saver or 2G connection it waits for the tap instead, on `touchstart` or `mousedown`. The other built-in strategies fetch more eagerly: `viewport` prefetches a link once it has been in view for 300 ms, and `load` fetches every link as soon as the page loads.
 
-## View transitions
+I measured it under `astro preview` in Chrome 154 on an Apple M5 Mac, with real mouse hover and click events on the header nav links, from a cold cache:
 
-A cached, prefetched page still loads with a flash of blank between documents. View transitions replace that with a cross-fade, and the CSS-only version needs two rules.
+| | `/` → `/writing` | `/writing` → `/about` |
+|---|---|---|
+| Prefetch starts after `mouseover` | 83 ms | 82 ms |
+| Prefetch transfer (decoded) | 9,739 B (40,951 B) | 11,739 B (43,548 B) |
+| Fetched again on click | `304`, 300 B | `304`, 300 B, plus a 1,365 B page stylesheet |
 
-```css title="global.css"
-@view-transition {
-  navigation: auto;
+The 82 and 83 ms are that 80 ms delay plus a couple of milliseconds. The prefetch took 6 ms each time, but that was localhost with no network latency.
+
+The click still asked the server about the document, because `astro preview` sends `cache-control: no-cache`. With Cloudflare's `must-revalidate` I expect the same small revalidation there; I haven't measured it on Cloudflare. The prefetch covers only the HTML, so `/about` still fetched its own small stylesheet on the click.
+
+## The page changes, the sky stays
+
+`<ClientRouter />` in the layout's `<head>` turns internal navigations into client-side swaps: Astro fetches the next page and replaces the DOM, using the browser's View Transitions API where it exists, instead of a full page load. `transition:persist` marks what should survive the swap:
+
+```astro title="src/layouts/BaseLayout.astro"
+<html lang="en">
+  <head>
+    <!-- … -->
+    <ClientRouter />
+    <!-- … -->
+  </head>
+  <body data-page={page}>
+    <!-- … -->
+    <canvas class="field-fx" width="0" height="0" aria-hidden="true" transition:persist="field-fx"></canvas>
+    <div data-canvas aria-hidden="true" class="sky">
+      <SkyCanvas client:idle transition:persist transition:name="sky" />
+    </div>
+```
+
+[Astro's docs](https://docs.astro.build/en/guides/view-transitions/#maintaining-state) say a persisted island keeps its current state instead of being replaced by the new page's copy. Here that is the 2D star-field canvas and the planet's island with its running WebGL scene, so the planet isn't rebuilt on every page.
+
+To check it, I set a marker property on the star-field canvas, the planet's canvas and its island before navigating. After `/` → `/writing` → `/about`, all three were the same nodes with the marker still on them, the scene was still running (`html[data-scene="on"]`), and there was one `<main>`. Neither navigation fetched any JavaScript. Timed from the click, same localhost setup:
+
+| | `/` → `/writing` | `/writing` → `/about` |
+|---|---:|---:|
+| `astro:before-swap` | 35 ms | 34 ms |
+| `astro:after-swap` (new `<main>` in the DOM) | 42 ms | 39 ms |
+| `astro:page-load` | 48 ms | 42 ms |
+
+The look of the swap is a few lines of CSS:
+
+```css title="src/styles/global.css"
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) { animation: fade-out var(--dur-page-out) steps(3, end) both; }
+  /* Held hidden until the old page is gone, then the swapped-in main runs its own flicker. */
+  ::view-transition-new(root) { animation: fade-in var(--dur-page-out) steps(1, end) both; }
+  main.flicker { animation-name: flicker-soft; }
 }
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 250ms;
-}
 ```
 
-Give an element the same `view-transition-name` on both pages, an article title on the index and on the post, and the browser animates it from one position to the other. The effect is small, but it is the difference between "a site" and "an app" in the reader's head. Keep it at 250 ms and respect `prefers-reduced-motion`.
+`--dur-page-out` is 160 ms. Under reduced motion none of this applies, and Astro's `ClientRouter` [disables every view transition animation](https://docs.astro.build/en/guides/view-transitions/#prefers-reduced-motion) on its own: the DOM just swaps.
 
-## What to measure
+## What the router costs
 
-The first visit has Lighthouse. For the second, look at:
+A client-side swap is not a page load, and code has to know that. Astro runs bundled module scripts [only once](https://docs.astro.build/en/guides/view-transitions/#script-re-execution), so anything that belongs to one page hangs off the router's lifecycle events instead:
 
-- Cache hit ratio at the CDN. It should be above 90 percent for assets.
-- The number of requests on a warm reload. For a post page here it is one.
-- Navigation timing in the field, split by `transferSize === 0`, which tells you the response came from cache.
+```ts title="src/scripts/fx.ts"
+document.addEventListener('astro:page-load', init);
+document.addEventListener('astro:before-swap', cleanup);
+// Page transitions: the swapped-in <main> turns on like a CRT (CSS keeps it static under reduced motion).
+document.addEventListener('astro:after-swap', () => document.querySelector('main')?.classList.add('flicker'));
+```
 
-A fast first load gets someone in the door. A fast second visit is why they stay.
+`init` starts the readouts and effects for the new page. `cleanup` aborts the old page's listeners and clears its observers, timers and animation frames, so nothing leaks from one page into the next. The star field re-checks the page on `astro:page-load` too, because the lens is off on articles. Analytics needs the same care: the layout sends a `page_view` from `astro:page-load` on every navigation.
+
+## What I haven't measured
+
+Apart from the analytics script, everything here was measured against two local servers on one machine, so some things are still open:
+
+- The Cloudflare edge itself: its compression, HTTP/2 or HTTP/3, and its own cache. The rebuilt site wasn't deployed when I measured this.
+- A real repeat visit days later. The headers say it should be one HTML revalidation, with every `/_astro/` file served from the browser cache, but that is what the headers promise, not something I measured.
+- Analytics. Fetched with Node, Google's `gtag.js` was 164,040 B with brotli and came with `cache-control: private, max-age=900`. Its cache rule is Google's, not mine, and fifteen minutes is short next to the one-year rule on my own files.
+
+The cost of a single frame is in the [previous post in this series](/writing/the-rendering-budget).

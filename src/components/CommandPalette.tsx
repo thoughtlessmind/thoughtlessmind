@@ -156,7 +156,8 @@ export default function CommandPalette({ pages, posts, projects }: Props) {
         const data = await Promise.all(res.results.slice(0, 6).map((r: { data: () => Promise<any> }) => r.data()));
         if (live)
           setHits(
-            data.map((d) => ({ id: `pf:${d.url}`, label: d.meta?.title ?? d.url, hint: strip(d.excerpt ?? ''), href: d.url })),
+            // Pagefind keeps the built folder path (/writing/x/); the site's URLs have no trailing slash.
+            data.map((d) => ({ id: `pf:${d.url}`, label: d.meta?.title ?? d.url, hint: strip(d.excerpt ?? ''), href: d.url.replace(/(.)\/$/, '$1') })),
           );
       } catch {
         if (live) setHits([]);

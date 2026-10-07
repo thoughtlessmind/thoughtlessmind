@@ -24,6 +24,8 @@ interface Props {
   showTags?: boolean;
   series?: Map<string, Post[]>;
   breadcrumb?: boolean;
+  /** Thin tag and series pages (fewer than 3 posts) stay out of the index. */
+  noindex?: boolean;
 }
 const {
   title,
@@ -38,16 +40,17 @@ const {
   showTags = true,
   series,
   breadcrumb = false,
+  noindex = false,
 } = Astro.props;
 const groups: [string, Post[]][] = groupYears ? groupByYear(posts).map(([y, list]) => [String(y), list]) : [['', posts]];
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
-<BaseLayout title={title} description={description} page="writing">
+<BaseLayout title={title} description={description} page="writing" noindex={noindex}>
   <header class="container-site page-head">
     {
       breadcrumb && (
-        <a href="/writing/" class="crumb">
+        <a href="/writing" class="crumb">
           cd ../writing
         </a>
       )
@@ -100,7 +103,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
               <span class="series-row__marker" aria-hidden="true">
                 ▸
               </span>
-              <a href={`/writing/series/${slugify(name)}/`} class="series-row__title">
+              <a href={`/writing/series/${slugify(name)}`} class="series-row__title">
                 {name}
               </a>
               <span class="series-row__leader" aria-hidden="true"></span>

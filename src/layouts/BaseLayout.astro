@@ -20,7 +20,8 @@ const { class: mainClass, page, ...head } = Astro.props;
 
 // gtag is injected after the first page-load + idle so its 160 KB never competes with the hero font;
 // page_view still fires on every ClientRouter navigation (queued into dataLayer until gtag.js lands).
-const gaScript = `(function(){var id='${SITE.gaId}',booted=false;function boot(){booted=true;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',id,{send_page_view:false});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s)}function view(){gtag('event','page_view',{page_location:location.href,page_title:document.title})}document.addEventListener('astro:page-load',function(){if(booted)return view();var go=function(){boot();view()};'requestIdleCallback'in window?requestIdleCallback(go,{timeout:4000}):setTimeout(go,1500)})})();`;
+// Only on the real host: localhost previews and *.workers.dev builds send nothing.
+const gaScript = `(function(){if(location.hostname!=='${new URL(SITE.url).hostname}')return;var id='${SITE.gaId}',booted=false;function boot(){booted=true;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',id,{send_page_view:false});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s)}function view(){gtag('event','page_view',{page_location:location.href,page_title:document.title})}document.addEventListener('astro:page-load',function(){if(booted)return view();var go=function(){boot();view()};'requestIdleCallback'in window?requestIdleCallback(go,{timeout:4000}):setTimeout(go,1500)})})();`;
 ---
 
 <html lang="en">

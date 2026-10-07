@@ -457,8 +457,8 @@
   [data-uptime-since],
   [data-pointer-coords] { font-variant-numeric: tabular-nums; }
 
-  /* CRT turn-on (once). */
-  .flicker { animation: flicker-on var(--dur-flicker) var(--ease-step) both; }
+  /* CRT turn-on (once). `backwards` not `both`: a held opacity fill is never an LCP candidate, so the glitch burst was. */
+  .flicker { animation: flicker-on var(--dur-flicker) var(--ease-step) backwards; }
 
   /* Glitch: two copies of data-text, offset in accent + signal, sliced into 3 bands. */
   .glitch { position: relative; }
@@ -469,11 +469,14 @@
     inset: 0;
     white-space: pre-line;
     pointer-events: none;
-    opacity: 0;
-    mix-blend-mode: var(--glitch-blend);
+    /* Not 0: painted at rest, so LCP records the copy at first paint, not at the first burst. Invisible. */
+    opacity: 0.001;
   }
   .glitch::before { color: var(--accent); }
   .glitch::after { color: var(--signal); }
+  /* Blend only while bursting: at rest a blended copy would cost a compositing pass per sky frame. */
+  .glitch:is(:hover, :focus-visible, .is-glitching)::before,
+  .glitch:is(:hover, :focus-visible, .is-glitching)::after { mix-blend-mode: var(--glitch-blend); }
   .glitch:is(:hover, :focus-visible, .is-glitching)::before { animation: glitch-a var(--dur-glitch) steps(1, end); }
   .glitch:is(:hover, :focus-visible, .is-glitching)::after { animation: glitch-b var(--dur-glitch) steps(1, end); }
 

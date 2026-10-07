@@ -10,7 +10,7 @@ import PostRow from '../components/PostRow.astro';
 import Counters from '../components/Counters.astro';
 import { SITE } from '../consts';
 import { getSyndicatedPosts } from '../lib/posts';
-import { person } from '../lib/person';
+import { person, PERSON_ID, WEBSITE_ID } from '../lib/person';
 
 const projects = (await getCollection('projects', ({ data }) => data.featured && !data.archived)).sort(
   (a, b) => a.data.order - b.data.order,
@@ -31,14 +31,23 @@ const socials = [
   { label: 'Stack Overflow', href: SITE.socials.stackoverflow },
   { label: 'dev.to', href: SITE.socials.devto },
 ];
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': WEBSITE_ID,
+  name: SITE.name,
+  alternateName: SITE.handle,
+  url: SITE.url,
+  publisher: { '@id': PERSON_ID },
+};
 ---
 
-<BaseLayout title={SITE.title} description={SITE.description} jsonLd={person()}>
+<BaseLayout title={SITE.title} description={SITE.description} jsonLd={[person(), website]}>
   <Hero />
   <Marquee />
 
   <section id="work" class="container-site section" aria-labelledby="work-title" data-reveal-group>
-    <SectionHeading index="01" label="Shipped" title="Selected work" id="work-title" href="/work/" linkLabel="All work" class="reveal" />
+    <SectionHeading index="01" label="Shipped" title="Selected work" id="work-title" href="/work" linkLabel="All work" class="reveal" />
     <div class="reveal"><SiteCaseStudy /></div>
     <ul class="home-modules">
       {projects.map((p, i) => <ProjectCard project={p} index={i + 1} class="reveal" />)}
@@ -46,14 +55,14 @@ const socials = [
   </section>
 
   <section id="writing" class="container-site section" aria-labelledby="writing-title" data-reveal-group>
-    <SectionHeading index="02" label="Logs" title="Latest writing" id="writing-title" href="/writing/" linkLabel="All writing" class="reveal" />
+    <SectionHeading index="02" label="Logs" title="Latest writing" id="writing-title" href="/writing" linkLabel="All writing" class="reveal" />
     <ul class="rows">
       {posts.map((post) => <PostRow post={post} class="reveal" />)}
     </ul>
   </section>
 
   <section id="operator" class="container-site section" aria-labelledby="operator-title" data-reveal-group>
-    <SectionHeading index="03" label="Operator" title="On record" id="operator-title" href="/about/" linkLabel="Full dossier" class="reveal" />
+    <SectionHeading index="03" label="Operator" title="On record" id="operator-title" href="/about" linkLabel="Full dossier" class="reveal" />
     <Counters items={counters} class="reveal" />
     <div class="operator reveal">
       <p class="operator__bio">

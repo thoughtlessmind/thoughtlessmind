@@ -20,13 +20,13 @@ const paletteProps = {
     .slice(0, 20)
     .map((p) => ({
       title: p.data.title,
-      href: p.data.external ?? `/writing/${p.id}/`,
+      href: p.data.external ?? `/writing/${p.id}`,
       date: formatDate(p.data.pubDate),
       draft: p.data.draft,
     })),
   projects: (await getCollection('projects'))
     .sort((a, b) => a.data.order - b.data.order)
-    .map((p) => ({ label: p.data.title, href: p.data.live ?? p.data.repo ?? '/work/' })),
+    .map((p) => ({ label: p.data.title, href: p.data.live ?? p.data.repo ?? '/work' })),
 };
 ---
 

@@ -22,7 +22,7 @@ const lastmod = new Map();
 for (const file of readdirSync(blogDir)) {
   if (!/\.mdx?$/.test(file)) continue;
   const fm = readFileSync(new URL(file, blogDir), 'utf8').split(/^---$/m)[1] ?? '';
-  const url = `${site}/writing/${file.replace(/\.mdx?$/, '')}/`;
+  const url = `${site}/writing/${file.replace(/\.mdx?$/, '')}`;
   /** @param {string} name */
   const field = (name) => fm.match(new RegExp(`^${name}:\\s*(.+)$`, 'm'))?.[1].trim().replace(/^["']|["']$/g, '');
   const canonical = field('canonical');
@@ -30,13 +30,14 @@ for (const file of readdirSync(blogDir)) {
   const date = field('updatedDate') ?? field('pubDate');
   if (date) lastmod.set(url, new Date(date).toISOString());
 }
-const buildDate = new Date().toISOString();
 
 // https://astro.build/config
 export default defineConfig({
   site,
   output: 'static',
-  trailingSlash: 'always',
+  // No trailing slash: /about, not /about/. Output stays about/index.html; Cloudflare's drop-trailing-slash
+  // serves it at /about and 307s /about/ there (wrangler.jsonc).
+  trailingSlash: 'never',
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   integrations: [
     react(),
@@ -89,8 +90,12 @@ export default defineConfig({
     }),
     mdx(),
     sitemap({
-      filter: (page) => !excluded.has(page),
-      serialize: (item) => ({ ...item, lastmod: lastmod.get(item.url) ?? buildDate }),
+      filter: (page) => !excluded.has(page) && !/\/writing\/(tag|series)\//.test(page),
+      // Only posts carry a lastmod (a real date); the other URLs get none rather than a build date.
+      serialize: (item) => {
+        const date = lastmod.get(item.url);
+        return date ? { ...item, lastmod: date } : item;
+      },
     }),
     pagefind(),
   ],

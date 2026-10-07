@@ -10,6 +10,12 @@ import { SITE } from '../consts';
 import { person } from '../lib/person';
 
 const dek = 'Web engineer. Seven years in, still curious about what runs underneath.';
+const description =
+  'Rajiv Kumar (thoughtlessmind), web engineer in New Delhi since 2019: React, TypeScript, 98 Stack Overflow answers and the css-only-tooltip library.';
+// Bump when the facts on this page change; deliberately not the build date.
+const dateModified = '2026-10-07';
+const { '@context': context, ...entity } = person();
+const profile = { '@context': context, '@type': 'ProfilePage', dateModified, mainEntity: entity };
 const id = [
   ['Name', SITE.name],
   ['Role', SITE.role],
@@ -56,7 +62,7 @@ const elsewhere: { name: IconName; label: string; href: string }[] = [
 ];
 ---
 
-<BaseLayout title="About" description={dek} jsonLd={person(`${SITE.url}/about/`)}>
+<BaseLayout title="About" description={description} jsonLd={profile}>
   <header class="container-site page-head dossier">
     <Avatar size={176} class="dossier__avatar" />
     <div class="dossier__file">

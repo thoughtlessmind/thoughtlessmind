@@ -35,7 +35,8 @@ const {
 const path = Astro.url.pathname;
 const isHome = path === '/';
 const fullTitle = isHome ? SITE.title : `${title} · ${SITE.name}`;
-const canonical = new URL(path.endsWith('/') ? path : `${path}/`, Astro.site);
+// No trailing slash (trailingSlash: 'never'); the root stays `/`.
+const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Astro.site);
 const canonicalHref = canonicalOverride ?? canonical.href;
 const ogImage = new URL(image, Astro.site);
 const iso = (d?: Date | string) => (d instanceof Date ? d.toISOString() : d);

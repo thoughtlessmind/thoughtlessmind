@@ -1,0 +1,195 @@
+---
+title: How I built a draggable black hole in an Astro site
+description: "The black hole on my home page: a lazy React Three Fiber island, a CPU tide sim, one window event for the dust and SVG filters for the text."
+pubDate: 2026-10-07
+tags: [react, performance]
+draft: false
+---
+
+The black hole on my [home page](/) is three tricks behind one `<span role="slider">`. A React Three Fiber scene, lazy-loaded into an Astro island, draws it and runs a small simulation that tears the planet apart. One window event tells the 2D dust canvas where the hole is, and SVG filters bend the text it passes over. The site runs Astro 7, React 19, three 0.182 and @react-three/fiber 9.
+
+## A slider with a shader under it
+
+The hit area is plain markup in the hero. It starts `hidden`, and only the scene unhides it, so a visitor without WebGL never meets a control that does nothing.
+
+```html title="src/components/Hero.astro"
+<span
+  class="hole"
+  data-black-hole
+  role="slider"
+  tabindex="0"
+  aria-label="Black hole: drag it toward the planet"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="0"
+  aria-valuetext="Pull 0%"
+  hidden></span>
+```
+
+`BlackHole.tsx` binds `pointerdown`, `pointermove` and `pointerup` on it and calls [`setPointerCapture`](https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture), so the drag keeps its events when the cursor outruns the span. Arrow keys move it 24 px nearer to the planet or further away, and `aria-valuenow` reports the pull from 0 to 100.
+
+The pointer never moves the hole directly. It sets a target, and a damped spring pulls the hole toward it every frame:
+
+```tsx title="src/components/three/BlackHole.tsx"
+// Heavy: a damped spring toward the drag (or key) target, slower the more it has eaten; let go, it glides.
+const mass = 1 + MASS * T.eaten;
+// …
+if (s.held || s.seek) {
+  const w = SPRING / Math.sqrt(mass);
+  s.vx += (w * w * (s.tx - s.x) - 2 * DAMP * w * s.vx) * dt;
+  s.vy += (w * w * (s.ty - s.y) - 2 * DAMP * w * s.vy) * dt;
+} else {
+  const k = Math.exp((-GLIDE / Math.sqrt(mass)) * dt);
+  s.vx *= k;
+  s.vy *= k;
+}
+```
+
+`SPRING` is 9 rad/s and `DAMP` is 0.8, just under critical damping, so it trails the cursor and settles without wobbling. `MASS` is 3: with the whole planet eaten it weighs 4 times as much, so the spring answers half as fast and, let go, it takes twice as long to stop.
+
+None of this is React state. `BlackHole` and `Planet` share one mutable `Tide` object through a ref: the hole writes where it is and how hard it pulls, the planet writes how much has been eaten. Both read it in `useFrame`, as the R3F docs [recommend](https://r3f.docs.pmnd.rs/advanced/pitfalls) instead of `setState` in a render loop, so a drag never re-renders a component. The hole itself is one quad, shaded in the same grid of dithered squares as the planet.
+
+## The tide: a CPU sim that feeds a vertex shader
+
+The planet is 8,000 points in one `<points>` draw: 5,000 on the sphere and 3,000 in the ring. Each point has a threshold, `base`: about 0 at the ring's outer edge, about 0.5 at its inner edge, 0.55 to 0.65 on the sphere. One number, the exposure E, climbs while the hole pulls and falls when it stops:
+
+```ts title="src/components/three/Planet.tsx"
+const TEAR_RATE = 0.05; // E per second at full pull: the whole planet in ~20s
+const MEND_RATE = 0.25; // E per second once nothing pulls
+// …
+s.e = pull > 0 ? Math.min(1.05, s.e + f.dt * TEAR_RATE * pull ** 1.5) : Math.max(0, s.e - f.dt * MEND_RATE);
+// …
+const face = clamp01(1 - (Math.hypot(px - ux, py - uy) - near) / 4.8);
+if (s.e < base[i] + FACE * (1 - face)) continue;
+```
+
+A point tears off once E passes its threshold, plus up to `FACE` (0.35) on the side away from the hole. So the outer ring goes first, and the near side goes before the far side. At most 500 points tear off per second.
+
+A torn point drifts for a moment, then falls:
+
+```ts title="src/components/three/Planet.tsx"
+// A plunge, faster the deeper it falls, with a last clockwise curl; stepped in polar form (exact turns).
+const v = Math.sqrt((2 * gm) / r) * (0.8 + 0.4 * seed[i]);
+const turn = CURL * Math.min(1, (2.5 * R) / r);
+```
+
+√(2GM/r) is the speed of something that fell from rest far away, the same expression as [escape velocity](https://openstax.org/books/university-physics-volume-1/pages/13-3-gravitational-potential-energy-and-total-energy). Each point gets a random ±20% on it. Nothing settles into orbit. At 1.3 horizon radii a point stops and hangs there, dimming and reddening, until the hole gulps: within 0.45 s of the first arrival, or at once when 30 points are waiting. Each gulp swells the horizon for 0.32 s, except one that comes under 1/3 s after the last swell, so it never flares more than 3 times a second. The hole ends up 35% wider once it has eaten everything. Move it out of reach and E falls at 0.25 per second; the points come back in reverse order, each one flickering on.
+
+The sim runs on the CPU, in typed arrays. It writes each torn point's position into a per-point attribute, `aFree`, created with `DynamicDrawUsage`, and flags it for upload only on frames where something changed. The vertex shader blends each point from its place on the planet to the sim's position, so the GPU still does all the drawing. While anything is in flight, `stepSim` returns true and `Planet` calls `invalidate()` for the next frame.
+
+## Bending the dust with one window event
+
+The dust behind the page is not part of the WebGL scene. It is a 2D canvas drawn by `field.ts`, a vanilla script outside React that keeps its canvas across page navigations. The hole talks to it with one event, sent only when it has moved more than 0.3 px or changed size:
+
+```tsx title="src/components/three/BlackHole.tsx"
+const sent = s.sent;
+if (Math.abs(x - sent.x) > 0.3 || Math.abs(y - sent.y) > 0.3 || R !== sent.r || s.held !== sent.held) {
+  Object.assign(sent, { x, y, r: R, held: s.held });
+  dispatchEvent(new CustomEvent('signal:hole', { detail: { x, y, r: R, held: s.held } }));
+}
+```
+
+```ts title="src/scripts/field.ts"
+window.addEventListener('signal:hole', (e) => {
+  const d = (e as CustomEvent<{ x: number; y: number; r: number; held?: boolean } | null>).detail;
+  if (!d || !ctx || calm.matches) {
+    hTarget = 0;
+  } else {
+    // …
+    hTarget = 1;
+    if (d.held) target = 0; // the pointer is on the hole: one lens, not two
+  }
+  wake();
+});
+```
+
+`field.ts` already lenses the dust around the cursor, so the hole is a second call to the same `lens()` function with its own numbers, scaled to the horizon: an Einstein radius of 2.2 horizon radii and a reach of 10. Each dot moves outward to `r′ = (r + √(r² + 4θ_E²)) / 2`, where θ_E is the Einstein radius. That is the outer image of a point-mass lens ([Narayan and Bartelmann, §2.1.5](https://arxiv.org/abs/astro-ph/9606001)), windowed back to rest at the edge:
+
+```ts title="src/scripts/field.ts"
+const u = 1 - d2 / r2;
+const push = k * u * u * (Math.sqrt(d2 + e4) - d) * 0.5;
+```
+
+The stars inside the WebGL scene use the same equation in GLSL, so stars and dust bend together. While you drag, the hole replaces the cursor's lens, so there is one lens on screen, not two. A `null` detail, sent when the hole leaves the page, and reduced motion both drop it. `wake()` starts the rAF loop, and the loop stops once the lens has eased to rest.
+
+## Bending the text with SVG filters
+
+The text stays real DOM text. `bend.ts` never touches its content; it puts an SVG filter on the text blocks near the hole. The filter's input is a 256×256 displacement map, drawn once into a canvas and kept as a PNG data URL: red and green hold the push, blue masks a clear core, alpha is the lens disc.
+
+```ts title="src/components/three/bend.ts"
+// Point lens: what shows at radius r comes from nearer the centre, by CORE^2 / r, windowed to 0 at the rim.
+const k = ((CORE * CORE) / Math.max(r, CORE)) * (1 - r * r) ** 2;
+const nx = r ? u / r : 0;
+const ny = r ? v / r : 0;
+const ox = -nx * k - ny * k * SWIRL;
+const oy = -ny * k + nx * k * SWIRL;
+img.data[i] = Math.round(127.5 + (ox / MAX) * 127.5);
+img.data[i + 1] = Math.round(127.5 + (oy / MAX) * 127.5);
+```
+
+`SWIRL` adds a tangential share of 0.45, a small frame-dragging twist. [`feDisplacementMap`](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feDisplacementMap) reads the red and green channels and shifts each pixel of the text by them:
+
+```ts title="src/components/three/bend.ts"
+const FILTER = (id: string, map: string) => `
+  <filter id="${id}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feImage href="${map}" preserveAspectRatio="none" result="map" />
+    <feDisplacementMap in="SourceGraphic" in2="map" xChannelSelector="R" yChannelSelector="G" result="bent" />
+    // …
+  </filter>`;
+```
+
+The map never changes. Each frame only re-aims it: the `feImage` moves to the hole's position relative to the block, and the displacement `scale` follows the lens radius of 9 horizon radii. If nothing changed since the last frame, no attribute is written. Blocks are found with [`document.elementsFromPoint`](https://developer.mozilla.org/en-US/docs/Web/API/Document/elementsFromPoint) at 13 points around the hole, every 0.25 s or once it moves more than 6 px, and at most 4 blocks hold a filter. Outside the lens disc each block is composited back unchanged, and when the hole moves away the filters come off.
+
+The bent part also flickers: a 160 ms burst splits it into orange and cyan copies. Bursts start at least 0.8 s apart and each is two 80 ms steps, so by `bend.ts`'s timers no second holds more than two bursts. That keeps it within the site's rule of at most 3 flashes a second, on a small area. It is arithmetic from the code, not a measurement.
+
+## Loading it last, and only where it can run
+
+Everything but the dust lives in one lazy chunk: three, R3F and the scene, 241,851 bytes gzipped and 199,636 with brotli (Node's zlib at maximum settings, on the built file). It is never in the initial bundle. The sky is one of the site's two React islands, hydrated with [`client:idle`](https://docs.astro.build/en/reference/directives-reference/#clientidle), and the island decides whether to load the scene at all:
+
+```tsx title="src/components/three/SkyCanvas.tsx"
+const Scene = lazy(() => import('./Scene'));
+// …
+const decide = async () => {
+  if (isArticle()) {
+    // …
+    if (!scene) setMode('static');
+    return;
+  }
+  if (scene) return;
+  if (weakDevice()) return setMode('static');
+  await loaded();
+  await document.fonts.ready;
+  await idle();
+  if (cancelled || scene || isArticle()) return;
+  if (weakDevice() || !webgl2()) return setMode('static');
+  scene = true;
+  setMode('scene');
+};
+```
+
+`weakDevice()` is true under reduced motion or save-data, with `deviceMemory` under 4, or with 2 cores or fewer. It runs before the wait and again after it. `webgl2()` creates a throwaway context and releases it, because R3F reports a failed context from an async effect that an error boundary can't catch. Articles never load the scene.
+
+On articles the sky is hidden altogether (`sky.css` sets its opacity to 0). Everywhere else, every "no" gets the same fallback: a CSS-only planet in the corner, a dithered disc and ring with no animation. An error boundary shows it too if the chunk fails to load or the scene throws, and turning on reduced motion mid-session drops the scene and frees WebGL. The black hole has no fallback of its own. Its span stays `hidden`, so without the scene there is no hole and no dead control.
+
+## What it costs per frame
+
+I measured the home page on an Apple M5 in Chrome 154, against a local production build served by `astro preview`, at 1440×900 and DPR 2, with no throttling. These are lab numbers: two runs, synthetic pointer events, and a wrapper around `requestAnimationFrame` that times the rAF callbacks only, summed per frame. Event handlers, style, layout, paint and GPU time are not in these numbers.
+
+| 5 s each, run 1 / run 2 | Idle | Dragging |
+|---|---:|---:|
+| R3F renders | 141 / 145 | 300 / 300 |
+| Render interval, median | 33.3 ms | 16.7 ms |
+| JS per frame, mean | 0.21 / 0.16 ms | 1.08 / 1.19 ms |
+| JS per frame, p95 | 0.7 / 0.6 ms | 2.3 / 2.4 ms |
+| JS per frame, max | 2.7 / 1.9 ms | 3.6 / 3.3 ms |
+| Dropped rAF ticks | 0 / 0 | 0 / 0 |
+
+Idle, the scene renders about 29 times a second on purpose. `Scene.tsx` uses R3F's [on-demand rendering](https://r3f.docs.pmnd.rs/advanced/scaling-performance#on-demand-rendering), `frameloop="demand"`, with a rAF tick that asks for a frame only after 32 ms:
+
+```tsx title="src/components/three/Scene.tsx"
+if (t - lastRender < 32) return;
+lastRender = t;
+invalidate();
+```
+
+While the hole is held, gliding or seeking a key target, `BlackHole.tsx` calls `invalidate()` every frame, so the scene renders at 60 fps. In the 5 s after release it stayed at 60 fps while the hole glided and the planet re-formed, at 0.61 ms in rAF callbacks per frame on average (p95 1.4 ms). A 60 Hz frame is 16.7 ms; the worst dragging frame spent 3.6 ms in rAF callbacks. The canvas also caps DPR at 1.5, a 2160×1350 backing store on this screen, and drops to 1 for good if rAF gaps over 45 ms keep recurring. It never triggered in these runs.

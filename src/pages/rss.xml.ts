@@ -20,7 +20,7 @@ export async function GET(context: APIContext) {
         title: post.data.title,
         description: post.data.description,
         pubDate: post.data.pubDate,
-        link: post.data.external ?? `/writing/${post.id}/`,
+        link: post.data.external ?? `/writing/${post.id}`,
         categories: [...post.data.tags],
         author: `${SITE.email} (${SITE.name})`,
         content,
@@ -33,6 +33,7 @@ export async function GET(context: APIContext) {
     title: `${SITE.name} — Writing`,
     description: SITE.description,
     site,
+    trailingSlash: false, // match trailingSlash: 'never'
     xmlns: { atom: 'http://www.w3.org/2005/Atom' },
     customData: [
       '<language>en</language>',

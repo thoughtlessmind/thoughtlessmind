@@ -1,13 +1,28 @@
 import { SITE } from '../consts';
 
-/** JSON-LD Person, shared by the home and about pages. Pass a page-specific `url` if it differs from the site root. */
-export const person = (url: string = SITE.url) => ({
+/** Stable JSON-LD @ids. Other nodes reference these instead of repeating the entity. */
+export const PERSON_ID = `${SITE.url}/#person`;
+export const WEBSITE_ID = `${SITE.url}/#website`;
+
+// Same glob as Avatar.astro: `image` is emitted only once an avatar file exists in public/images/.
+const avatar = Object.keys(import.meta.glob('/public/images/avatar.{jpg,png,webp}'))[0]?.replace(/^\/public/, '');
+
+/** JSON-LD Person, defined on the home page and the about page. `url` is always the site root. */
+export const person = () => ({
   '@context': 'https://schema.org',
   '@type': 'Person',
+  '@id': PERSON_ID,
   name: SITE.name,
-  url,
+  alternateName: SITE.handle,
+  url: SITE.url,
+  ...(avatar && { image: new URL(avatar, SITE.url).href }),
   email: `mailto:${SITE.email}`,
   jobTitle: SITE.role,
+  knowsAbout: ['React', 'TypeScript', 'JavaScript', 'CSS', 'Web performance', 'Material UI'],
   address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
-  sameAs: Object.values(SITE.socials).filter(Boolean),
+  sameAs: [
+    ...Object.values(SITE.socials).filter(Boolean),
+    'https://hashnode.com/@thoughtlessmind',
+    'https://www.npmjs.com/~thoughtlessmind',
+  ],
 });

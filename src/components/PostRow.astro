@@ -23,7 +23,7 @@ interface Props {
 const { post, level = 'h3', showTag = true, maxTags = 3, number, class: className } = Astro.props;
 const Title = level;
 const { external, draft, title, description, pubDate } = post.data;
-const href = external ?? `/writing/${post.id}/`;
+const href = external ?? `/writing/${post.id}`;
 const tags = showTag ? post.data.tags.slice(0, maxTags) : [];
 // External cross-posts may carry only a stub body, so they get no reading time.
 const minutes = external ? null : readingTime(post.body).minutes;
@@ -55,7 +55,7 @@ const minutes = external ? null : readingTime(post.body).minutes;
         <ul class="post-row__tags" aria-label="Tags">
           {tags.map((tag) => (
             <li>
-              <a href={`/writing/tag/${tag}/`} class="tag">
+              <a href={`/writing/tag/${tag}`} class="tag">
                 {tag}
               </a>
             </li>

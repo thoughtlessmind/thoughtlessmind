@@ -11,13 +11,15 @@ const featured = all.filter((p) => p.data.featured && !p.data.archived).sort(byO
 // Full index: live projects by order, archived ones last.
 const index = [...all.filter((p) => !p.data.archived).sort(byOrder), ...all.filter((p) => p.data.archived).sort(byOrder)];
 const pad = (n: number) => String(n).padStart(2, '0');
-const description = 'A production-minded site rebuild and focused tools for everyday frontend problems.';
+const dek = 'A production-minded site rebuild and focused tools for everyday frontend problems.';
+const description =
+  "Projects by Rajiv Kumar: css-only-tooltip, the Diver Chrome extension, YouTube Playlist Info, and this site's Astro rebuild.";
 ---
 
 <BaseLayout title="Work" description={description}>
   <header class="container-site page-head">
     <h1 class="page-title flicker">Work</h1>
-    <p class="page-head__dek">{description}</p>
+    <p class="page-head__dek">{dek}</p>
   </header>
 
   <section class="container-site section work__section" aria-labelledby="featured-title" data-reveal-group>

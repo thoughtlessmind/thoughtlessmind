@@ -14,7 +14,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
 <nav class="hud series-nav" aria-label="Series">
   <p class="label series-nav__label">Series · part {pad(index + 1)} of {pad(posts.length)}</p>
-  <a href={`/writing/series/${slugify(series)}/`} class="link series-nav__name">{series}</a>
+  <a href={`/writing/series/${slugify(series)}`} class="link series-nav__name">{series}</a>
   <ol class="series-nav__list">
     {
       posts.map((p, i) => (
@@ -23,7 +23,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
           {p.id === currentId ? (
             <span aria-current="page">{p.data.title}</span>
           ) : (
-            <a href={`/writing/${p.id}/`} class="link">
+            <a href={`/writing/${p.id}`} class="link">
               {p.data.title}
             </a>
           )}

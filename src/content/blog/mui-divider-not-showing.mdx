@@ -1,0 +1,97 @@
+---
+title: Why your MUI Divider is not showing in a flex container
+description: "An MUI Divider inside a flex container can collapse to 0px. Why align-items causes it, and how the flexItem prop brings it back in MUI v9."
+pubDate: 2026-10-07
+tags: [react, css]
+series: Material UI, answered
+seriesOrder: 3
+draft: false
+---
+
+If your MUI Divider vanishes inside a flex container, it is still in the DOM; it is 0px wide. In a flex column with `alignItems: 'center'`, items are sized to their content, and the Divider's `<hr>` has no content. Add the `flexItem` prop, `<Divider flexItem />`, and it stretches across the container again. Everything here is checked against `@mui/material` 9.4.0, the current release.
+
+## The layout that hides it
+
+This is the shape of the original question, a small menu in a popover, ported to v9 with `sx` in place of `makeStyles`:
+
+```tsx title="NavMenu.tsx"
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
+
+export default function NavMenu() {
+  return (
+    <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Button>Login</Button>
+      <Divider />
+      <Button>FAQs</Button>
+    </Container>
+  );
+}
+```
+
+Both buttons show. The Divider renders as an `<hr>` that is 0px wide with a 1px bottom border, so there is nothing to see. The question asked why a Divider doesn't show inside a `Container` or `Paper`. Neither component is the cause. A `Paper` with the same three flex styles hides it too, and a `Paper` without them shows it at full width.
+
+## Why it collapses
+
+MUI's Divider has no content. Its line is a border: `border-bottom-width: thin` on an `<hr>` with no margin.
+
+In a flex column, width is the cross axis. Flex items normally stretch along the cross axis: `align-items` starts as `normal`, which [behaves as `stretch`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/align-items#normal) for flex items. `alignItems: 'center'` turns the stretch off. The flexbox spec then sizes each item's cross axis [as if `auto` meant `fit-content`](https://www.w3.org/TR/css-flexbox-1/#algo-cross-item). The buttons have text, so they get a width from it. The `<hr>` has nothing inside it, so its fit-content width is 0.
+
+When I first answered this, I blamed `flex-shrink`. That was wrong. MUI sets `flex-shrink: 0` on the Divider, in v4 and in v9, so it never shrinks. The missing stretch is the cause. You can see it by deleting `alignItems: 'center'`: the Divider comes back at full width, and so do the buttons, which undoes the centring.
+
+## The fix: flexItem
+
+```tsx
+<Divider flexItem />
+```
+
+`flexItem` adds two styles to the Divider: `align-self: stretch` and `height: auto`. `align-self` on an item overrides `align-items` on its container, so the Divider stretches across while the buttons stay centred. In 9.4.0 the Divider in the example goes from 0px to the full content width of the `Container`.
+
+The prop's description only mentions vertical dividers, but stretch applies to whichever axis is the cross axis, so it fixes a horizontal Divider in a column as well. If you'd rather say what you mean, these do the same job:
+
+```tsx
+<Divider sx={{ alignSelf: 'stretch' }} />
+<Divider sx={{ width: '100%' }} />
+```
+
+The second one is my original fix from 2021, written then as `style={{ width: '100%' }}`. That still works; `sx` is just how MUI styles components now.
+
+On v4 (`@material-ui/core`), skip `flexItem` for horizontal dividers. The v4 Divider drew its line as a 1px-tall background, not a border, and `height: auto` collapses that to 0. Use the width fix there.
+
+## Vertical dividers in a row
+
+Vertical dividers hit the same wall, and this is the case the docs write about. A vertical Divider is a `<div>` with `height: 100%` and a right border. In a flex row that takes its height from its content, there is no fixed height for that 100% to resolve against, and the line ends up 0px tall. The prop's own documentation says so: by default, a vertical divider has a calculated height of 0px when it is the child of a flex container.
+
+`flexItem` swaps the `100%` for `auto` and stretches the Divider to the height of the row:
+
+```tsx title="FormatBar.tsx"
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+
+export default function FormatBar() {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Button>Bold</Button>
+      <Divider orientation="vertical" flexItem />
+      <Button>Italic</Button>
+    </Box>
+  );
+}
+```
+
+In 9.4.0 this Divider goes from 0px tall to the height of the buttons. The vertical divider demos in the MUI docs use the same `orientation="vertical" flexItem` pair.
+
+One case `flexItem` can't fix: a horizontal Divider placed directly in a flex row. Its width is now the main axis, sized from its content, so it is 0px wide again. Stretch only works on the cross axis, which in a row is height, so it stays 0px wide with `flexItem` too. If you wanted a vertical line, use `orientation="vertical"`. If you wanted a line under the row, move the Divider out of it.
+
+## Which fix for which layout
+
+- Flex column with `alignItems` set to anything but `stretch`: `<Divider flexItem />`.
+- Flex row, vertical line between items: `<Divider orientation="vertical" flexItem />`.
+- Flex row, horizontal Divider inside it: move it out of the row, or make it vertical.
+- Still on v4, horizontal Divider in a column: `style={{ width: '100%' }}`.
+
+---
+
+I first answered this [on Stack Overflow](https://stackoverflow.com/a/65572655) in 2021. The question has been viewed about 31,000 times.

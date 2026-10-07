@@ -20,9 +20,14 @@ pnpm check     # astro check (types); must be clean
 
 Node ≥ 22.12, pnpm. Search needs a built index: run `pnpm build` once, then the dev server serves `dist/pagefind`.
 
+**Deploy**: Cloudflare Workers, static assets only (no Worker code). `wrangler.jsonc` points at `dist/`, drops
+trailing slashes (`/about/` 307s to `/about`) and serves `404.html` with a 404. `public/_headers` makes `/_astro/*` immutable. Workers
+Builds deploys `main` (`pnpm build`, then `npx wrangler deploy`) and reads `.node-version`. The www, script.* and
+rajiv.me redirects are Cloudflare Redirect Rules, not repo files. Check locally with `npx wrangler dev` after a build.
+
 ## Stack
 
-- Astro 7, `output: 'static'`, `trailingSlash: 'always'`, ClientRouter transitions.
+- Astro 7, `output: 'static'`, `trailingSlash: 'never'` (output stays `about/index.html`), ClientRouter transitions.
 - React 19 islands, only two: the ⌘K palette (`CommandPalette.tsx`) and the 3D sky (`components/three/`). Everything
   else is `.astro` plus vanilla TS in `src/scripts/`. Keep it that way.
 - three 0.182 + @react-three/fiber 9 with custom GLSL shaders. No drei, no postprocessing.
@@ -40,18 +45,20 @@ pubDate: 2026-09-08
 updatedDate: 2026-09-10       # optional
 tags: [javascript, performance] # convention: javascript typescript react css html performance tooling thinking
 series: Frontend performance field notes   # optional, with seriesOrder: 2
-draft: false        # true: "Draft" badge + noindex; left out of RSS, sitemap, search, ⌘K, llms.txt, home "Latest writing"
+draft: false        # true: dev only ("Draft" badge + noindex); production builds leave it out entirely
 canonical: https://…  # optional; if the host isn't ours, the post is also left out of the sitemap
 external: https://…   # optional; dev.to cross-post, listed with ↗ and no local page
 ```
 
 The route, tag/series pages, reading time, TOC (h2/h3), prev/next, related posts and `/og/<slug>.png` all derive from
-the file. ` ```ts title="file.ts" ` gives a code block a filename tab and a copy button.
+the file. ` ```ts title="file.ts" ` gives a code block a filename tab and a copy button. Tag and series pages are
+`noindex` below 3 posts and never in the sitemap; only posts carry a sitemap `lastmod`.
 
 **Project**: `src/content/projects/<slug>.md`, frontmatter only (fields in `content.config.ts`). `featured: true` shows it
 as a module card on home and /work (keep it to about 3). A project with `image` spans both card columns.
 
-**Facts**: `src/consts.ts` (name, role, company, email, socials, coords, since, nav) and `src/lib/person.ts` (JSON-LD).
+**Facts**: `src/consts.ts` (name, role, company, email, socials, coords, since, nav) and `src/lib/person.ts` (JSON-LD:
+one Person `#person`, referenced by `@id` from the WebSite on home, the ProfilePage on about and every BlogPosting).
 Use real facts only; never invent numbers or titles. Name the current employer (swipejobs) only in the about page's Experience entry; the role reads "web engineer".
 
 ## Design direction: v3 "SIGNAL"
@@ -148,7 +155,7 @@ styles/       global.css
   - The egg marker is the one circle.
   - The big bang's blackbody colours, white singularity, circular inflation front (bigbang.ts) and the black hole's
     shadow, ring, heat and redshift colours (warp.ts) are physics, not theme.
-- Every internal link ends with `/`. Astro 7's compiler is strict: close every tag.
+- No internal link ends with `/` (only the root is `/`). Astro 7's compiler is strict: close every tag.
 - Every animation needs a `prefers-reduced-motion` path. Nothing may flash more than 3 times a second or over a large area.
   The big bang's one flash is the only exception.
 - Idle means zero work: stop rAF loops when nothing moves. The three.js chunk (~244 KB gz) stays lazy.

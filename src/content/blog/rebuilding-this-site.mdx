@@ -1,53 +1,121 @@
 ---
 title: "Rebuilding this site: what I kept and what I threw out"
-description: Notes from replacing a 2020 React portfolio with a static Astro site. What earned its place, what got cut, and the numbers behind each call.
-pubDate: 2026-09-08
+description: "I swapped a client-rendered React 17 app for static Astro 7 with two React islands. What survived, what I cut, and what the result weighs."
+pubDate: 2026-10-07
 tags: [thinking, tooling]
-draft: true
+draft: false
 ---
 
-The old site was a React app from 2020 with a hand-written webpack config. It shipped 180 KB of JavaScript to render three paragraphs and two screenshots. It had a contact form that posted to a service I no longer pay for. It worked, in the sense that it loaded, but it had stopped saying anything true about how I build things.
+I kept the domain, the handle, the three-hexagon mark, the projects, both old posts and Google Analytics. I threw out the app itself: React 17, Material-UI 4 and a hand-written webpack config, rendering everything in the browser behind a loading screen. This site is now static HTML built by Astro 7, with React 19 in exactly two islands, and the numbers below are measured on its production build.
 
-This version is static HTML with two small islands. Here is what survived the move and what did not.
+There is no before-and-after table. I have no measurements of the old site, so every number here describes the new one.
 
-## Kept
+## What the old site was
 
-**The domain and the handle.** `thoughtlessmind` predates the site. It stays.
+The old site still lives on the `main` branch of this repo. Its `package.json` lists `react` 17.0.1, `@material-ui/core` 4.11.3 and webpack 5.19, with Babel, Sass and PostCSS loaders wired up in a 101-line `webpack.config.js`. It was one page: a header, two sidebars, then landing, about, work and contact sections, all rendered by React into an empty `<div id="root">`.
 
-**The projects.** Three of them, the same three. A YouTube playlist calculator, a CSS-only tooltip library, and an Angular app I built to learn Angular. Only the tooltip library is still something I would write the same way today, and that is the point of keeping the others.
+That div shipped hidden, with a loader of three spinning hexagons on top of it:
 
-**Google Analytics.** One tag, loaded after everything else. I look at it twice a year. That is enough to justify 20 lines.
-
-**The two articles.** Both were on Hashnode and dev.to. They now live here, with a canonical link pointing back at the original so nothing gets counted twice.
-
-## Thrown out
-
-**The framework on the critical path.** Nothing on this page needs React to render text. The blog, the project list, and the navigation are built at deploy time. React runs only for the search palette and the background, both of which mount after the page is readable.
-
-**The contact form.** It produced 11 messages in five years, 9 of them spam. A `mailto:` link produces the same 2 real ones with no backend.
-
-**Every animation over 500 ms.** The old hero had a 1.2 s fade. Nobody waits that long for a sentence.
-
-**The sidebar.** It held a photo, five icons and a quote. The icons moved to the footer. The rest did not move anywhere.
-
-## The numbers
-
-| Metric                           | 2020 site | This site |
-| -------------------------------- | --------- | --------- |
-| JavaScript on first load         | 180 KB    | 4 KB      |
-| Time to interactive (slow 4G)    | 4.1 s     | 0.9 s     |
-| Dependencies                     | 1,412     | 38        |
-
-The stack, for the record:
-
-```ts title="astro.config.mjs"
-export default defineConfig({
-  site: 'https://thoughtlessmind.dev',
-  output: 'static',
-  integrations: [react(), expressiveCode(), mdx(), sitemap(), pagefind()],
-});
+```html title="src/index.html (main branch)"
+<script>
+  function onLoad() {
+    setTimeout(() => {
+      const rootEl = document.getElementById("root")
+      rootEl.style.display = "block"
+      // …
+    }, 1500);
+  }
+</script>
+<!-- … -->
+<body onload="onLoad()">
+  <div class="loader" id="loader">
+    <!-- … -->
+  </div>
+  <div id="root"></div>
+</body>
 ```
 
-## What comes next
+The [`load` event](https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event) fires only after every stylesheet, script and image has loaded. The timeout then added another 1,500 ms. However fast the connection, nobody saw a word before both had passed. The same `<head>` pulled Roboto from Google Fonts and Google's gtag.js.
 
-I will write more here. The goal is one useful post a month, not a feed. The first few are already in the queue: a Core Web Vitals checklist, a note on the 16 ms rendering budget, and a look at what the second visit to a site should feel like.
+## What I kept
+
+**The name and the address.** thoughtlessmind.dev and the handle stay. Both live in `src/consts.ts` with the other facts the site prints.
+
+**The mark.** The old three-hexagon logo, the same shapes that loader spun, is now the header mark and the favicon. The hexagons lost their rounded corners, because the design system uses a radius of 0 everywhere, and they turned launch orange, the site's accent colour.
+
+**The projects.** The old work section showed two projects, YouTube Playlist Info and css-only-tooltip, with a third, WatchFlix, commented out in the source. All three are back, WatchFlix marked archived, next to Diver, React dashboard UI and take-break. Each one is now a Markdown file with frontmatter instead of an object inside a component.
+
+**The two posts.** [Tooltips with CSS only](/writing/tooltip-using-only-css) first ran on dev.to and Hashnode in 2021, and [Function overloads in TypeScript](/writing/function-overload-in-typescript) on Hashnode in 2023. Both now live here and neither sets a `canonical` field, so each page names itself as the original. The plan is for the dev.to and Hashnode copies to point here. That choice also decides the sitemap: `astro.config.mjs` leaves out any post whose canonical names another host, so these two are in it.
+
+**Google Analytics.** Same property, loaded differently. The old page put gtag.js in the `<head>` with `async`. `BaseLayout.astro` now injects it only in production builds, after Astro's first `astro:page-load` event and a `requestIdleCallback` with a 4-second timeout, then sends a `page_view` on every client-side navigation. Deferring it doesn't make it small. gtag.js is 164,040 bytes on the wire with brotli, measured with node because the browser reports no size for it. That is more than twice the first-party JavaScript a post loads before anyone interacts, 74,992 bytes. On a post, the heaviest script is not mine.
+
+## What I threw out
+
+**Rendering in the browser.** `astro.config.mjs` sets `output: 'static'`, so every page is HTML at build time and the HTML always holds the final text. The decode and glitch effects animate text that is already in the document, and scroll reveals only hide anything when the `html.js` class is set, so with JavaScript off nothing stays hidden.
+
+**React as the page.** React stays for two islands: the ⌘K command palette and the 3D sky, both hydrated with `client:idle`. Everything else is `.astro` components and plain TypeScript in `src/scripts/`. The sky's island then decides, late, whether three.js loads at all:
+
+```tsx title="src/components/three/SkyCanvas.tsx"
+const decide = async () => {
+  if (isArticle()) {
+    // …
+    if (!scene) setMode('static');
+    return;
+  }
+  if (scene) return;
+  if (weakDevice()) return setMode('static');
+  await loaded();
+  await document.fonts.ready;
+  await idle();
+  if (cancelled || scene || isArticle()) return;
+  if (weakDevice() || !webgl2()) return setMode('static');
+  scene = true;
+  setMode('scene');
+};
+```
+
+`weakDevice()` is true under reduced motion, Save-Data, `deviceMemory` below 4 or two CPU cores or fewer. Those visitors get a CSS planet and never download three.js, and neither does anyone who lands on an article. [How the draggable black hole works](/writing/draggable-black-hole) covers what runs when the scene does load.
+
+**Material-UI and the webpack config.** Styling is Tailwind v4, with every colour, radius and duration defined once in `global.css`. Astro owns the build. The fonts are self-hosted from Fontsource instead of Google Fonts.
+
+**Light mode.** The rebuild's first design had a light and a dark theme. This one is dark only. The LGT switch in the header warns you, counts down and runs a big bang instead.
+
+**A whole design direction.** The rebuild began as a calm serif design: warm paper, Oxford navy, brass hairlines. It was replaced by the current one, mission control for a web engineer. The repo's `AGENTS.md` keeps a list of rejected ideas so they don't creep back in: that serif direction; a "diver mode" that outlined every element the way my Chrome extension Diver does; graph-paper grids, registration crosses and scanlines; cursor trails and click pings; easter eggs triggered by typed keys, such as the Konami code; Matrix rain, neon synthwave and fake hacking text.
+
+A few more cuts are on record with reasons. A motion toggle was rejected because the OS reduced-motion setting is already respected everywhere. Pagination was rejected because the writing index groups posts by year. Comments, Giscus included, were rejected too: the site has no backend, no login and no comments, by design.
+
+## What it weighs now
+
+Method: the production build served locally by `astro preview`, Chrome 154 on an Apple M5, cold cache, 1440×900 viewport, no throttling. Compressed sizes are node's brotli at its default quality 11, and kB means 1,000 bytes. "At load" counts everything that loads with no interaction, including the idle islands and the lazy three.js chunk where it loads.
+
+| | Home | A post |
+| --- | ---: | ---: |
+| First-party JavaScript at load | 273.7 kB | 75.0 kB |
+| of which the three.js chunk | 199.6 kB | not loaded |
+| of which React DOM | 48.5 kB | 48.5 kB |
+| Fonts (4 woff2 files) | 117.5 kB | 117.5 kB |
+| Everything same-origin | 423.1 kB | 219.7 kB |
+| Same-origin requests | 28 | 27 |
+
+The three.js chunk (three 0.182, @react-three/fiber 9 and the scene code) is 47% of the home page's same-origin bytes. `AGENTS.md` said it was about 244 KB gzipped; measured with gzip at level 9 it is 241.9 kB. The initial module graph, before either island, is 17.7 kB across 11 files on the home page. On a post, the fonts weigh more than all the JavaScript.
+
+Core Web Vitals were measured with Chrome's mobile emulation: a 412×823 viewport, 4× CPU slowdown and the Slow 4G network preset, three cold runs per page.
+
+| Page | Median LCP | LCP element | CLS |
+| --- | ---: | --- | ---: |
+| Home | 1,648 ms | the hero name | 0 |
+| A post | 1,612 ms | first paragraph | 0.0191 |
+
+These are lab numbers, not field data. web.dev's ["good" thresholds](https://web.dev/articles/vitals), 2.5 s for LCP and 0.1 for CLS, apply to the 75th percentile of real visits; in the lab, both pages sit inside them. INP isn't measured: a lab load has no real interactions.
+
+The background dust stays on a 2D canvas rather than WebGL. At 1440×900 it holds 3,750 points. Its `requestAnimationFrame` callback was timed (main-thread JavaScript only) at 1× CPU on the same Mac, while synthetic pointer events moved a cursor across the page. It averaged 0.68 to 0.96 ms across three runs (p95 1.1 ms), and the loop stopped 430 to 443 ms after the last pointer move. [The rendering budget](/writing/the-rendering-budget) goes through that loop.
+
+## What's still open
+
+**Render-blocking CSS on mobile.** The mobile trace put 1,645 ms of the home page's 1,648 ms LCP into render delay. Under Slow 4G the three stylesheets were requested at 600 ms and finished at about 1,414 ms, and they block rendering.
+
+**One font swap.** Only the display and UI fonts are preloaded. The body font, which sets a post's first paragraph, is not. On the mobile runs, the post's only layout shift, 0.0191, came from that body font arriving over the network. Fallback font metrics are still open.
+
+**Analytics.** It stays, deferred, and it still outweighs all the first-party JavaScript on a post.
+
+**Hosting.** When these numbers were taken, the rebuilt site wasn't deployed yet. The plan is Cloudflare Workers static assets, with `public/_headers` marking everything under `/_astro/` immutable for a year. Those headers were checked locally under `wrangler dev`. Nothing here has been measured on the CDN yet. [Designing for the second visit](/writing/designing-for-the-second-visit) covers the caching and prefetch side.

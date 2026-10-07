@@ -17,7 +17,7 @@ const cells = [
   cells.length > 0 && (
     <nav class="prevnext" aria-label="Older and newer posts">
       {cells.map(({ label, post, newer }) => (
-        <a href={`/writing/${post.id}/`} class:list={['hud prevnext__cell', { 'prevnext__cell--newer': newer }]}>
+        <a href={`/writing/${post.id}`} class:list={['hud prevnext__cell', { 'prevnext__cell--newer': newer }]}>
           <span class="label prevnext__label">{label}</span>
           <span class="prevnext__title">{post.data.title}</span>
         </a>
