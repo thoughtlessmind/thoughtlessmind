@@ -72,10 +72,12 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
 - Colour roles:
   - Launch orange `--accent` is rare: the primary CTA, active state, focus ring and corner brackets.
   - Cyan `--signal` appears only in motion.
-  - Lime `--ok` is only for status dots.
-- Radius 0. `.hud` frames with accent corner brackets. Hairlines, no shadows.
-- Fonts: Geist Pixel (display, ≥ 40px), Martian Mono (UI, labels uppercase via CSS), Geist (body), Geist Mono (code).
-  Copy is sentence case. No emoji.
+  - No status dots (the lime `--ok` token is gone).
+- Radius 0. `.hud` frames with accent corner brackets. Hairlines, no shadows, no hairline under every list row.
+- Fonts: Geist Pixel (display, ≥ 40px), Martian Mono (short UI strings: nav, buttons, labels, tags, meta), Geist
+  (headings, post and project titles, body), Geist Mono (code). Copy is sentence case. No emoji, no em or en dashes.
+- No `// 0N` section indices or eyebrows over section titles; one label per CTA intent (`Email me`, `All writing`).
+- Icons: Phosphor regular via `src/lib/icons.ts` + `Icon.astro`. No hand-drawn icon SVGs (the hexagon logo is the brand).
 - Background: seeded random dust that bends around the cursor like a gravitational lens.
 - Easter eggs are found by exploring coordinates, not by shortcuts.
 - Secondary UI stays compact: the telemetry panel is small and user-resizable.
@@ -85,14 +87,15 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
   - Graph-paper grids, `+` registration crosses, scanline overlays.
   - Cursor trails, wakes and click pings.
   - Keyboard-triggered easter eggs (`~`, Konami, typed words) and visible buttons that give eggs away.
-  - Matrix rain, neon synthwave, fake hacking text.
+  - Matrix rain, neon synthwave, fake hacking text (incl. the boot log, `sys://` status lines, "all systems nominal").
+  - Locale, clock, uptime and build-stamp strips in the header or footer; the stack-keyword marquee.
 
 ## Design system
 
 - `global.css` holds the tokens (in `:root`), `@theme static` (fonts, type scale,
   `--dur-*`, layout) and `@theme inline` (colour utilities). It also holds base type, the `.field` vignette + grain, and
   the global classes (`.hud`, `.btn*`, `.link`, `.tag`, `.label`, `.display`, `.page-title`, `.prose`, `.glitch`,
-  `.flicker`, `.reveal`, `.marquee`…).
+  `.flicker`, `.reveal`, `.demo`…).
 - Change a colour, radius or duration in `global.css` and nowhere else.
 - `src/scripts/theme.js` sets `html.js` before paint and drops the old `localStorage.theme`.
 - Martian Mono width: use `font-stretch`, not `font-variation-settings`. Geist Pixel uses the square `ELSH` instance.
@@ -100,10 +103,10 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
 ## Motion, 3D, easter eggs
 
 - `src/scripts/fx.ts` drives markup behaviour:
-  - Attributes: `data-scramble` (decode in view, or `="hover"`), `data-count-to` + `data-count-suffix`, `data-boot`
-    (once per session), `data-glitch-burst`, `data-clock`, `data-uptime-since`, `data-pointer-coords`.
+  - Attributes: `data-scramble` (decode in view, or `="hover"`), `data-count-to` + `data-count-suffix`,
+    `data-glitch-burst`, `data-pointer-coords`.
   - Lifecycle: inits on `astro:page-load`, cleans up on `astro:before-swap`.
-  - The HTML always holds the final text. Under reduced motion only the readouts run.
+  - The HTML always holds the final text. Under reduced motion only the pointer readout runs.
 - `.reveal` in `[data-reveal-group]` does a 2-step wipe once (`src/scripts/reveal.ts`).
 - Page transitions: the old page steps out, the new `<main>` flickers on.
 - `src/scripts/field.ts` draws the dust on the persisted `canvas.field-fx` and runs the lens:
@@ -134,7 +137,7 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
   DESIGN.md §4.
 - Window events: `signal:warp`, `signal:pulse` `{x, y}`, `signal:hole` `{x, y, r, held}` | null, `signal:dawn` `{ms}`,
   `terminal:open`, `open-palette`.
-- Storage: `eggs`, `tele-scale` (localStorage), `booted` (sessionStorage).
+- Storage: `eggs`, `tele-scale` (localStorage).
 
 ## Layout of src
 
@@ -142,7 +145,7 @@ physics, sport, problem solving. It should feel like a well-built instrument, no
 components/   Astro UI (Header, Footer, ThemeToggle, Hero, ProjectCard, PostRow, Terminal, article parts…), CommandPalette.tsx, three/
 content/      blog/*.mdx, projects/*.md
 layouts/      BaseLayout (head, chrome, scripts, sky, field), WritingLayout (index/tag/series), ArticleLayout
-lib/          posts.ts (published posts, reading time, related, series, dates), person.ts
+lib/          posts.ts (published posts, reading time, related, series, dates), person.ts, icons.ts (Phosphor set)
 pages/        index, work, about, 404, writing/…, og/[...slug].png.ts, rss.xml.ts, robots.txt.ts, llms.txt.ts
 scripts/      theme.js (inline: html.js), fx.ts, field.ts (dust + lens), eggs.ts, reveal.ts, bigbang.ts + raster.ts + warp.ts + fall.ts (the big bang)
 styles/       global.css
@@ -156,6 +159,8 @@ styles/       global.css
   - The big bang's blackbody colours, white singularity, circular inflation front (bigbang.ts) and the black hole's
     shadow, ring, heat and redshift colours (warp.ts) are physics, not theme.
 - No internal link ends with `/` (only the root is `/`). Astro 7's compiler is strict: close every tag.
+- No new `scroll` listeners: use IntersectionObserver or CSS scroll-driven animations. The two in `Planet.tsx` and
+  `eggs.ts` are an accepted exception (DESIGN.md §8).
 - Every animation needs a `prefers-reduced-motion` path. Nothing may flash more than 3 times a second or over a large area.
   The big bang's one flash is the only exception.
 - Idle means zero work: stop rAF loops when nothing moves. The three.js chunk (~244 KB gz) stays lazy.

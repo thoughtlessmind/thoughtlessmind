@@ -1,26 +1,24 @@
 ---
 /**
- * Module card for a featured project: `M-01` + year, glitching title, summary, stack tags, links.
- * A screenshot (when the project has one) sits behind a duotone + dither + scanline wash that clears on hover/focus.
- * Cards with an image span both grid columns (`.project-card--wide`) so the grid stays even.
+ * Card for a featured project: year, title, summary, stack tags, links, and a real visual where there is one.
+ * - A screenshot (`image` in the frontmatter) spans both grid columns (`.project-card--wide`) so the grid stays even.
+ * - css-only-tooltip shows the library's own technique working (the .demo plate in global.css).
  */
 import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 
 interface Props {
   project: CollectionEntry<'projects'>;
-  /** 1-based position, rendered as M-01. */
-  index: number;
   /** h3 under a section h2. */
   level?: 'h2' | 'h3';
   /** Also show the longer description (the /work page). */
   long?: boolean;
   class?: string;
 }
-const { project, index, level: Title = 'h3', long = false, class: className } = Astro.props;
+const { project, level: Title = 'h3', long = false, class: className } = Astro.props;
 const { title, summary, description, year, stack, repo, live, image } = project.data;
 const liveLabel = project.id === 'css-only-tooltip' ? 'npm' : project.id === 'diver' ? 'Web store' : 'Live';
-const id = `M-${String(index).padStart(2, '0')}`;
+const tooltip = project.id === 'css-only-tooltip';
 ---
 
 <li class:list={['hud project-card', { 'project-card--wide': image }, className]}>
@@ -31,13 +29,16 @@ const id = `M-${String(index).padStart(2, '0')}`;
       </div>
     )
   }
+  {
+    tooltip && (
+      <div class="demo project-card__demo" aria-hidden="true">
+        <span data-tooltip="Pure CSS. No JavaScript.">data-tooltip</span>
+      </div>
+    )
+  }
 
   <div class="project-card__body">
-    <p class="label project-card__meta">
-      <span class="project-card__id">{id}</span>
-      <span>{year}</span>
-    </p>
-    <Title class="glitch project-card__title" data-text={title}>
+    <Title class="project-card__title">
       <a href={live ?? repo} class="project-card__link tap" rel="noopener" target="_blank">{title}</a>
     </Title>
     <p class="project-card__summary">{summary}</p>
@@ -60,6 +61,7 @@ const id = `M-${String(index).padStart(2, '0')}`;
           </a>
         )
       }
+      <span class="project-card__year">{year}</span>
     </p>
   </div>
 </li>
@@ -76,20 +78,14 @@ const id = `M-${String(index).padStart(2, '0')}`;
     flex-direction: column;
     padding: 1.5rem;
   }
-  .project-card__meta {
-    display: flex;
-    justify-content: space-between;
-    margin: 0;
-    color: var(--text-subtle);
+  .project-card__year {
+    margin-left: auto;
   }
-  .project-card__id {
-    color: var(--accent);
-  }
+  /* Same size whether it renders as h3 (home) or h2 (/work). */
   .project-card__title {
-    margin-top: 1.25rem;
-    font-family: var(--font-ui);
     font-size: var(--text-h3);
-    font-weight: 500;
+    line-height: var(--text-h3--line-height);
+    letter-spacing: -0.01em;
   }
   .project-card__link {
     color: inherit;
@@ -100,7 +96,7 @@ const id = `M-${String(index).padStart(2, '0')}`;
     color: var(--accent);
   }
   .project-card__summary {
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
     color: var(--text);
   }
   .project-card__desc {
@@ -129,9 +125,7 @@ const id = `M-${String(index).padStart(2, '0')}`;
     gap: 0.4em;
   }
 
-  /* Screenshot: duotone (grayscale under an accent multiply), dither dots and scanlines; clears on hover/focus. */
   .project-card__media {
-    position: relative;
     overflow: hidden;
     aspect-ratio: 16 / 10;
     border-bottom: 1px solid var(--border);
@@ -143,38 +137,13 @@ const id = `M-${String(index).padStart(2, '0')}`;
     height: 100%;
     object-fit: cover;
     object-position: top left;
-    filter: grayscale(1) contrast(1.15);
-    transition: filter var(--dur-3) var(--ease-out);
   }
-  .project-card__media::before,
-  .project-card__media::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    transition: opacity var(--dur-3) var(--ease-out);
-  }
-  .project-card__media::before {
-    background: var(--accent);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-  }
-  .project-card__media::after {
-    background-image:
-      radial-gradient(var(--bg) 0.6px, transparent 0.8px),
-      repeating-linear-gradient(to bottom, transparent 0 2px, var(--bg) 2px 3px);
-    background-size: 3px 3px, 100% 3px;
-    opacity: 0.45;
-  }
-  .project-card:hover .project-card__media :global(img),
-  .project-card:focus-within .project-card__media :global(img) {
-    filter: none;
-  }
-  .project-card:hover .project-card__media::before,
-  .project-card:hover .project-card__media::after,
-  .project-card:focus-within .project-card__media::before,
-  .project-card:focus-within .project-card__media::after {
-    opacity: 0;
+
+  /* The tooltip plate: a short band above the body, tooltip text hanging below its target. */
+  .project-card__demo {
+    padding: 1.75rem 1.5rem 3.25rem;
+    border: 0;
+    border-bottom: 1px solid var(--border);
   }
 
   @media (min-width: 720px) {
@@ -187,13 +156,6 @@ const id = `M-${String(index).padStart(2, '0')}`;
       min-height: 18rem;
       border-bottom: 0;
       border-right: 1px solid var(--border);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .project-card__media :global(img),
-    .project-card__media::before,
-    .project-card__media::after {
-      transition: none;
     }
   }
 </style>

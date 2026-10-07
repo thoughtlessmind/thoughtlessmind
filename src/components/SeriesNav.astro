@@ -1,5 +1,5 @@
 ---
-/** HUD panel: "Series · part n of m", the series link, and the ordered parts; the current one is marked, the rest link. */
+/** HUD panel: "Part n of m", the series link, and the ordered parts; the current one is marked, the rest link. */
 import { slugify, type Post } from '../lib/posts';
 
 interface Props {
@@ -13,7 +13,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <nav class="hud series-nav" aria-label="Series">
-  <p class="label series-nav__label">Series · part {pad(index + 1)} of {pad(posts.length)}</p>
+  <p class="label series-nav__label">Part {index + 1} of {posts.length}</p>
   <a href={`/writing/series/${slugify(series)}`} class="link series-nav__name">{series}</a>
   <ol class="series-nav__list">
     {

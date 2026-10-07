@@ -8,11 +8,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <span class="lost__static" aria-hidden="true"></span>
       <p class="display glitch lost__code" data-text="404" data-glitch-burst aria-hidden="true">404</p>
     </div>
-    <p class="label lost__label"><span class="lost__accent">//</span> Error 404 · no carrier</p>
     <h1 id="lost-title" class="page-title flicker">Signal lost</h1>
-    <p class="lost__lead">The address may have changed, or it never existed. Nothing here has been deleted on purpose.</p>
+    <p class="lost__lead">There is no page at this address. It may have moved, or it never existed.</p>
     <p class="lost__actions">
-      <a href="/" class="btn btn-ghost"><span data-scramble="hover">return home</span></a>
+      <a href="/" class="btn btn-ghost"><span data-scramble="hover">Back to home</span></a>
     </p>
     <p class="lost__more">
       Or go to <a href="/writing" class="link">Writing</a> or <a href="/work" class="link">Work</a>.
@@ -63,15 +62,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     line-height: 1;
   }
 
-  .lost__label {
-    margin-top: 2rem;
-    color: var(--text-muted);
-  }
   .lost__accent {
     color: var(--accent);
   }
   .lost .page-title {
-    margin-top: 0.75rem;
+    margin-top: 2rem;
   }
   .lost__lead {
     max-width: 48ch;

@@ -1,48 +1,27 @@
 ---
 /**
- * Home hero: boot log, status, glitching name, role line, lead, CTAs and a telemetry HUD.
+ * Home hero: four text elements (role eyebrow, glitching name, one line of lead, two CTAs), the planet slot
+ * and a telemetry HUD.
  * `[data-planet-anchor]` is an empty, sized box: the scene agent draws the WebGL planet over its rect.
- * Every live value (clock, uptime, cursor) is rendered at its build-time/fallback value; fx.ts animates it.
+ * The cursor readout is rendered at its fallback value; fx.ts animates it.
  * The CURSOR row's `[data-egg-hint]` and the `[data-egg-mark]` ring belong to the coordinate eggs (eggs.ts).
  * `[data-black-hole]` is the black hole's hit area: three/BlackHole.tsx shows it, places it and draws the hole.
  */
 import { SITE } from '../consts';
-
-const since = { year: SITE.since, month: 3 }; // matches data-uptime-since="2019-03" below
-const now = new Date();
-const months = (now.getUTCFullYear() - since.year) * 12 + (now.getUTCMonth() + 1 - since.month);
-const pad = (n: number) => String(n).padStart(2, '0');
-const uptime = `${pad(Math.floor(months / 12))}y ${pad(months % 12)}m`;
+import { inner } from '../lib/icons';
 
 const [first, last] = SITE.name.split(' ');
-
-const boot = [
-  '> init signal.v3 ........ ok',
-  '> mount /work /writing /about .. ok',
-  '> locate operator ....... 28.61N 77.21E',
-  '> status .................. shipping',
-];
 ---
 
 <section class="hero container-site" aria-labelledby="hero-title">
   <div class="hero__planet" data-planet-anchor aria-hidden="true"></div>
 
   <div class="hero__copy">
-    <ol class="hero__boot" data-boot aria-hidden="true">
-      {boot.map((line) => <li>{line}</li>)}
-    </ol>
-
-    <p class="label hero__status">
-      <span class="dot-status">Online — sys://{SITE.handle}</span>
-    </p>
+    <p class="label hero__eyebrow"><span data-scramble>Web engineer</span></p>
 
     <h1 id="hero-title" class="display flicker glitch hero__name" data-text={`${first}\n${last}`} data-glitch-burst>
       {first} <br />{last}
     </h1>
-
-    <p class="mono hero__role">
-      <span data-scramble>web engineer</span><span class="caret" aria-hidden="true"></span>
-    </p>
 
     <p class="hero__lead">
       I build interfaces that load fast and read clearly. Seven years of React and TypeScript.
@@ -50,7 +29,7 @@ const boot = [
 
     <div class="hero__actions">
       <a href="#work" class="btn btn-primary"><span data-scramble="hover">View work</span></a>
-      <a href={`mailto:${SITE.email}`} class="btn btn-ghost"><span data-scramble="hover">ping me</span></a>
+      <a href={`mailto:${SITE.email}`} class="btn btn-ghost"><span data-scramble="hover">Email me</span></a>
     </div>
   </div>
 
@@ -73,21 +52,13 @@ const boot = [
           <dd>{SITE.coords}</dd>
         </div>
         <div class="hero__row">
-          <dt>Local</dt>
-          <dd><span data-clock>--:--:--</span> IST</dd>
-        </div>
-        <div class="hero__row">
-          <dt>Uptime</dt>
-          <dd><span data-uptime-since="2019-03">{uptime}</span></dd>
-        </div>
-        <div class="hero__row">
           <dt>Stack</dt>
           <dd>TS / React / Astro / R3F</dd>
         </div>
         <div class="hero__row hero__row--cursor">
           <dt>Cursor</dt>
           <dd>
-            <span data-pointer-coords>X ---- · Y ----</span><span class="hero__egg" data-egg-hint aria-hidden="true" hidden><svg class="hero__egg-dir" viewBox="0 0 16 16"><g transform="rotate(0 8 8)"><path d="M2.5 8h10M9 4.5 12.5 8 9 11.5"></path></g></svg><svg class="hero__egg-lock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"></circle><circle cx="8" cy="8" r="2.5"></circle></svg><span data-egg-hint-text></span></span>
+            <span data-pointer-coords>X ---- · Y ----</span><span class="hero__egg" data-egg-hint aria-hidden="true" hidden><svg class="hero__egg-dir" viewBox="0 0 256 256"><g transform="rotate(0 128 128)" set:html={inner('arrow-right')} /></svg><svg class="hero__egg-lock" viewBox="0 0 256 256" set:html={inner('crosshair')} /><span data-egg-hint-text></span></span>
           </dd>
         </div>
       </dl>
@@ -146,23 +117,7 @@ const boot = [
     min-width: 0;
   }
 
-  .hero__boot {
-    font-family: var(--font-ui);
-    font-size: var(--text-caption);
-    line-height: 1.7;
-    color: var(--text-subtle);
-    white-space: pre;
-    overflow-x: clip;
-    font-variant-numeric: tabular-nums;
-  }
-  /* Decorative, and on a phone it would push the name below the fold. */
-  @media (max-width: 599px) {
-    .hero__boot { display: none; }
-    .hero .hero__status { margin-top: 0; }
-  }
-
-  .hero__status {
-    margin-top: 2rem;
+  .hero__eyebrow {
     color: var(--text-muted);
   }
 
@@ -170,15 +125,9 @@ const boot = [
     margin-top: 1.25rem;
   }
 
-  .hero__role {
-    margin-top: 1.5rem;
-    font-size: var(--text-h3);
-    color: var(--text);
-  }
-
   .hero__lead {
-    max-width: 52ch;
-    margin-top: 1.25rem;
+    max-width: 44ch;
+    margin-top: 1.75rem;
     font-size: var(--text-lead);
     line-height: 1.55;
     color: var(--text-muted);
@@ -195,7 +144,7 @@ const boot = [
   /* Telemetry: compact, and every size is in em off one font-size, so --tele-scale (the grip, fine pointers in
      the two-column layout) scales it uniformly. Rows are one line each: 1.5em line + 2 x 0.25em padding. */
   .hero__tele {
-    --rows: 6;
+    --rows: 4;
     grid-area: telemetry;
     align-self: end;
     font-size: var(--text-label);
@@ -237,7 +186,7 @@ const boot = [
   }
   @media (pointer: coarse) {
     .hero__tele {
-      --rows: 5;
+      --rows: 3;
     }
     .hero__row--cursor {
       display: none;
@@ -256,17 +205,10 @@ const boot = [
     height: 1em;
     margin-right: 0.5ch;
     vertical-align: -0.15em;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.5;
-    stroke-linecap: square;
+    fill: currentColor;
   }
   .hero__egg-lock {
     color: var(--accent);
-  }
-  .hero__egg-lock circle + circle {
-    fill: currentColor;
-    stroke: none;
   }
   .hero__egg.is-locked .hero__egg-dir,
   .hero__egg:not(.is-locked) .hero__egg-lock {
@@ -433,10 +375,13 @@ const boot = [
       --planet: max(16rem, min(40vw, 540px, calc(100svh - var(--header-h) - 24rem)));
       grid-template-columns: minmax(0, 1fr) max(var(--planet), 26rem);
       grid-template-rows: auto auto;
+      /* The copy sits beside the planet (centred on it), not on planet + panel, so it starts near the top of the hero
+         instead of floating; spare height goes below. */
       grid-template-areas:
         'copy planet'
-        'copy telemetry';
+        '. telemetry';
       align-items: center;
+      align-content: start;
       column-gap: clamp(2rem, 4vw, 4rem);
       min-height: calc(92svh - var(--header-h));
       padding-block: 3rem 4rem;

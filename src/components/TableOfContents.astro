@@ -74,7 +74,7 @@ const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
 <script>
   // Active = last heading whose top has passed the 20% line (the end stack below the article lets the last one get there).
-  // Recomputed per animation frame on scroll: an IntersectionObserver band misses headings on fast scrolls.
+  // Recomputed whenever a heading crosses that line.
   let stop: (() => void) | undefined;
 
   function init() {
@@ -85,9 +85,7 @@ const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
     const heads = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
     if (!heads.length) return;
 
-    let queued = false;
     const mark = () => {
-      queued = false;
       const line = window.innerHeight * 0.2;
       let current = heads[0].id;
       for (const h of heads) if (h.getBoundingClientRect().top <= line) current = h.id;
@@ -98,11 +96,11 @@ const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
         else l.removeAttribute('aria-current');
       }
     };
-    const onScroll = () => {
-      if (!queued) (queued = true), requestAnimationFrame(mark);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    stop = () => window.removeEventListener('scroll', onScroll);
+    // The observed box is everything above the 20% line, so a heading fires once each time it crosses that line, in
+    // either direction, however fast the page moves; no scroll listener.
+    const io = new IntersectionObserver(mark, { rootMargin: '100000px 0px -80% 0px' });
+    for (const h of heads) io.observe(h);
+    stop = () => io.disconnect();
     mark();
   }
 

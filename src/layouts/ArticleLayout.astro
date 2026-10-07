@@ -84,7 +84,7 @@ const jsonLd = [
 
   <div class:list={['container-site article', { 'article--rail': hasToc }]} data-pagefind-ignore={draft ? 'all' : undefined}>
     <header class="article__head" data-pagefind-ignore>
-      <a href="/writing" class="crumb">cd ../writing</a>
+      <a href="/writing" class="crumb">All writing</a>
       <h1 class="article__title" transition:name={`post-${post.id}`} data-pagefind-meta="title">{title}</h1>
       <p class="article__dek">{description}</p>
       <p class="label article__meta">
@@ -172,25 +172,26 @@ const jsonLd = [
   .crumb {
     display: inline-block;
     margin-bottom: 2rem;
-    font-family: var(--font-mono);
+    font-family: var(--font-ui);
     font-size: var(--text-caption);
     color: var(--text-subtle);
     text-decoration: none;
   }
   .crumb::before {
-    content: '$ ' / '';
+    content: '← ' / '';
     color: var(--accent);
   }
   .crumb:hover {
     color: var(--text);
   }
 
+  /* Geist, not the pixel face: a post title is a sentence and has to read in one pass. */
   .article__title {
-    font-family: var(--font-ui);
-    font-size: var(--text-h2);
+    font-family: var(--font-sans);
+    font-size: clamp(2rem, 1.4rem + 2.2vw, 3rem);
     font-weight: 600;
-    line-height: var(--text-h2--line-height);
-    letter-spacing: var(--text-h2--letter-spacing);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
     text-wrap: balance;
   }
   .article__dek {
@@ -200,19 +201,15 @@ const jsonLd = [
     color: var(--text-muted);
     text-wrap: pretty;
   }
+  /* Meta items are spaced apart, not chained with separators. */
   .article__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.25rem 0.75rem;
+    gap: 0.25rem 1.5rem;
     margin-top: 1.75rem;
     color: var(--text-subtle);
     font-variant-numeric: tabular-nums;
-  }
-  /* Separators between meta items; the draft badge stands on its own. */
-  .article__meta > :not(:first-child, .draft-badge)::before {
-    content: '·' / '';
-    margin-right: 0.75rem;
   }
   .article__tags {
     display: flex;

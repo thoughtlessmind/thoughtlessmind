@@ -19,18 +19,20 @@ points, a field of dust that bends around the cursor like a gravitational lens, 
 
 | Role | Font (Fontsource package) | Where |
 |---|---|---|
-| Display | **Geist Pixel** (`@fontsource-variable/geist-pixel`, the square `ELSH` 1 instance, set once on `<html>`) | Hero name, page titles, 404, big counters, mobile menu links. Only at ≥ 40px. Never body text. |
-| Interface / headings | **Martian Mono** (`@fontsource-variable/martian-mono/standard.css`: `wdth` 75–112.5 via `font-stretch`, `wght` 100–800) | h2–h6, nav, buttons, labels, tags, readouts, tables, the article title |
-| Body / prose | **Geist** (`@fontsource-variable/geist`) | Paragraphs, article prose, summaries |
+| Display | **Geist Pixel** (`@fontsource-variable/geist-pixel`, the square `ELSH` 1 instance, set once on `<html>`) | Hero name, page titles (incl. home "Get in touch"), 404, big counters, mobile menu links. Only at ≥ 40px. Never body text. |
+| Interface | **Martian Mono** (`@fontsource-variable/martian-mono/standard.css`: `wdth` 75–112.5 via `font-stretch`, `wght` 100–800) | Short UI strings only: nav, buttons, labels, tags, dates, meta, readouts, the crumb |
+| Headings / body | **Geist** (`@fontsource-variable/geist`) | h2–h6 (600), post and project titles, the article title, paragraphs, prose, summaries |
 | Code | **Geist Mono** (`@fontsource-variable/geist-mono`) | Code blocks, inline code, kbd, the terminal, OG cards |
 
-Tokens: `--font-display`, `--font-ui`, `--font-sans`, `--font-mono`.
+Tokens: `--font-display`, `--font-ui`, `--font-sans`, `--font-mono`. Anything a reader reads as a sentence (a post title,
+a heading) is Geist; the wide mono stays on strings of a few words.
 
 Scale (fluid, 360 → 1440):
 - `--text-display`: clamp(3.25rem, 1rem + 10vw, 10.5rem); line-height 0.9; tracking 0
 - `--text-h1`: clamp(2.5rem, 1.5rem + 4vw, 5rem); lh 1.0 (Geist Pixel: bare `h1` and `.page-title`)
-- `--text-h2`: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem); lh 1.15; Martian Mono 600, `wdth` 100, tracking -0.01em
-- `--text-h3`: clamp(1.125rem, 1rem + 0.6vw, 1.375rem); lh 1.3; Martian Mono 500
+- `--text-h2`: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem); lh 1.15; Geist 600, tracking -0.02em
+- `--text-h3`: clamp(1.125rem, 1rem + 0.6vw, 1.375rem); lh 1.3; Geist 600, tracking -0.01em
+- Article title: clamp(2rem, 1.4rem + 2.2vw, 3rem); lh 1.1; Geist 600, tracking -0.025em
 - h4–h6: 1rem; lh 1.4
 - `--text-lead`: clamp(1.125rem, 1.05rem + 0.4vw, 1.3125rem); lh 1.55; Geist
 - `--text-body`: 1.0625rem (17px); lh 1.7; Geist
@@ -38,7 +40,12 @@ Scale (fluid, 360 → 1440):
 - `--text-label`: 0.6875rem (11px); lh 1.4; Martian Mono 500, UPPERCASE, tracking 0.14em, `wdth` 87.5
 - `--text-caption`: 0.75rem; lh 1.5
 
-Labels, nav, buttons and tags are uppercase Martian Mono. Headings and body are sentence case. No emoji.
+Labels, nav, buttons and tags are uppercase Martian Mono. Headings and body are sentence case. No emoji, no em
+or en dashes in copy. Uppercase labels are rationed: no `// 0N` section indices, no eyebrow above section titles (the
+hero's "Web engineer" is the home page's one eyebrow), no chains of `·` separators.
+
+Icons: Phosphor, regular weight (`@phosphor-icons/core`, inlined at build by `src/lib/icons.ts` + `Icon.astro`). The
+hexagon logo is the only hand-drawn SVG.
 
 ## 2. Colour
 
@@ -48,12 +55,12 @@ bang instead (§4).
 | Token | Value | Use |
 |---|---|---|
 | `--bg` | `#0a0b0d` | page |
-| `--bg-elevated` | `#101216` | cards, palette, terminal, telemetry, marquee tape |
+| `--bg-elevated` | `#101216` | cards, palette, terminal, telemetry, the about "Now" block |
 | `--surface` | `#15181d` | code, inputs, hover rows |
 | `--border` | `#23272e` | hairlines |
 | `--border-strong` | `#3b414b` | inputs, frames, button borders |
 | `--field-dot` / `--field-vignette` / `--field-grain` | `rgb(233 231 226 / 0.3)` / `rgb(0 0 0 / 0.5)` / 4% SVG noise | background dust (brightest level), edge vignette, grain |
-| `--text` | `#ebe9e4` | primary text |
+| `--text` | `#e8e9eb` | primary text (neutral, same temperature as the greys) |
 | `--text-muted` | `#a6aab2` | secondary |
 | `--text-subtle` | `#858b95` | labels, meta (5.74:1 on bg) |
 | `--accent` | `#ff5f1f` | **launch orange**: primary CTA, active nav, focus ring, corner brackets |
@@ -61,18 +68,17 @@ bang instead (§4).
 | `--accent-fg` | `#0a0b0d` | text on accent |
 | `--accent-soft` | `rgb(255 95 31 / 0.12)` | selection, hover wash |
 | `--signal` | `#38e1f0` | cyan: the second glitch channel, link hover underline, the terminal's cwd. Never large fills. |
-| `--ok` | `#a4f04a` | lime: status dots |
 | `--code-bg` | `#0d0f12` | |
 | `--glitch-blend` | `screen` | blend mode of the glitch copies |
 
 Colour rules: orange is rare and meaningful (one primary CTA per view, the active state, focus, bracket corners).
-Cyan appears only in motion (glitch split, hover underline) and small accents. Lime only on status dots.
+Cyan appears only in motion (glitch split, hover underline) and small accents. There are no status dots.
 `<meta name="theme-color">` is `#0a0b0d` (`Head.astro`).
 
 ## 3. Shape, space, surfaces
 
-- **Radius: 0.** Only `--radius-1: 2px` for kbd, and `999px` for status dots. The one circle in the system is the
-  coordinate-egg marker ring (§10). No rounded cards.
+- **Radius: 0.** Only `--radius-1: 2px` for kbd. The one circle in the system is the coordinate-egg marker ring (§10).
+  No rounded cards.
 - **HUD frame** (`.hud`): 1px `--border` box with four 10px × 2px **corner brackets** in `--accent` (background gradients on `::before`, no extra DOM). This replaces cards and shadows. No drop shadows anywhere.
 - Background: **random dust**. `canvas.field-fx` (drawn by `src/scripts/field.ts`) scatters 1px dots from a seeded PRNG, one
   candidate per 24px cell (`--field-size`), jittered inside the cell with a 4px margin, ~30% empty, three brightness levels
@@ -83,16 +89,20 @@ Cyan appears only in motion (glitch split, hover underline) and small accents. L
   40rem (~70 characters of Geist; 68ch ran to ~88 because of its wide "0"). `--container-wide` 880px for code/figure breakouts.
   `--header-h` 3.5rem.
 - Section rhythm: `--spacing-section` clamp(5rem, 3rem + 7vw, 9rem); `.section` pads half of it top and bottom.
-- Section header pattern (`SectionHeading.astro`): one row of `// 0N` index in `--accent` + label (decodes in view) + a
-  hairline that fills to the right edge + an optional `ALL WORK →` link; the title sits below the row.
+- Section header pattern (`SectionHeading.astro`): one hairline above the section, then the title (Geist h2) and an
+  optional link (`ALL WRITING →`) on the same line. No index, no eyebrow.
+- Lists: no hairline under every row. Post lists are separated by spacing; the stack and the year groups get one
+  divider per group.
 
 ## 4. Motion
 
 Tokens: `--dur-1` 120ms, `--dur-2` 240ms, `--dur-3` 480ms, `--dur-4` 900ms; named: `--dur-page-out` 160ms,
-`--dur-glitch` 280ms, `--dur-reveal` 360ms, `--dur-flicker` 420ms, `--dur-caret` 1.1s, `--dur-pulse` 2.4s,
-`--dur-marquee` 40s; `--ease-out` cubic-bezier(0.2, 0.8, 0.2, 1); `--ease-step` steps(4, end).
+`--dur-glitch` 280ms, `--dur-reveal` 360ms, `--dur-flicker` 420ms, `--dur-caret` 1.1s;
+`--ease-out` cubic-bezier(0.2, 0.8, 0.2, 1); `--ease-step` steps(4, end).
 
-Everything below except the three readouts (clock, uptime, pointer coords) is **off under
+Every effect has to say something (identity, feedback, a state change); decoration-only motion (a boot log, a
+keyword marquee, pulsing status dots, live clocks) was removed. Everything below except the pointer-coords readout is
+**off under
 `prefers-reduced-motion: reduce`** (final state shown immediately) and never blocks content: text is in the HTML at its
 final value; JS only animates it.
 
@@ -103,18 +113,15 @@ rise and one fall, never more than one in any second, behind a warning that says
 
 | Effect | Trigger | Spec |
 |---|---|---|
-| **Decode / scramble** | `data-scramble` (once, when ≥ 40% in view); `data-scramble="hover"` (pointerenter/focus of the closest link or button: nav, CTAs, section links) | Characters resolve left→right from random glyphs `!<>-_\/[]{}=+*^?#01ABCDEF` over 700ms (hover: 350ms). Spaces are kept. The element is split into a `.sr-only` copy of the final text plus an `aria-hidden` glyph span with the same character count, so mono widths hold. Targets must be text-only leaves. |
+| **Decode / scramble** | `data-scramble` (once, when ≥ 40% in view: the hero's "Web engineer" eyebrow); `data-scramble="hover"` (pointerenter/focus of the closest link or button: nav, CTAs, section links) | Characters resolve left→right from random glyphs `!<>-_\/[]{}=+*^?#01ABCDEF` over 700ms (hover: 350ms). Spaces are kept. The element is split into a `.sr-only` copy of the final text plus an `aria-hidden` glyph span with the same character count, so mono widths hold. Targets must be text-only leaves. |
 | **CRT turn-on** | `.flicker` | On load: opacity 0 → 1 with three stutters (0, .8, .2, 1, .6, 1) over 420ms `--ease-step`. On `main` it runs `flicker-soft` (0, .85, .6, 1). Fill mode `backwards`, never `both`: a held opacity fill keeps the element from ever being an LCP candidate. |
-| **Glitch** | `.glitch` with `data-text="same text"`, on hover/focus; `data-glitch-burst` adds `.is-glitching` every 5–9s (skipped while the tab is hidden) | Two pseudo-elements copy the text, offset 2–3px in `--accent` and `--signal` with `mix-blend-mode: var(--glitch-blend)`, clipped to 3 horizontal slices that jump in `steps()`, 280ms total. At rest the copies sit at opacity 0.001, not 0, so LCP records them at first paint instead of at the first burst (which read as a 5–9s LCP). Used on the hero name, the 404 code, project titles and the contact email. |
-| **Caret** | `.caret` | A 0.6em × 1em `--accent` block (`::after`), blinking 1.1s `steps(1)`. |
-| **Status dot** | `.dot-status` | A 6px round lime dot pulsing to 0.35 opacity every 2.4s. |
-| **Boot log** | `[data-boot]` on home hero | Child lines appear one by one, 70ms apart, each decoding (700ms): about 1s total. Once per session (`sessionStorage.booted`); later visits render lines instantly. Decorative (`aria-hidden`). Hidden < 600px. |
+| **Glitch** | `.glitch` with `data-text="same text"`, on hover/focus; `data-glitch-burst` adds `.is-glitching` every 5–9s (skipped while the tab is hidden) | Two pseudo-elements copy the text, offset 2–3px in `--accent` and `--signal` with `mix-blend-mode: var(--glitch-blend)`, clipped to 3 horizontal slices that jump in `steps()`, 280ms total. At rest the copies sit at opacity 0.001, not 0, so LCP records them at first paint instead of at the first burst (which read as a 5–9s LCP). Used on the hero name and the 404 code. |
+| **Caret** | `.caret` | A 0.6em × 1em `--accent` block (`::after`), blinking 1.1s `steps(1)`. The terminal's input only. |
 | **Counters** | `data-count-to="98"` (+ optional `data-count-suffix="k+"`) | When ≥ 40% in view, digits roll through random digits then settle left→right, 900ms; the suffix never rolls. |
-| **Marquee tape** | `.marquee` + `.marquee__track` | Horizontal infinite scroll of stack keywords separated by an accent `▲`, 40s linear; pauses on hover. The duplicated list is `aria-hidden`. |
+| **Press** | `.btn:active` | Buttons drop 1px while pressed. |
+| **Live demo** | css-only-tooltip card (home, /work) | The `.demo [data-tooltip]` plate (global.css): the tooltip opens on hover/focus, and is shown open on `(hover: none)`. No JS. |
 | **Reveal** | `.reveal` in `[data-reveal-group]` (`src/scripts/reveal.ts`) | Once, when it enters the viewport (bottom 10% excluded): opacity 0 → 1 with a 2-step `clip-path` inset wipe (top→bottom), 360ms, 50ms stagger capped at 6 steps. Hidden only when `html.js` and motion is allowed. |
 | **Lens** | Pointer move (fine pointers) | The dust around the cursor is displaced like a gravitational lens (point-lens mapping): a clear ~32px core, dots compressed into a soft ring (~48px of glow) that brightens and warms 25% toward `--accent`, back to rest by 150px; the brightest ring dots draw at 2px. Faint extra dust (invisible at rest) appears only inside the ring. The lens follows an eased cursor (~70ms) with no trail, fades in/out (~180ms) as the pointer enters/leaves the window, and rAF stops when it settles. `signal:pulse` sends a 420px, 800ms shockwave through the dust. Off (static field) on article pages, under reduced motion and without a fine pointer. |
-| **Live clock** | `data-clock` | `HH:MM:SS` in Asia/Kolkata (markup adds ` IST`), updates each second, tabular nums. |
-| **Uptime** | `data-uptime-since="2019-03"` | Renders `07y 06m` style difference from that month to now. Server renders a build-time value first. |
 | **Pointer coords** | `data-pointer-coords` | `X 0412 · Y 0233` from the pointer position, fine pointers only, rAF-throttled. |
 | **Big bang** | `[data-theme-toggle]` (LGT), ⌘K "Light theme", terminal `theme light` | There is no light mode. A modal (`ThemeToggle.astro`) warns "no light mode in space · contains one bright flash" and counts 3 → 0 (Abort or Esc cancel), then about 11s (`src/scripts/bigbang.ts`, lazy; maths in `src/scripts/fall.ts`). **Crunch** 0–3.4s: copies of every visible word, box and image (the DOM is untouched; `html.bb` hides it; copies keep paint order per container, so the sticky header stays on top) and the dust behind them are drawn once into a canvas (`src/scripts/raster.ts`), and one WebGL2 pass (`src/scripts/warp.ts`) bends that picture into a black hole at the centre. Over the first 0.3s it fades in over the copies (pixel-identical) while a pinpoint shadow opens. Then the page is one sheet of fluid: it free-falls in on a point-mass curve (the centre drains first, the corners arrive at 3.4s), winds clockwise into spiral arms (angular momentum kept) and stretches along its fall line (tides, from the differential fall); a point lens bends its light, so text near the hole stretches into arcs around the Einstein ring (2× the shadow) with a thin inverted image inside it; the black shadow grows with what has gone in (to 7% of the short side), ringed by a thin lensing ring that brightens with the accretion rate; squeezed material heats up the blackbody ramp toward blue-white, and near the shadow it reddens and dims (gravitational redshift: colour × g, light × g⁴) instead of popping out. Over the last 0.3s shadow and ring collapse into the point. The sky scales to a point on the same curve and brightens. Without WebGL2 the copies fall in as one turning sheet. **Singularity** to 4.1s: one 2px white point that trembles. **Bang**: light bursts out (200ms), cools along the blackbody curve through 3,000 K orange (recombination) to transparent (2.4s), with a faint blurred mottle as its afterglow; dark ages to 7.1s. **First stars**: `signal:dawn` ignites the dust, brightest first (2.4s). **Structure** 8–11s: copies condense in place, smallest first, the planet last; then the swap back to the originals, the toast "Universe rebooted · still dark", focus on the toggle. Esc skips; a resize, the tab hidden, a navigation or an error end it at once. Reduced motion: the modal and countdown, then the toast "Still dark · space has no light mode". |
 | **Page transitions** | Astro `ClientRouter` | Old page: 160ms `steps(3)` fade out (`--dur-page-out`); the new page is held until it is gone, then fx.ts adds `.flicker` to `main` on `astro:after-swap` (the soft variant above). |
@@ -192,76 +199,77 @@ Scene:
 **Header** (sticky, `--header-h` 56px, `--bg` at 85% + 12px backdrop blur, bottom hairline):
 `[ ⬡ ]` logo: the three overlapping hexagons from the old site, hard-cornered, filled `--accent` at .45/.65/.8 so the
 overlaps build to a solid core (22px tall; brackets `--text-subtle`, accent on hover; links home). Favicons and touch
-icons are the same mark on a transparent background (`public/favicon.svg`) · nav `01 WORK  02 WRITING  03 ABOUT`
-(index in `--text-subtle`, active item in `--accent` with a `▸` marker, hover scramble) · right side: `NDL 14:32:07 IST` live
-clock (hidden < 900px), search button (icon + `⌘K` kbd; opens the palette), theme toggle `[DRK|LGT]`: one native button,
-DRK always lit in `--accent`; LGT opens the big bang's warning (§4).
+icons are the same mark on a transparent background (`public/favicon.svg`). Nav `WORK  WRITING  ABOUT` (active item in
+`--accent` with a `▸` marker, hover scramble). Right side: search button (icon + `⌘K` kbd; opens the palette), theme
+toggle `[DRK|LGT]`: one native button, DRK always lit in `--accent`; LGT opens the big bang's warning (§4). No clock.
 < 768px: nav and the `⌘K` kbd hide; a `MENU` / `CLOSE` button opens a full-height sheet under the header with Geist Pixel
 40px links (flicker-soft on open), closed by Esc, an outside click, tabbing out or widening past 768px.
 
-**Footer**: HUD frame (`--bg` at 85%). Left: "Built by Rajiv Kumar in New Delhi." + `28.6139° N, 77.2090° E`. Middle:
-socials as `GH  IN  X  SO  DEV  RSS` mono links (cyan underline on hover). Right: status `● ALL SYSTEMS NOMINAL` (lime dot),
-`BUILD 2026-09-23` (build date). One column < 768px. The footer also mounts the terminal `<dialog>` and the egg toast region.
+**Footer**: HUD frame (`--bg` at 85%). Left: "Built by Rajiv Kumar in New Delhi." Right: the site's one list of profile
+links, full names in Martian Mono (`GitHub  LinkedIn  X  Stack Overflow  dev.to  RSS`, `rel="me"`, cyan underline on
+hover). No status, build stamp or coordinates. One column < 768px. The footer also mounts the terminal `<dialog>` and
+the egg toast region.
 
 ## 7. Pages
 
 **Home**
 1. Hero (≥ 900px: two columns, min-height `92svh` minus the header; planet box `max(16rem, min(40vw, 540px, 100svh −
-   header − 24rem))` on the right with the telemetry panel under it). Boot log (4 muted lines: `> init signal.v3 ........ ok`,
-   `> mount /work /writing /about .. ok`, `> locate operator ....... 28.61N 77.21E`, `> status .................. shipping`),
-   status label `● ONLINE — SYS://THOUGHTLESSMIND`, `<h1>` "Rajiv Kumar" in Geist Pixel display (two lines, `.flicker`,
-   `.glitch` + `data-glitch-burst`), a role line `web engineer` (Martian Mono, h3 size, decodes in view) + caret, lead
-   paragraph (Geist): "I build interfaces that load fast and read clearly. Seven years of React and TypeScript." CTAs: primary `[ VIEW WORK ]` (→ `#work`), ghost `> ping me` (mailto). Telemetry panel
-   (`.hud.hud--solid`) with rows: `LOC 28.6139° N, 77.2090° E` · `LOCAL <clock> IST` · `UPTIME <since 2019-03>` ·
-   `STACK TS / REACT / ASTRO / R3F` · `CURSOR <pointer coords>` (+ the egg hint, §10; the
-   CURSOR row is hidden on coarse pointers). One line per cell, ellipsised, so nothing reflows.
+   header − 24rem))` on the right with the telemetry panel under it). Four text elements: the eyebrow `WEB ENGINEER`
+   (label, decodes in view), `<h1>` "Rajiv Kumar" in Geist Pixel display (two lines, `.flicker`, `.glitch` +
+   `data-glitch-burst`), one lead line (Geist): "I build interfaces that load fast and read clearly. Seven years of
+   React and TypeScript." and the CTAs: primary `[ VIEW WORK ]` (→ `#work`), ghost `> Email me` (mailto). Telemetry
+   panel (`.hud.hud--solid`) with rows: `LOC 28.6139° N, 77.2090° E` (the Terminal egg's clue) · `STACK TS / REACT /
+   ASTRO / R3F` · `CURSOR <pointer coords>` (+ the egg hint, §10; the CURSOR row is hidden on coarse pointers). One line
+   per cell, ellipsised, so nothing reflows.
    The panel is secondary: compact by default (11px, every size in em off `--tele-scale`, 32em wide) and user-resizable at
    ≥ 900px with a fine pointer. Its free top-left corner bracket is a grip (`role="slider"`, drag up-left to grow, arrow keys
    ±5%, Home / End, Enter or double-click resets), range 0.85×–1.8×, clamped so it stays 56px clear of the copy column and
    never rises above the hero. The scale is kept in `localStorage.tele-scale` and applied before paint by an inline script.
    It grows up-left inside a fixed slot so the hero never reflows.
    Mobile (< 900px): one column: the copy, then the planet in its own band (`min(62vw, 15rem)`; the black hole rests in the room below it) so no
-   text sits on the points, then the compact panel. < 600px the boot log is hidden so the name stays above the fold.
-2. Marquee tape (`--bg-elevated`, hairlines above and below): TYPESCRIPT ▲ REACT ▲ CSS ▲ ASTRO ▲ WEBGL ▲ PERFORMANCE ▲ ACCESSIBILITY ▲ CHROME EXTENSIONS ▲ DESIGN SYSTEMS ▲ NODE.
-3. `// 01 SHIPPED` "Selected work" (`ALL WORK →`): this site as the case study (`M-00` HUD panel: facts list + build
-   pipeline readout + source link), then featured projects as module cards in a 2-column grid (≥ 720px): `M-01` index +
-   year, title (Martian Mono, h3 size, glitches on hover), summary, `[CSS] [NPM]` tags, `REPO ↗` + `LIVE ↗` / `NPM ↗` /
-   `WEB STORE ↗`. A card with a screenshot spans both columns (image 7fr | body 5fr); the YouTube Playlist Info screenshot
-   gets a duotone (grayscale under an accent multiply) + dither + scanline wash that clears on hover/focus. Cards are `.hud`.
-4. `// 02 LOGS` "Latest writing": the 3 latest non-draft posts as terminal log lines: `2026-09-08  ▸ Title .......... 6 MIN`
-   with dot leaders, then the summary and up to 3 tags.
-5. `// 03 OPERATOR` "On record" (`FULL DOSSIER →`): counters row: `98` SO answers, `60` accepted, `110k+` reads on one answer,
-   `49` PRs to others' repos, `07` years (computed from 2019). Geist Pixel at clamp(2.5rem, 5vw, 4.5rem); two columns on
-   phones, one row from 720px. One short paragraph, then `OFF-DUTY: ROCKETS · ORBITAL MECHANICS · PHYSICS · SPORT`.
-6. `// 04 TRANSMIT` — huge "Let's build something." (Geist Pixel display), email as a large Martian Mono link with an accent
-   underline that glitches on hover, socials with `↗`.
+   text sits on the points, then the compact panel.
+2. "Selected work" (no link; the hero CTA and the nav cover /work): this site as the case study (HUD panel: year, title,
+   one line, `HOW IT WAS BUILT →` to the rebuild post + `SOURCE ↗`, and three facts: rendering, the planet, easter eggs;
+   5fr | 7fr from 1024px), then the featured projects as cards in a 2-column grid (≥ 720px): year, Geist title, summary,
+   `[CSS] [NPM]` tags, `REPO ↗` + `NPM ↗` / `WEB STORE ↗` / `LIVE ↗`. A card with a screenshot spans both columns
+   (image 7fr | body 5fr), shown as it is. css-only-tooltip carries the live tooltip plate (§4). Cards are `.hud`.
+3. "Latest writing" (`ALL WRITING →`): the 3 latest non-draft posts as log lines: `2026-09-08  ▸ Title .......... 6 MIN`
+   with dot leaders (Geist title), then the summary and up to 3 tags.
+4. "Track record" (`MORE ABOUT ME →`): bio (two short paragraphs, lead size) beside a 2 × 2 grid of Geist Pixel numbers
+   (`98` Stack Overflow answers, `60` accepted answers, `110k+` reads on one answer, `49` pull requests to other people's
+   repos), each with a 2px left rule; 7fr | 5fr from 900px, stacked below.
+5. "Get in touch" (`.page-title`, Geist Pixel), one line, then `[ EMAIL ME ]` and the address as plain text to copy
+   (`user-select: all`).
 
-**Work** `/work/`: page title in Geist Pixel (`.flicker`) + dek; `// 01 FEATURED` the case study and featured module cards
-(with the longer description); `// 02 INDEX` a `$ ls -la ~/work` prompt and the full index as a table (idx · year · name ·
-stack · links), archived rows last, tagged `[ARCHIVED]` and dimmed by colour (not opacity, to keep AA), rows highlight with
-`--surface` on hover; `TOTAL n` under it.
+One label per intent across the site: contact is always `Email me`, the writing index is always `All writing`.
 
-**About** `/about/`: "Operator dossier". Avatar (176px: initials `RK` in Geist Pixel inside a HUD frame with dither dots,
-scanlines and a slow accent scan bar; a photo if `/public/images/avatar.{jpg,png,webp}` exists, shown grayscale + dither),
-`About` page title, dek, an ID list (name · role · company · base · coords · active), then sections: `// 01 LOG` experience
-as log entries, `// 02 TRAJECTORY` timeline (square nodes, current one in accent), `// 03 SPEC SHEET` stack table,
-`// 04 ON RECORD` counters + record lines, `// 05 NOW`, `// 06 ELSEWHERE` links.
+**Work** `/work`: page title in Geist Pixel (`.flicker`) + dek; the case study and the featured cards (h2, with the
+longer description); "More projects": every other project once, live ones first, archived last (`[ARCHIVED]`, dimmed by
+colour, not opacity, to keep AA). From 900px each is one row: year | name, summary, stack | links. No frames, no row rules.
 
-**Writing** index / tag / series: page title + dek, tag filters as CLI flags (`--tag=css 02` chips + an `NN ENTRIES` readout),
-then a terminal listing grouped by year (`// 2026 04`), rows as on home. Tag and series pages add a `$ cd ../writing` crumb;
-series pages keep reading order with numbered rows and no tag bar.
+**About** `/about`: avatar (176px: initials `RK` in Geist Pixel inside a HUD frame with dither dots, scanlines and a slow
+accent scan bar; an image at `/public/images/avatar.{jpg,png,webp}` replaces it, shown grayscale + dither; a mascot is
+planned, no photo), `About` page title, dek, `[ EMAIL ME ]`. Then three paragraphs, "Experience" (one timeline: square
+nodes, the current one in accent; roles get a bold title and a line, milestones one line), "Stack" (three clusters,
+name | tags, one divider between clusters) and "Now" (the page's one framed block).
 
-**Article**: the calmest page. No 3D and no lens (static dust only). `$ cd ../writing` crumb, title in Martian Mono 600 at
-`--text-h2`, dek, a label meta line (date · N min read · N words · updated · draft badge), tags. Prose in Geist 17px on the
-40rem measure, headings in Martian Mono, `#` anchors on hover; code, figures and tables break out to 880px at ≥ 960px.
+**Writing** index / tag / series: page title + dek, tag chips (`react 6`, active in accent; one scrolling row on phones),
+then the listing grouped by year (a plain `2026` marker with one rule under it), rows as on home, then "Series". Tag pages
+are titled "Posts tagged …". Tag and series pages add a `← All writing` crumb; series pages keep reading order with
+numbered rows and no tag bar.
+
+**Article**: the calmest page. No 3D and no lens (static dust only). `← All writing` crumb, title in Geist 600 (scale
+above), dek, a label meta line (date, N min read, N words, updated, draft badge; spaced, no separators), tags. Prose in
+Geist 17px on the 40rem measure, headings in Geist, `#` anchors on hover; code, figures and tables break out to 880px at
+≥ 960px.
 Reading progress: 2px `--accent` bar fixed under the header plus a `037%` readout, measured through the prose only. TOC as a
 `> section` list (h3 as `-`) with the active item in accent: a sticky right rail at ≥ 1200px, otherwise a `> ON THIS PAGE [+]`
 `<details>`. Code blocks: expressive-code, `github-dark`, radius 0, tab indicator in accent. End stack:
 share, series nav, older/newer, author box, related.
 
 **404**: "Signal lost". Big glitching `404` (Geist Pixel, `data-glitch-burst`) over low-contrast TV static (SVG noise mask
-at 7%, jumped in steps, flat brightness), `// ERROR 404 · NO CARRIER`, `> return home`, links to Writing and Work, and a hint
-that the home telemetry knows where the signals are.
+at 7%, jumped in steps, flat brightness), one line ("There is no page at this address…"), `> Back to home`, links to
+Writing and Work, and a hint that the home telemetry knows where the signals are.
 
 **⌘K palette** (⌘K / Ctrl+K or the header button): a `.hud` terminal prompt: `~$` prefix, mono input ("search writing,
 pages, actions"), grouped results (Pages · Writing via Pagefind, falling back to title filtering · Projects · Actions: copy
@@ -282,25 +290,31 @@ orange 8px left bar, title in Geist Mono bold (64px, 54px when long), muted desc
 - Fonts: preload only the Geist Pixel (ELSH) and Martian Mono (standard) latin files, the display and UI faces
   (`Head.astro`). The Geist body face is not preloaded; on posts its swap is a small layout shift (CLS 0.019 on
   mobile lab runs, 2026-10-07), still well inside "good".
-- The 3D chunk stays lazy and out of the initial bundle; no new runtime dependencies besides fonts.
+- The 3D chunk stays lazy and out of the initial bundle; no new runtime dependencies besides fonts (Phosphor icons are
+  inlined at build, so they ship no JS).
+- No `scroll` listeners: scroll-linked UI uses IntersectionObserver (the TOC) or CSS scroll-driven timelines (the
+  reading progress bar). **Accepted exception (2026-10-07):** two passive, rAF-coalesced `window` scroll listeners
+  stay: `three/Planet.tsx` (the planet shrinking into the corner as the hero leaves) and `scripts/eggs.ts`
+  (rechecking the egg under a still pointer as the page moves). Both need the exact position every frame while the
+  page moves, and the only replacement is a frame loop that runs while idle, which breaks "idle means zero work".
 - `pnpm check` and `pnpm build` pass; no console errors.
 
 ## 9. Implementation contract (shared by every file)
 
 Global classes (defined only in `src/styles/global.css`):
-- Layout: `.container-site`, `.section`, `.rows` (list with hairline dividers), `.skip-link`, `.tap` (44px min hit area on coarse pointers)
+- Layout: `.container-site`, `.section`, `.rows` (list reset, no dividers), `.skip-link`, `.tap` (44px min hit area on coarse pointers)
 - Type: `.display` (Geist Pixel, `--text-display`), `.page-title` (Geist Pixel, `--text-h1`), `.page-head`, `.page-head__dek`,
   `.label`, `.mono` (Martian Mono), `.prose`
 - Surfaces: `.hud` (frame + accent corner brackets), `.hud--solid` (with `--bg-elevated`)
 - Controls: `.btn` (draws `[ ]` around its label in CSS), `.btn-primary`, `.btn-ghost` (a `>` prompt in accent instead),
-  `.btn-sm`, `.icon-btn`, `.link`, `.tag` (renders `[text]`), `.kbd`
-- Status: `.dot-status` (lime pulsing dot), `.draft-badge`, `.caret`
-- Motion: `.reveal`, `.flicker`, `.glitch` (needs `data-text`), `.marquee` + `.marquee__track`; state classes set by
+  `.btn-sm`, `.icon-btn`, `.link`, `.tag` (renders `[text]`), `.kbd`, `.demo` (+ `[data-tooltip]`: the CSS tooltip plate)
+- Status: `.draft-badge`, `.caret`
+- Motion: `.reveal`, `.flicker`, `.glitch` (needs `data-text`); state classes set by
   scripts: `.is-visible`, `.is-glitching`, `.is-dim`, `html.bb` (bigbang.ts, while it runs)
 - Background: `.field` (vignette + grain) + `canvas.field-fx` (dust + lens, persisted across navigations)
 
 Data attributes: `data-scramble`, `data-scramble="hover"`, `data-glitch-burst`, `data-count-to` (+ `data-count-suffix`),
-`data-boot`, `data-clock`, `data-uptime-since`, `data-pointer-coords` (all fx.ts); `data-reveal-group` (reveal.ts);
+`data-pointer-coords` (all fx.ts); `data-reveal-group` (reveal.ts);
 `data-egg`, `data-egg-hint` / `data-egg-hint-text` (the CURSOR row's arrow + target slot), `data-egg-mark` (the marker
 button), `data-tele` (eggs.ts); `data-tele-grip` (Hero's resize grip); `data-planet-anchor` (Planet.tsx, BlackHole.tsx,
 eggs.ts); `data-black-hole` (the black hole's hit area, BlackHole.tsx);
@@ -312,8 +326,7 @@ the dust gets a shockwave, the planet glitches if hit), `signal:hole` (`detail: 
 black hole moves, `null` once it is gone; the dust lenses around it), `signal:dawn` (`detail: {ms}`: field.ts ignites
 the dust star by star, brightest first; `0` shows it all), `open-palette` (no detail).
 
-Storage: `localStorage.tele-scale`, `localStorage.eggs` (found ids),
-`sessionStorage.booted`.
+Storage: `localStorage.tele-scale`, `localStorage.eggs` (found ids).
 
 Component-specific styles live in the component's scoped `<style>` (or a CSS file imported by a React island), never in
 global.css. `Terminal.astro` uses `<style is:global>` because its output lines, toasts and rocket are created by script.

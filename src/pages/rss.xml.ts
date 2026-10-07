@@ -30,7 +30,7 @@ export async function GET(context: APIContext) {
   );
 
   return rss({
-    title: `${SITE.name} — Writing`,
+    title: `Writing by ${SITE.name}`,
     description: SITE.description,
     site,
     trailingSlash: false, // match trailingSlash: 'never'

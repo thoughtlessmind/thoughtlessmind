@@ -13,8 +13,8 @@ const posts = all.filter((p) => p.data.tags.includes(tag));
 ---
 
 <WritingLayout
-  title={`Writing · ${tag}`}
-  heading={`Writing · ${tag}`}
+  title={`Posts tagged ${tag}`}
+  heading={`Posts tagged ${tag}`}
   description={`Everything filed under ${tag}.`}
   posts={posts}
   tags={getAllTags(all)}

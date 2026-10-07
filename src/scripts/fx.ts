@@ -1,15 +1,12 @@
 // SIGNAL behaviours (DESIGN.md §4). Everything is driven by data attributes / classes in the markup;
 // the HTML always holds the final text, JS only animates it. Initialised on astro:page-load, fully torn
-// down on astro:before-swap. Under reduced motion only the non-animated readouts run (clock, uptime,
-// pointer coords). Easter eggs live in eggs.ts and Terminal.astro.
+// down on astro:before-swap. Under reduced motion only the pointer-coords readout runs.
+// Easter eggs live in eggs.ts and Terminal.astro.
 //
 //   data-scramble            decode once when >= 40% in view (700ms)
 //   data-scramble="hover"    decode on hover/focus of the closest a/button (350ms)
 //   data-count-to (+suffix)  digits roll then settle when in view (900ms)
-//   data-boot                children appear one by one, decoding; once per session
 //   data-glitch-burst        on a .glitch: a burst every 5–9s
-//   data-clock               HH:MM:SS in Asia/Kolkata
-//   data-uptime-since="YYYY-MM"  "07y 06m"
 //   data-pointer-coords      "X 0412 · Y 0233" (fine pointers)
 //
 // Scramble/count targets must be text-only leaves: they are rewritten as a sr-only copy of the final
@@ -128,25 +125,6 @@ function counters() {
   }
 }
 
-function boot() {
-  const log = document.querySelector<HTMLElement>('[data-boot]');
-  if (!log) return;
-  try {
-    if (sessionStorage.getItem('booted')) return;
-    sessionStorage.setItem('booted', '1');
-  } catch {
-    return; // no storage: render the lines as they are
-  }
-  const lines = [...log.children] as HTMLElement[];
-  for (const line of lines) line.style.visibility = 'hidden';
-  lines.forEach((line, i) =>
-    later(() => {
-      line.style.visibility = '';
-      decode(line, textNodes(line), 700, GLYPHS, isSpace);
-    }, i * 70),
-  );
-}
-
 function bursts() {
   for (const el of $$('[data-glitch-burst]')) {
     const loop = () =>
@@ -162,27 +140,6 @@ function bursts() {
 }
 
 function readouts(signal: AbortSignal) {
-  const clocks = $$('[data-clock]');
-  if (clocks.length) {
-    const fmt = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Asia/Kolkata',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hourCycle: 'h23',
-    });
-    const tick = () => {
-      const now = fmt.format(new Date());
-      for (const c of clocks) c.textContent = now;
-    };
-    tick();
-    timers.add(window.setInterval(tick, 1000));
-  }
-
-  for (const el of $$('[data-uptime-since]')) {
-    if (el.dataset.uptimeSince) el.textContent = uptime(el.dataset.uptimeSince);
-  }
-
   const coords = $$('[data-pointer-coords]');
   if (coords.length && matchMedia('(pointer: fine)').matches) {
     let x = 0;
@@ -208,7 +165,7 @@ function readouts(signal: AbortSignal) {
   }
 }
 
-/** "07y 06m" from a "YYYY-MM" month to now (also used by the terminal). */
+/** "07y 06m" from a "YYYY-MM" month to now (the terminal's uptime command). */
 export function uptime(since: string, now = new Date()) {
   const [y, m = 1] = since.split('-').map(Number);
   const months = Math.max(0, (now.getFullYear() - y) * 12 + now.getMonth() + 1 - m);
@@ -232,7 +189,6 @@ function init() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   scramble(signal);
   counters();
-  boot();
   bursts();
 }
 

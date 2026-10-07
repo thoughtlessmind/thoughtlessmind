@@ -390,7 +390,7 @@ function frame() {
     if (hintText) hintText.textContent = `X ${pad4(hx)} · Y ${pad4(hy)}`;
   }
   hint.classList.toggle('is-locked', shown === best);
-  arrow?.setRotate((Math.atan2(best.y - py, best.x - px) * 180) / Math.PI, 8, 8);
+  arrow?.setRotate((Math.atan2(best.y - py, best.x - px) * 180) / Math.PI, 128, 128);
 }
 
 function schedule() {

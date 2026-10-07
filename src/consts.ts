@@ -1,9 +1,9 @@
 export const SITE = {
   name: 'Rajiv Kumar',
   handle: 'thoughtlessmind',
-  title: 'Rajiv Kumar (thoughtlessmind) — React & TypeScript web engineer',
+  title: 'Rajiv Kumar (thoughtlessmind): React & TypeScript web engineer',
   description:
-    'Web engineer in New Delhi. Seven years of React and TypeScript, shipping web products that are fast, exact, and quietly good.',
+    'Web engineer in New Delhi. Seven years of React and TypeScript: fast, accessible interfaces, small open-source tools and notes on frontend performance.',
   url: 'https://thoughtlessmind.dev',
   email: 'me.rajiv21@gmail.com',
   role: 'Senior Web Engineer',

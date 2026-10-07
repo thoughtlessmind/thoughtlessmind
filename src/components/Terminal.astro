@@ -248,9 +248,8 @@ const files = {
   }
   .term__swatches i:nth-child(1) { background: var(--accent); }
   .term__swatches i:nth-child(2) { background: var(--signal); }
-  .term__swatches i:nth-child(3) { background: var(--ok); }
-  .term__swatches i:nth-child(4) { background: var(--text-muted); }
-  .term__swatches i:nth-child(5) { background: var(--text); }
+  .term__swatches i:nth-child(3) { background: var(--text-muted); }
+  .term__swatches i:nth-child(4) { background: var(--text); }
 
   /* Egg toasts, bottom-right */
   .egg-toasts {
@@ -420,7 +419,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
     for (const [k, v] of info) text.append(el('span', 'term__key', k.padEnd(12)), `${v}\n`);
     const swatches = el('span', 'term__swatches');
     swatches.setAttribute('aria-hidden', 'true');
-    swatches.append(...Array.from({ length: 5 }, () => document.createElement('i')));
+    swatches.append(...Array.from({ length: 4 }, () => document.createElement('i')));
     text.append(swatches);
     const logo = el('pre', 'term__logo', LOGO);
     logo.setAttribute('aria-hidden', 'true');

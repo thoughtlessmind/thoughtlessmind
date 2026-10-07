@@ -10,7 +10,7 @@ import { formatDate, getPublishedPosts } from '../lib/posts';
 const trim = (p: string) => p.replace(/\/+$/, '');
 const path = trim(Astro.url.pathname);
 const isActive = (href: string) => path === trim(href) || path.startsWith(`${trim(href)}/`);
-const nav = SITE.nav.map((item, i) => ({ ...item, idx: String(i + 1).padStart(2, '0'), current: isActive(item.href) }));
+const nav = SITE.nav.map((item) => ({ ...item, current: isActive(item.href) }));
 
 // Palette data (serialised into the island): pages, latest 20 posts, projects.
 const paletteProps = {
@@ -48,7 +48,6 @@ const paletteProps = {
           nav.map((item) => (
             <li>
               <a href={item.href} class="nav-link" aria-current={item.current ? 'page' : undefined}>
-                <span class="nav-link__idx" aria-hidden="true">{item.idx}</span>
                 <span data-scramble="hover">{item.label}</span>
               </a>
             </li>
@@ -58,11 +57,6 @@ const paletteProps = {
     </nav>
 
     <div class="site-header__actions">
-      <p class="header-clock label">
-        <span aria-hidden="true">NDL&nbsp;</span><span class="sr-only">New Delhi time</span><span data-clock
-          >--:--:--</span
-        > IST
-      </p>
       <button type="button" class="icon-btn search-btn" data-open-palette aria-keyshortcuts="Meta+K">
         <Icon name="search" size={16} />
         <kbd class="kbd search-kbd" aria-hidden="true">⌘K</kbd>
@@ -83,7 +77,6 @@ const paletteProps = {
           nav.map((item) => (
             <li>
               <a href={item.href} class="site-menu__link" aria-current={item.current ? 'page' : undefined}>
-                <span class="site-menu__idx" aria-hidden="true">{item.idx}</span>
                 {item.label}
               </a>
             </li>
@@ -162,14 +155,10 @@ const paletteProps = {
     text-decoration: none;
     transition: color var(--dur-1) var(--ease-out);
   }
-  .nav-link__idx {
-    color: var(--text-subtle);
-  }
   .nav-link:hover {
     color: var(--text);
   }
-  .nav-link[aria-current='page'],
-  .nav-link[aria-current='page'] .nav-link__idx {
+  .nav-link[aria-current='page'] {
     color: var(--accent);
   }
   .nav-link[aria-current='page']::before {
@@ -181,10 +170,6 @@ const paletteProps = {
     align-items: center;
     gap: 0.25rem;
     margin-left: auto;
-  }
-  .header-clock {
-    margin-right: 1rem;
-    white-space: nowrap;
   }
   .search-btn {
     gap: 0.5rem;
@@ -245,21 +230,10 @@ const paletteProps = {
     color: var(--text);
     text-decoration: none;
   }
-  .site-menu__idx {
-    font-family: var(--font-ui);
-    font-size: var(--text-label);
-    color: var(--text-subtle);
-  }
-  .site-menu__link[aria-current='page'],
-  .site-menu__link[aria-current='page'] .site-menu__idx {
+  .site-menu__link[aria-current='page'] {
     color: var(--accent);
   }
 
-  @media (max-width: 899px) {
-    .header-clock {
-      display: none;
-    }
-  }
   @media (max-width: 767px) {
     .site-nav,
     .search-kbd {

@@ -8,10 +8,12 @@ import ProjectCard from '../components/ProjectCard.astro';
 const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) => a.data.order - b.data.order;
 const all = await getCollection('projects');
 const featured = all.filter((p) => p.data.featured && !p.data.archived).sort(byOrder);
-// Full index: live projects by order, archived ones last.
-const index = [...all.filter((p) => !p.data.archived).sort(byOrder), ...all.filter((p) => p.data.archived).sort(byOrder)];
-const pad = (n: number) => String(n).padStart(2, '0');
-const dek = 'A production-minded site rebuild and focused tools for everyday frontend problems.';
+// Everything not featured above, live projects first, archived last. Each project appears once on the page.
+const more = [
+  ...all.filter((p) => !p.data.featured && !p.data.archived).sort(byOrder),
+  ...all.filter((p) => p.data.archived).sort(byOrder),
+];
+const dek = 'Small tools for everyday frontend annoyances, and the rebuild of this site.';
 const description =
   "Projects by Rajiv Kumar: css-only-tooltip, the Diver Chrome extension, YouTube Playlist Info, and this site's Astro rebuild.";
 ---
@@ -22,69 +24,51 @@ const description =
     <p class="page-head__dek">{dek}</p>
   </header>
 
-  <section class="container-site section work__section" aria-labelledby="featured-title" data-reveal-group>
-    <SectionHeading index="01" label="Featured" title="Featured modules" id="featured-title" class="reveal" />
-    <div class="reveal"><SiteCaseStudy /></div>
+  <div class="container-site work__featured" data-reveal-group>
+    <div class="reveal"><SiteCaseStudy level="h2" /></div>
     <ul class="work__modules">
-      {featured.map((p, i) => <ProjectCard project={p} index={i + 1} long class="reveal" />)}
+      {featured.map((p) => <ProjectCard project={p} level="h2" long class="reveal" />)}
     </ul>
-  </section>
+  </div>
 
   <section class="container-site section" aria-labelledby="index-title" data-reveal-group>
-    <SectionHeading index="02" label="Index" title="Every project" id="index-title" class="reveal" />
-    <p class="work__prompt reveal" aria-hidden="true"><span>$</span> ls -la ~/work</p>
-    <table class="work__table reveal">
-      <caption class="sr-only">All projects in display order, archived projects last.</caption>
-      <thead>
-        <tr>
-          <th scope="col">Idx</th>
-          <th scope="col">Year</th>
-          <th scope="col">Name</th>
-          <th scope="col" class="work__col-stack">Stack</th>
-          <th scope="col"><span class="sr-only">Links</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          index.map((p, i) => {
-            const { title, summary, year, stack, repo, live, archived } = p.data;
-            return (
-              <tr class:list={{ 'is-archived': archived }}>
-                <td class="work__idx">{pad(i + 1)}</td>
-                <td>{year}</td>
-                <td class="work__name">
-                  <span class="work__title">{title}</span>
-                  {archived && <span class="tag">archived</span>}
-                  <span class="work__summary">{summary}</span>
-                  <span class="work__stack-inline">{stack.join(' / ')}</span>
-                </td>
-                <td class="work__col-stack">{stack.join(' / ')}</td>
-                <td class="work__links">
-                  {repo && (
-                    <a href={repo} class="link tap" rel="noopener" target="_blank">
-                      Repo<span class="sr-only"> of {title}</span> <span aria-hidden="true">↗</span>
-                    </a>
-                  )}
-                  {live && (
-                    <a href={live} class="link tap" rel="noopener" target="_blank">
-                      Live<span class="sr-only"> {title}</span> <span aria-hidden="true">↗</span>
-                    </a>
-                  )}
-                </td>
-              </tr>
-            );
-          })
-        }
-      </tbody>
-    </table>
-    <p class="label work__total reveal">Total {index.length}</p>
+    <SectionHeading title="More projects" id="index-title" class="reveal" />
+    <ul class="more">
+      {
+        more.map((p) => {
+          const { title, summary, year, stack, repo, live, archived } = p.data;
+          return (
+            <li class:list={['more__item reveal', { 'is-archived': archived }]}>
+              <p class="label more__year">
+                {year}
+                {archived && <span class="tag">archived</span>}
+              </p>
+              <div>
+                <h3 class="more__title">{title}</h3>
+                <p class="more__summary">{summary}</p>
+                <p class="more__stack">{stack.join(' / ')}</p>
+              </div>
+              <p class="label more__links">
+                {repo && (
+                  <a href={repo} class="link tap" rel="noopener" target="_blank">
+                    Repo<span class="sr-only"> of {title}</span> <span aria-hidden="true">↗</span>
+                  </a>
+                )}
+                {live && (
+                  <a href={live} class="link tap" rel="noopener" target="_blank">
+                    Live<span class="sr-only"> {title}</span> <span aria-hidden="true">↗</span>
+                  </a>
+                )}
+              </p>
+            </li>
+          );
+        })
+      }
+    </ul>
   </section>
 </BaseLayout>
 
 <style>
-  .work__section {
-    padding-top: 0;
-  }
   .work__modules {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -99,110 +83,75 @@ const description =
     }
   }
 
-  .work__prompt {
-    font-family: var(--font-mono);
-    font-size: var(--text-caption);
-    color: var(--text-muted);
+  /* More projects: a plain list, no frames or row rules. From 900px each entry is one row: year | name and
+     summary | links. Archived entries are dimmed by colour, not opacity, so they keep AA contrast. */
+  .more {
+    display: grid;
+    gap: 2.5rem;
+    max-width: 60rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
-  .work__prompt span {
-    color: var(--accent);
+  .more__item {
+    display: grid;
+    gap: 0.5rem;
   }
-
-  .work__table {
-    width: 100%;
-    margin-top: 1rem;
-    border-collapse: collapse;
-    font-family: var(--font-ui);
-    font-size: var(--text-caption);
-    font-variant-numeric: tabular-nums;
+  @media (min-width: 900px) {
+    .more__item {
+      grid-template-columns: 12ch minmax(0, 1fr) 10rem;
+      align-items: baseline;
+      gap: 2rem;
+    }
   }
-  .work__table :is(th, td) {
-    padding: 0.875rem 1rem 0.875rem 0;
-    text-align: left;
-    vertical-align: top;
-    border-bottom: 1px solid var(--border);
+  /* Below 900px the year follows the description (no label above the title); from 900px it is the first column. */
+  .more__year {
+    order: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
   }
-  .work__table thead th {
-    font-size: var(--text-label);
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-subtle);
-    border-bottom-color: var(--border-strong);
+  .more__links {
+    order: 2;
   }
-  .work__table tbody tr {
-    transition: background-color var(--dur-1) var(--ease-out);
+  @media (min-width: 900px) {
+    .more__year,
+    .more__links {
+      order: 0;
+    }
   }
-  .work__table tbody tr:hover {
-    background: var(--surface);
+  .more__title {
+    font-size: var(--text-h3);
+    line-height: var(--text-h3--line-height);
+    letter-spacing: -0.01em;
   }
-  .work__table tbody td {
-    color: var(--text-muted);
-  }
-  .work__table tbody .work__idx {
-    color: var(--accent);
-  }
-  .work__table tbody .work__name {
-    color: var(--text);
-  }
-  .work__title {
-    font-weight: 500;
-    margin-right: 0.75em;
-  }
-  .work__summary {
-    display: block;
-    margin-top: 0.25rem;
-    font-family: var(--font-sans);
+  .more__summary {
+    margin-top: 0.375rem;
     font-size: var(--text-small);
     color: var(--text-muted);
   }
-  .work__stack-inline {
-    display: block;
-    margin-top: 0.375rem;
+  .more__stack {
+    margin-top: 0.5rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
     color: var(--text-subtle);
   }
-  .work__col-stack {
-    display: none;
+  .more__links {
+    display: flex;
+    gap: 0 1.5rem;
   }
-  .work__table .work__links {
-    white-space: nowrap;
-    text-align: right;
-    padding-right: 0;
+  @media (min-width: 900px) {
+    .more__links {
+      justify-content: flex-end;
+    }
   }
-  .work__links a {
+  .more__links a {
     display: inline-flex;
     align-items: center;
     gap: 0.4em;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
   }
-  .work__links a + a {
-    margin-left: 1rem;
-  }
-  /* Dimmed by colour, not opacity, so archived rows keep AA contrast. */
-  .work__table .is-archived :is(td, .work__name, .work__summary) {
+  .is-archived :is(.more__title, .more__summary) {
     color: var(--text-subtle);
-  }
-  .work__total {
-    margin-top: 1rem;
-    color: var(--text-subtle);
-  }
-
-  @media (min-width: 900px) {
-    .work__col-stack {
-      display: table-cell;
-    }
-    .work__stack-inline {
-      display: none;
-    }
-  }
-  @media (max-width: 559px) {
-    .work__links a {
-      display: flex;
-      justify-content: flex-end;
-    }
-    .work__links a + a {
-      margin-left: 0;
-    }
   }
 </style>

@@ -1,7 +1,7 @@
 ---
 /**
- * Terminal log line: `2026-09-08  ▸ Title ........ 6 MIN`, then the one-line summary and tags.
- * Used by the home "// 02 LOGS" list, the /writing listings and Related. Shared contract: keep props stable.
+ * Log line: `2026-09-08  ▸ Title ........ 6 MIN`, then the one-line summary and tags.
+ * Used by the home "Latest writing" list, the /writing listings and Related. Shared contract: keep props stable.
  * The whole row is the title link's hit area; tag links sit above it.
  */
 import type { CollectionEntry } from 'astro:content';
@@ -73,7 +73,7 @@ const minutes = external ? null : readingTime(post.body).minutes;
     grid-template-columns: max-content minmax(0, 1fr);
     align-items: baseline;
     column-gap: 1.5rem;
-    padding-block: 1.125rem;
+    padding-block: 1.25rem;
   }
   .post-row--numbered {
     grid-template-columns: max-content max-content minmax(0, 1fr);
@@ -111,10 +111,9 @@ const minutes = external ? null : readingTime(post.body).minutes;
   }
   .post-row__title {
     min-width: 0;
-    font-family: var(--font-ui);
-    font-size: var(--text-body);
-    font-weight: 500;
-    line-height: 1.45;
+    font-size: 1.125rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
     text-wrap: pretty;
   }
   .post-row__link {

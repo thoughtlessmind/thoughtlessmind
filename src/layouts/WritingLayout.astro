@@ -6,6 +6,7 @@
 import BaseLayout from './BaseLayout.astro';
 import TagChips from '../components/TagChips.astro';
 import PostRow from '../components/PostRow.astro';
+import SectionHeading from '../components/SectionHeading.astro';
 import { groupByYear, slugify, type Post } from '../lib/posts';
 
 interface Props {
@@ -51,7 +52,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     {
       breadcrumb && (
         <a href="/writing" class="crumb">
-          cd ../writing
+          All writing
         </a>
       )
     }
@@ -70,15 +71,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   {
     groups.map(([label, list]) => (
       <section class="container-site writing-group" aria-label={label || 'Articles'} data-reveal-group>
-        {label && (
-          <p class="label writing-group__label reveal">
-            <span class="writing-group__slash" aria-hidden="true">
-              {'//'}
-            </span>
-            {label}
-            <span class="writing-group__count">{pad(list.length)}</span>
-          </p>
-        )}
+        {label && <p class="writing-group__label reveal">{label}</p>}
         <ul class="rows">
           {list.map((post, i) => (
             <PostRow post={post} level="h2" number={numbered ? pad(i + 1) : undefined} class="reveal" />
@@ -91,12 +84,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   {
     series && series.size > 0 && (
       <section class="container-site writing-group" aria-labelledby="series-label" data-reveal-group>
-        <p class="label writing-group__label reveal" id="series-label">
-          <span class="writing-group__slash" aria-hidden="true">
-            {'//'}
-          </span>
-          Series
-        </p>
+        <SectionHeading title="Series" id="series-label" class="reveal" />
         <ul class="rows">
           {[...series].map(([name, list]) => (
             <li class="series-row reveal">
@@ -108,7 +96,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
               </a>
               <span class="series-row__leader" aria-hidden="true"></span>
               <span class="series-row__count">
-                {pad(list.length)} {list.length === 1 ? 'part' : 'parts'}
+                {list.length} {list.length === 1 ? 'part' : 'parts'}
               </span>
             </li>
           ))}
@@ -122,13 +110,13 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .crumb {
     display: inline-block;
     margin-bottom: 1.25rem;
-    font-family: var(--font-mono);
+    font-family: var(--font-ui);
     font-size: var(--text-caption);
     color: var(--text-subtle);
     text-decoration: none;
   }
   .crumb::before {
-    content: '$ ' / '';
+    content: '← ' / '';
     color: var(--accent);
   }
   .crumb:hover {
@@ -141,18 +129,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .writing-group:last-child {
     padding-bottom: var(--spacing-section);
   }
+  /* The year: a plain date marker above its posts, not an eyebrow. */
   .writing-group__label {
-    display: flex;
-    gap: 0.75rem;
-    padding-bottom: 0.875rem;
-    color: var(--text-muted);
-  }
-  .writing-group__slash {
-    color: var(--accent);
-  }
-  .writing-group__count {
-    color: var(--text-subtle);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
     font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
   }
 
   .series-row {
@@ -172,8 +156,9 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
   .series-row__title {
     min-width: 0;
-    font-size: var(--text-body);
-    font-weight: 500;
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 600;
     color: var(--text);
     text-decoration: none;
     transition: color var(--dur-1) var(--ease-out);

@@ -1,10 +1,10 @@
 ---
-/** Tag filters as CLI flags: `--tag=all 09`, `--tag=css 02`… plus a right-aligned "n entries" readout. Wraps, never scrolls. */
+/** Tag filters: `all 10`, `css 2`… as chips with a count. Wraps on desktop; one scrolling row on phones. */
 interface Props {
   tags: { tag: string; count: number }[];
   /** 'all', a tag name, or '' for none. */
   active: string;
-  /** Articles listed on this page (drives the readout). */
+  /** Articles listed on this page. */
   total: number;
   /** Count shown on the "all" chip. Defaults to `total`. */
   allCount?: number;
@@ -12,7 +12,6 @@ interface Props {
 }
 const { tags, active, total, allCount = total, class: className } = Astro.props;
 const chips = [{ tag: 'all', count: allCount, href: '/writing' }, ...tags.map((t) => ({ ...t, href: `/writing/tag/${t.tag}` }))];
-const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <div class:list={['tag-chips', className]}>
@@ -22,25 +21,18 @@ const pad = (n: number) => String(n).padStart(2, '0');
         chips.map(({ tag, count, href }) => (
           <li>
             <a href={href} class="chip" aria-current={active === tag ? 'page' : undefined}>
-              <span><span class="chip__flag" aria-hidden="true">--tag=</span>{tag}</span>
-              <span class="chip__count">{pad(count)}</span>
+              <span>{tag}</span>
+              <span class="chip__count">{count}</span>
             </a>
           </li>
         ))
       }
     </ul>
   </nav>
-  <p class="label chip-total">
-    {pad(total)} {total === 1 ? 'entry' : 'entries'}
-  </p>
 </div>
 
 <style>
   .tag-chips {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem 2rem;
     padding-bottom: 2.5rem;
   }
   .chip-row {
@@ -58,7 +50,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     min-height: 2.25rem;
     padding-inline: 0.75rem;
     border: 1px solid var(--border);
-    font-family: var(--font-mono);
+    font-family: var(--font-ui);
     font-size: var(--text-caption);
     color: var(--text-muted);
     text-decoration: none;
@@ -68,7 +60,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
       border-color var(--dur-1) var(--ease-out),
       background-color var(--dur-1) var(--ease-out);
   }
-  .chip__flag,
   .chip__count {
     color: var(--text-subtle);
     font-variant-numeric: tabular-nums;
@@ -83,30 +74,17 @@ const pad = (n: number) => String(n).padStart(2, '0');
     border-color: var(--accent);
     background: var(--accent-soft);
   }
-  .chip[aria-current='page'] .chip__flag {
+  .chip[aria-current='page'] .chip__count {
     color: inherit;
-  }
-  .chip-total {
-    flex: none;
-    padding-top: 0.625rem;
-    color: var(--text-subtle);
-    font-variant-numeric: tabular-nums;
   }
   /* Phones: one row that scrolls inside itself (edge to edge), so the listing stays above the fold. */
   @media (max-width: 640px) {
-    .tag-chips {
-      flex-direction: column-reverse;
-      align-items: stretch;
-    }
     .chip-row {
       flex-wrap: nowrap;
       overflow-x: auto;
       scrollbar-width: none;
       margin-inline: calc(-1 * var(--spacing-gutter));
       padding-inline: var(--spacing-gutter);
-    }
-    .chip-total {
-      padding-top: 0;
     }
   }
 </style>

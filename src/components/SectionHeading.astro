@@ -1,80 +1,54 @@
 ---
 /**
- * Section header: `// 0N` index (accent) + label + a hairline that fills to the right edge + optional link,
- * then the title. Omit `title` when the page renders its own heading under the label row (home "Transmit").
+ * Section header: the title, and an optional link on the same line. One hairline above groups the section.
+ * No index, no eyebrow: the title names the section on its own.
  */
 interface Props {
-  /** "01" → renders `// 01`. */
-  index: string;
-  label: string;
-  title?: string;
+  title: string;
   href?: string;
   linkLabel?: string;
-  level?: 'h1' | 'h2' | 'h3';
+  level?: 'h2' | 'h3';
   id?: string;
   class?: string;
 }
-const { index, label, title, href, linkLabel = 'All', level: Tag = 'h2', id, class: className } = Astro.props;
+const { title, href, linkLabel = 'All', level: Tag = 'h2', id, class: className } = Astro.props;
 ---
 
 <div class:list={['section-heading', className]}>
-  <div class="section-heading__bar">
-    <p class="label section-heading__label">
-      <span class="section-heading__index">// {index}</span>
-      <span data-scramble>{label}</span>
-    </p>
-    <span class="section-heading__rule" aria-hidden="true"></span>
-    {
-      href && (
-        <a href={href} class="label link section-heading__link tap">
-          <span data-scramble="hover">{linkLabel}</span>
-          <span aria-hidden="true">→</span>
-        </a>
-      )
-    }
-  </div>
-  {title && <Tag id={id} class="section-heading__title">{title}</Tag>}
+  <Tag id={id} class="section-heading__title">{title}</Tag>
+  {
+    href && (
+      <a href={href} class="label link section-heading__link tap">
+        <span data-scramble="hover">{linkLabel}</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    )
+  }
 </div>
 
 <style>
   .section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
     margin-bottom: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
   }
-  .section-heading__bar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .section-heading__label {
-    display: flex;
-    gap: 1.25em;
-    flex-shrink: 0;
-    margin: 0;
-    color: var(--text-muted);
-  }
-  .section-heading__index {
-    color: var(--accent);
-  }
-  .section-heading__rule {
-    flex: 1;
-    min-width: 1.5rem;
-    height: 1px;
-    background: var(--border);
+  .section-heading__title {
+    max-width: 24ch;
   }
   .section-heading__link {
     display: inline-flex;
     align-items: center;
     gap: 0.5em;
-    flex-shrink: 0;
     color: var(--text-muted);
     white-space: nowrap;
   }
   .section-heading__link:hover,
   .section-heading__link:focus-visible {
     color: var(--accent);
-  }
-  .section-heading__title {
-    max-width: 24ch;
-    margin-top: 1rem;
   }
 </style>
