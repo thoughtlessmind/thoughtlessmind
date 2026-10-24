@@ -3,6 +3,7 @@ title: YouTube Playlist Info
 summary: How long does that playlist really take? Paste the URL and find out.
 description: Totals the watch time of any YouTube playlist, lists every video with its duration, and plays them inline. React, Material UI, YouTube Data API.
 year: 2020
+kind: Web app
 stack: [React, Material UI, YouTube Data API]
 repo: https://github.com/thoughtlessmind/youtube-playlist-info
 live: https://youtube-playlist-info.netlify.app

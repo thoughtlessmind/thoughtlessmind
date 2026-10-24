@@ -1,6 +1,6 @@
 ---
 /**
- * Card for a featured project: year, title, summary, stack tags, links, and a real visual where there is one.
+ * Card for a featured project: kind and year, title, summary, stack tags, links, and a real visual where there is one.
  * - A screenshot (`image` in the frontmatter) spans both grid columns (`.project-card--wide`) so the grid stays even.
  * - css-only-tooltip shows the library's own technique working (the .demo plate in global.css).
  */
@@ -16,7 +16,7 @@ interface Props {
   class?: string;
 }
 const { project, level: Title = 'h3', long = false, class: className } = Astro.props;
-const { title, summary, description, year, stack, repo, live, image } = project.data;
+const { title, summary, description, year, kind, stack, repo, live, image } = project.data;
 const liveLabel = project.id === 'css-only-tooltip' ? 'npm' : project.id === 'diver' ? 'Web store' : 'Live';
 const tooltip = project.id === 'css-only-tooltip';
 ---
@@ -61,7 +61,7 @@ const tooltip = project.id === 'css-only-tooltip';
           </a>
         )
       }
-      <span class="project-card__year">{year}</span>
+      <span class="project-card__year">{kind}, {year}</span>
     </p>
   </div>
 </li>

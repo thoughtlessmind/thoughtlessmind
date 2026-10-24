@@ -1,7 +1,7 @@
 # thoughtlessmind.dev
 
-Personal site of Rajiv Kumar (*thoughtlessmind*), a senior web engineer in New Delhi. It is a portfolio and blog
-that should show ~7 years of frontend craft through the site itself: static, fast, accessible, playful in the details.
+Personal site of Rajiv Kumar (*thoughtlessmind*), a software engineer in New Delhi. It is a portfolio and blog
+that should show ~7 years of craft through the site itself: static, fast, accessible, playful in the details.
 No backend, no login, no comments by design. `README.md` is the GitHub profile README: never overwrite it.
 
 `DESIGN.md` is the design spec (§1 type · §2 colour · §3 surfaces · §4 motion · §5 3D · §6 chrome · §7 pages ·
@@ -54,16 +54,19 @@ The route, tag/series pages, reading time, TOC (h2/h3), prev/next, related posts
 the file. ` ```ts title="file.ts" ` gives a code block a filename tab and a copy button. Tag and series pages are
 `noindex` below 3 posts and never in the sitemap; only posts carry a sitemap `lastmod`.
 
-**Project**: `src/content/projects/<slug>.md`, frontmatter only (fields in `content.config.ts`). `featured: true` shows it
-as a module card on home and /work (keep it to about 3). A project with `image` spans both card columns.
+**Project**: `src/content/projects/<slug>.md`, frontmatter only (fields in `content.config.ts`; `kind` is web app,
+macOS app, Chrome extension or library). `featured: true` shows it as a module card on home and /work (keep it to about
+3, on different platforms). A project with `image` spans both card columns.
 
 **Facts**: `src/consts.ts` (name, role, company, email, socials, coords, since, nav) and `src/lib/person.ts` (JSON-LD:
 one Person `#person`, referenced by `@id` from the WebSite on home, the ProfilePage on about and every BlogPosting).
-Use real facts only; never invent numbers or titles. Name the current employer (swipejobs) only in the about page's Experience entry; the role reads "web engineer".
+Use real facts only; never invent numbers or titles. Name the current employer (swipejobs) only in the about page's Experience entry, as "Senior Frontend Engineer, swipejobs"
+(`SITE.role`, also the JSON-LD `jobTitle`). Everywhere else he is a "software engineer" who builds web and native apps,
+backends and infrastructure: no library names in the positioning, and never "freelancer". Client work is never named.
 
 ## Design direction: v3 "SIGNAL"
 
-Mission control for a web engineer. The motif pool is his interests: astronomy, rockets, orbital mechanics,
+Mission control for a software engineer. The motif pool is his interests: astronomy, rockets, orbital mechanics,
 physics, sport, problem solving. It should feel like a well-built instrument, not a hacker cliché.
 
 - Techie and funky: pixel display type, telemetry readouts, digital motion that decodes, flickers and glitches in short

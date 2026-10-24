@@ -18,7 +18,7 @@ export async function GET({ site }: APIContext) {
     '',
     `> ${SITE.description}`,
     '',
-    `Personal site of ${SITE.name} (${SITE.handle}), ${SITE.location}. Portfolio and writing on frontend engineering: React, TypeScript, CSS, performance, tooling. ${posts.length} articles, ${projects.length} projects. Feed at ${feed}.`,
+    `Personal site of ${SITE.name} (${SITE.handle}), ${SITE.location}. Software engineer: web and native apps, backends and infrastructure. Writing on React, TypeScript, CSS, performance and tooling. ${posts.length} articles, ${projects.length} projects. Feed at ${feed}.`,
     '',
     '## Pages',
     '',

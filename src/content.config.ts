@@ -29,6 +29,8 @@ const projects = defineCollection({
       summary: z.string(),
       description: z.string(),
       year: z.number().int(),
+      /** What it is, shown before the year: the range of platforms is the point of the work page. */
+      kind: z.enum(['Web app', 'macOS app', 'Chrome extension', 'Library']),
       stack: z.array(z.string()),
       repo: z.url().optional(),
       live: z.url().optional(),

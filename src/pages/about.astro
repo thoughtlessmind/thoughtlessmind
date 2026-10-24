@@ -6,18 +6,32 @@ import Timeline from '../components/Timeline.astro';
 import { SITE } from '../consts';
 import { person } from '../lib/person';
 
-const dek = "Web engineer in New Delhi. I've built for the web since 2019, mostly in React and TypeScript.";
+const dek =
+  "Software engineer in New Delhi. I've shipped software since 2019: web apps, native apps, and the backends and infrastructure behind them.";
 const description =
-  'Rajiv Kumar (thoughtlessmind), web engineer in New Delhi since 2019: React, TypeScript, 98 Stack Overflow answers and the css-only-tooltip library.';
+  'Rajiv Kumar (thoughtlessmind), software engineer in New Delhi since 2019: web and native apps, backends, infrastructure and 98 Stack Overflow answers.';
 // Bump when the facts on this page change; deliberately not the build date.
-const dateModified = '2026-10-07';
+const dateModified = '2026-10-22';
 const { '@context': context, ...entity } = person();
 const profile = { '@context': context, '@type': 'ProfilePage', dateModified, mainEntity: entity };
-// Three clusters instead of a row-per-item table.
-const stack = [
-  { group: 'Language and UI', items: ['TypeScript', 'React', 'Next.js', 'Astro'] },
-  { group: 'Styling and state', items: ['Tailwind CSS', 'Material UI', 'Redux'] },
-  { group: 'Build and platform', items: ['Vite', 'Webpack', 'Node', 'Chrome extensions'] },
+// What he builds, not a library list: one line per capability, the tools in a quiet line under it.
+const builds = [
+  {
+    what: 'Web apps',
+    line: 'Fast, accessible interfaces, from design systems to 3D in the browser, and browser extensions.',
+    tools: ['TypeScript', 'React', 'Next.js', 'Astro', 'three.js'],
+  },
+  { what: 'Native apps', line: 'Desktop apps for macOS.', tools: ['Swift', 'SwiftUI', 'AppKit'] },
+  {
+    what: 'Backend',
+    line: 'APIs and services, databases, queues and auth.',
+    tools: ['Node', 'NestJS', 'PostgreSQL', 'Prisma'],
+  },
+  {
+    what: 'Infrastructure and DevOps',
+    line: 'Cloud infrastructure as code, build pipelines and deploys.',
+    tools: ['AWS', 'Terraform', 'Docker', 'Cloudflare'],
+  },
 ];
 ---
 
@@ -36,8 +50,9 @@ const stack = [
   <div class="container-site about">
     <div class="about__prose" data-reveal-group>
       <p class="reveal">
-        I started building for the web in {SITE.since} and haven't stopped. Most of my work is React and TypeScript in
-        production: design systems, dashboards, and the performance work that keeps them fast.
+        I started on the web in {SITE.since}, and most of my work still ends up in a browser. But I build whatever the
+        product needs: the interface, a native app when the web isn't enough, the services and data behind it, and the
+        infrastructure and pipelines that ship it.
       </p>
       <p class="reveal">
         I like tools that do one job completely. css-only-tooltip is a tooltip library with no JavaScript at all. Diver
@@ -56,18 +71,15 @@ const stack = [
     </section>
 
     <section class="about__block" aria-labelledby="stack-title" data-reveal-group>
-      <SectionHeading title="Stack" id="stack-title" class="reveal" />
+      <SectionHeading title="What I build" id="stack-title" class="reveal" />
       <dl class="stack reveal">
         {
-          stack.map((s) => (
+          builds.map((b) => (
             <div class="stack__group">
-              <dt>{s.group}</dt>
+              <dt>{b.what}</dt>
               <dd>
-                <ul class="stack__items">
-                  {s.items.map((i) => (
-                    <li class="tag">{i}</li>
-                  ))}
-                </ul>
+                <p>{b.line}</p>
+                <p class="stack__tools">{b.tools.join(' / ')}</p>
               </dd>
             </div>
           ))
@@ -77,7 +89,7 @@ const stack = [
 
     <section class="hud now" aria-labelledby="now-title" data-reveal-group>
       <h2 id="now-title" class="now__title reveal">Now</h2>
-      <p class="reveal">Writing about how this site is built, one post at a time. Reading about orbital mechanics.</p>
+      <p class="reveal">Getting Orca and theme-genie ready to release. Writing about how this site is built, one post at a time.</p>
     </section>
   </div>
 </BaseLayout>
@@ -113,7 +125,7 @@ const stack = [
     margin-top: calc(var(--spacing-section) * 0.6);
   }
 
-  /* Stack: three clusters, name left and tags right from 720px; one soft divider between clusters. */
+  /* What I build: capability left and its line right from 720px, the tools quiet under it; one soft divider between rows. */
   .stack {
     max-width: 52rem;
     margin: 0;
@@ -133,13 +145,11 @@ const stack = [
   .stack__group dd {
     margin: 0;
   }
-  .stack__items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .stack__tools {
+    margin-top: 0.375rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    color: var(--text-subtle);
   }
   @media (min-width: 720px) {
     .stack__group {

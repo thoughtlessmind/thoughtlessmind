@@ -18,13 +18,13 @@ const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 
-// Files for `cat`, generated from the same data as the pages. stack.txt mirrors the about page's spec sheet.
+// Files for `cat`, generated from the same data as the pages. stack.txt mirrors the about page's "What I build".
 const files = {
   'about.txt': [
     SITE.name,
-    `${SITE.role}, ${SITE.location}.`,
-    `Building for the web since ${SITE.since}, mostly React and TypeScript in production:`,
-    'design systems, dashboards and the plumbing that keeps them fast.',
+    `Software engineer, ${SITE.location}.`,
+    `Shipping since ${SITE.since}: web and native apps,`,
+    'and the backends and infrastructure behind them.',
     'Off duty: rockets, physics and whatever sport is on.',
   ].join('\n'),
   'projects.txt': cols(
@@ -40,13 +40,10 @@ const files = {
     ['email', SITE.email],
   ]) + '\nTry: open github',
   'stack.txt': cols([
-    ['language', 'TypeScript'],
-    ['ui', 'React · Next.js · Astro'],
-    ['styling', 'Tailwind CSS · Material UI'],
-    ['state', 'Redux'],
-    ['build', 'Vite · Webpack'],
-    ['runtime', 'Node'],
-    ['platform', 'Chrome extensions'],
+    ['web', 'TypeScript · React · Next.js · Astro · three.js'],
+    ['native', 'Swift · SwiftUI · AppKit'],
+    ['backend', 'Node · NestJS · PostgreSQL · Prisma'],
+    ['infra', 'AWS · Terraform · Docker · Cloudflare'],
   ]),
 };
 ---
@@ -461,7 +458,7 @@ Tab completes, ↑ ↓ walk history, Esc closes.`;
 
   const COMMANDS: Record<string, Cmd> = {
     help: () => print(HELP),
-    whoami: () => print(`rajiv\n${SITE.name} · ${SITE.role} · ${SITE.location}`),
+    whoami: () => print(`rajiv\n${SITE.name} · Software engineer · ${SITE.location}`),
     ls: () => print([...Object.keys(files), 'work/', 'writing/', 'about/'].join('  ')),
     cat: ([f]) => {
       if (!f) return print('usage: cat <file>. Try ls.', 'is-muted');

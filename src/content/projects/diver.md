@@ -3,7 +3,8 @@ title: Diver
 summary: A Chrome extension that outlines every element on a page.
 description: "One click shows the layout skeleton of any page: boxes, nesting, spacing. Useful for debugging CSS you didn't write."
 year: 2023
-stack: [JavaScript, Chrome extension]
+kind: Chrome extension
+stack: [JavaScript]
 repo: https://github.com/thoughtlessmind/diver
 live: https://chrome.google.com/webstore/detail/diver/onfnfdmnccoaknhjinebmlncejnofhoc
 featured: true

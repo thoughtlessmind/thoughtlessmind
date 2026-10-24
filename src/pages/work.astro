@@ -13,7 +13,7 @@ const more = [
   ...all.filter((p) => !p.data.featured && !p.data.archived).sort(byOrder),
   ...all.filter((p) => p.data.archived).sort(byOrder),
 ];
-const dek = 'Small tools for everyday frontend annoyances, and the rebuild of this site.';
+const dek = "Apps, tools and libraries I've built and shipped, and the rebuild of this site.";
 const description =
   "Projects by Rajiv Kumar: css-only-tooltip, the Diver Chrome extension, YouTube Playlist Info, and this site's Astro rebuild.";
 ---
@@ -31,41 +31,45 @@ const description =
     </ul>
   </div>
 
-  <section class="container-site section" aria-labelledby="index-title" data-reveal-group>
-    <SectionHeading title="More projects" id="index-title" class="reveal" />
-    <ul class="more">
-      {
-        more.map((p) => {
-          const { title, summary, year, stack, repo, live, archived } = p.data;
-          return (
-            <li class:list={['more__item reveal', { 'is-archived': archived }]}>
-              <p class="label more__year">
-                {year}
-                {archived && <span class="tag">archived</span>}
-              </p>
-              <div>
-                <h3 class="more__title">{title}</h3>
-                <p class="more__summary">{summary}</p>
-                <p class="more__stack">{stack.join(' / ')}</p>
-              </div>
-              <p class="label more__links">
-                {repo && (
-                  <a href={repo} class="link tap" rel="noopener" target="_blank">
-                    Repo<span class="sr-only"> of {title}</span> <span aria-hidden="true">↗</span>
-                  </a>
-                )}
-                {live && (
-                  <a href={live} class="link tap" rel="noopener" target="_blank">
-                    Live<span class="sr-only"> {title}</span> <span aria-hidden="true">↗</span>
-                  </a>
-                )}
-              </p>
-            </li>
-          );
-        })
-      }
-    </ul>
-  </section>
+  {
+    more.length > 0 && (
+      <section class="container-site section" aria-labelledby="index-title" data-reveal-group>
+        <SectionHeading title="More projects" id="index-title" class="reveal" />
+        <ul class="more">
+          {
+            more.map((p) => {
+              const { title, summary, year, kind, stack, repo, live, archived } = p.data;
+              return (
+                <li class:list={['more__item reveal', { 'is-archived': archived }]}>
+                  <p class="label more__year">
+                    {year}
+                    {archived && <span class="tag">archived</span>}
+                  </p>
+                  <div>
+                    <h3 class="more__title">{title}</h3>
+                    <p class="more__summary">{summary}</p>
+                    <p class="more__stack">{kind}: {stack.join(' / ')}</p>
+                  </div>
+                  <p class="label more__links">
+                    {repo && (
+                      <a href={repo} class="link tap" rel="noopener" target="_blank">
+                        Repo<span class="sr-only"> of {title}</span> <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                    {live && (
+                      <a href={live} class="link tap" rel="noopener" target="_blank">
+                        Live<span class="sr-only"> {title}</span> <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                  </p>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </section>
+    )
+  }
 </BaseLayout>
 
 <style>

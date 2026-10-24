@@ -1,13 +1,13 @@
 # thoughtlessmind.dev — design v3 "SIGNAL"
 
-The site is a live signal console run by one web engineer. Dark by default, phosphor-on-black, hard edges,
+The site is a live signal console run by one software engineer. Dark by default, phosphor-on-black, hard edges,
 pixel display type, telemetry readouts, and digital motion that flickers, decodes and glitches, but only in short,
 deliberate bursts. It should feel like a well-built instrument, not a hacker-movie cliché: no green-on-black Matrix
 rain, no neon purple synthwave, no fake "hacking" text. Every readout shows a real fact about Rajiv.
 
-Why it fits him: he builds developer-grade tools (a no-JS tooltip library, a Chrome extension that outlines every
-element on a page, a playlist timer), he's a CSS and React person who reads about rockets and orbital mechanics.
-So the metaphor is **mission control for a web engineer**: telemetry, launch orange, a ringed planet made of
+Why it fits him: he builds software end to end (web and native apps, the backends and infrastructure behind them) and
+developer-grade tools (a no-JS tooltip library, a Chrome extension that outlines every element on a page), and he reads
+about rockets and orbital mechanics. So the metaphor is **mission control for a software engineer**: telemetry, launch orange, a ringed planet made of
 points, a field of dust that bends around the cursor like a gravitational lens, and a set of easter eggs for people who poke at things
 (a real terminal, a rocket launch, a warp drive).
 
@@ -42,7 +42,7 @@ Scale (fluid, 360 → 1440):
 
 Labels, nav, buttons and tags are uppercase Martian Mono. Headings and body are sentence case. No emoji, no em
 or en dashes in copy. Uppercase labels are rationed: no `// 0N` section indices, no eyebrow above section titles (the
-hero's "Web engineer" is the home page's one eyebrow), no chains of `·` separators.
+hero's "Software engineer" is the home page's one eyebrow), no chains of `·` separators.
 
 Icons: Phosphor, regular weight (`@phosphor-icons/core`, inlined at build by `src/lib/icons.ts` + `Icon.astro`). The
 hexagon logo is the only hand-drawn SVG.
@@ -91,8 +91,8 @@ Cyan appears only in motion (glitch split, hover underline) and small accents. T
 - Section rhythm: `--spacing-section` clamp(5rem, 3rem + 7vw, 9rem); `.section` pads half of it top and bottom.
 - Section header pattern (`SectionHeading.astro`): one hairline above the section, then the title (Geist h2) and an
   optional link (`ALL WRITING →`) on the same line. No index, no eyebrow.
-- Lists: no hairline under every row. Post lists are separated by spacing; the stack and the year groups get one
-  divider per group.
+- Lists: no hairline under every row. Post lists are separated by spacing; the "What I build" rows and the year groups get
+  one divider per group.
 
 ## 4. Motion
 
@@ -113,7 +113,7 @@ rise and one fall, never more than one in any second, behind a warning that says
 
 | Effect | Trigger | Spec |
 |---|---|---|
-| **Decode / scramble** | `data-scramble` (once, when ≥ 40% in view: the hero's "Web engineer" eyebrow); `data-scramble="hover"` (pointerenter/focus of the closest link or button: nav, CTAs, section links) | Characters resolve left→right from random glyphs `!<>-_\/[]{}=+*^?#01ABCDEF` over 700ms (hover: 350ms). Spaces are kept. The element is split into a `.sr-only` copy of the final text plus an `aria-hidden` glyph span with the same character count, so mono widths hold. Targets must be text-only leaves. |
+| **Decode / scramble** | `data-scramble` (once, when ≥ 40% in view: the hero's "Software engineer" eyebrow); `data-scramble="hover"` (pointerenter/focus of the closest link or button: nav, CTAs, section links) | Characters resolve left→right from random glyphs `!<>-_\/[]{}=+*^?#01ABCDEF` over 700ms (hover: 350ms). Spaces are kept. The element is split into a `.sr-only` copy of the final text plus an `aria-hidden` glyph span with the same character count, so mono widths hold. Targets must be text-only leaves. |
 | **CRT turn-on** | `.flicker` | On load: opacity 0 → 1 with three stutters (0, .8, .2, 1, .6, 1) over 420ms `--ease-step`. On `main` it runs `flicker-soft` (0, .85, .6, 1). Fill mode `backwards`, never `both`: a held opacity fill keeps the element from ever being an LCP candidate. |
 | **Glitch** | `.glitch` with `data-text="same text"`, on hover/focus; `data-glitch-burst` adds `.is-glitching` every 5–9s (skipped while the tab is hidden) | Two pseudo-elements copy the text, offset 2–3px in `--accent` and `--signal` with `mix-blend-mode: var(--glitch-blend)`, clipped to 3 horizontal slices that jump in `steps()`, 280ms total. At rest the copies sit at opacity 0.001, not 0, so LCP records them at first paint instead of at the first burst (which read as a 5–9s LCP). Used on the hero name and the 404 code. |
 | **Caret** | `.caret` | A 0.6em × 1em `--accent` block (`::after`), blinking 1.1s `steps(1)`. The terminal's input only. |
@@ -214,12 +214,12 @@ the egg toast region.
 
 **Home**
 1. Hero (≥ 900px: two columns, min-height `92svh` minus the header; planet box `max(16rem, min(40vw, 540px, 100svh −
-   header − 24rem))` on the right with the telemetry panel under it). Four text elements: the eyebrow `WEB ENGINEER`
+   header − 24rem))` on the right with the telemetry panel under it). Four text elements: the eyebrow `SOFTWARE ENGINEER`
    (label, decodes in view), `<h1>` "Rajiv Kumar" in Geist Pixel display (two lines, `.flicker`, `.glitch` +
-   `data-glitch-burst`), one lead line (Geist): "I build interfaces that load fast and read clearly. Seven years of
-   React and TypeScript." and the CTAs: primary `[ VIEW WORK ]` (→ `#work`), ghost `> Email me` (mailto). Telemetry
-   panel (`.hud.hud--solid`) with rows: `LOC 28.6139° N, 77.2090° E` (the Terminal egg's clue) · `STACK TS / REACT /
-   ASTRO / R3F` · `CURSOR <pointer coords>` (+ the egg hint, §10; the CURSOR row is hidden on coarse pointers). One line
+   `data-glitch-burst`), one lead line (Geist): "I build web and native apps, and the backends and infrastructure they
+   run on." No library names in the positioning. Then the CTAs: primary `[ VIEW WORK ]` (→ `#work`), ghost `> Email me` (mailto). Telemetry
+   panel (`.hud.hud--solid`) with rows: `LOC 28.6139° N, 77.2090° E` (the Terminal egg's clue) · `BUILDS WEB / NATIVE /
+   BACKEND / INFRA` · `CURSOR <pointer coords>` (+ the egg hint, §10; the CURSOR row is hidden on coarse pointers). One line
    per cell, ellipsised, so nothing reflows.
    The panel is secondary: compact by default (11px, every size in em off `--tele-scale`, 32em wide) and user-resizable at
    ≥ 900px with a fine pointer. Its free top-left corner bracket is a grip (`role="slider"`, drag up-left to grow, arrow keys
@@ -230,8 +230,9 @@ the egg toast region.
    text sits on the points, then the compact panel.
 2. "Selected work" (no link; the hero CTA and the nav cover /work): this site as the case study (HUD panel: year, title,
    one line, `HOW IT WAS BUILT →` to the rebuild post + `SOURCE ↗`, and three facts: rendering, the planet, easter eggs;
-   5fr | 7fr from 1024px), then the featured projects as cards in a 2-column grid (≥ 720px): year, Geist title, summary,
-   `[CSS] [NPM]` tags, `REPO ↗` + `NPM ↗` / `WEB STORE ↗` / `LIVE ↗`. A card with a screenshot spans both columns
+   5fr | 7fr from 1024px), then the featured projects as cards in a 2-column grid (≥ 720px): Geist title, summary,
+   `[CSS] [NPM]` tags, `REPO ↗` + `NPM ↗` / `WEB STORE ↗` / `LIVE ↗`, then kind and year (`LIBRARY, 2021`; `kind` in the
+   projects schema: web app, macOS app, Chrome extension, library). Featured cards should cover different platforms. A card with a screenshot spans both columns
    (image 7fr | body 5fr), shown as it is. css-only-tooltip carries the live tooltip plate (§4). Cards are `.hud`.
 3. "Latest writing" (`ALL WRITING →`): the 3 latest non-draft posts as log lines: `2026-09-08  ▸ Title .......... 6 MIN`
    with dot leaders (Geist title), then the summary and up to 3 tags.
@@ -244,14 +245,16 @@ the egg toast region.
 One label per intent across the site: contact is always `Email me`, the writing index is always `All writing`.
 
 **Work** `/work`: page title in Geist Pixel (`.flicker`) + dek; the case study and the featured cards (h2, with the
-longer description); "More projects": every other project once, live ones first, archived last (`[ARCHIVED]`, dimmed by
-colour, not opacity, to keep AA). From 900px each is one row: year | name, summary, stack | links. No frames, no row rules.
+longer description); "More projects" (left out while it would be empty): every other project once, live ones first,
+archived last (`[ARCHIVED]`, dimmed by colour, not opacity, to keep AA). From 900px each is one row: year | name,
+summary, `kind: stack` | links. No frames, no row rules.
 
 **About** `/about`: avatar (176px: initials `RK` in Geist Pixel inside a HUD frame with dither dots, scanlines and a slow
 accent scan bar; an image at `/public/images/avatar.{jpg,png,webp}` replaces it, shown grayscale + dither; a mascot is
 planned, no photo), `About` page title, dek, `[ EMAIL ME ]`. Then three paragraphs, "Experience" (one timeline: square
-nodes, the current one in accent; roles get a bold title and a line, milestones one line), "Stack" (three clusters,
-name | tags, one divider between clusters) and "Now" (the page's one framed block).
+nodes, the current one in accent; roles get a bold title and a line, milestones one line), "What I build" (one row per
+capability: web apps, native apps, backend, infrastructure and DevOps; name | one line, with the tools in a quiet
+Martian Mono caption line under it; one divider between rows) and "Now" (the page's one framed block).
 
 **Writing** index / tag / series: page title + dek, tag chips (`react 6`, active in accent; one scrolling row on phones),
 then the listing grouped by year (a plain `2026` marker with one rule under it), rows as on home, then "Series". Tag pages
