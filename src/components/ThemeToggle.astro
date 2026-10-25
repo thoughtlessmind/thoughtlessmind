@@ -1,0 +1,38 @@
+<button
+  class="theme lab rise"
+  style="--d:180"
+  type="button"
+  data-theme-toggle
+  ><span class="disc" aria-hidden="true"></span><span class="sr-only">Theme: </span><span class="tl">Dark</span></button
+>
+
+<script>
+  // Follows the system until clicked, then flips dark and light and remembers it (localStorage 'theme').
+  // Every change fires `theme:change` on window so the intro can redraw in the new ink.
+  const root = document.documentElement;
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!;
+  const label = btn.querySelector('.tl')!;
+  const light = matchMedia('(prefers-color-scheme: light)');
+  const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : !light.matches);
+
+  function sync() {
+    label.textContent = isDark() ? 'Dark' : 'Light';   // the name reads "Theme: Dark", visible label included
+  }
+  const changed = () => window.dispatchEvent(new CustomEvent('theme:change'));
+
+  btn.addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch {}
+    sync();
+    changed();
+  });
+  light.addEventListener('change', () => {
+    if (root.dataset.theme) return; // a picked theme ignores the system
+    sync();
+    changed();
+  });
+  sync();
+</script>

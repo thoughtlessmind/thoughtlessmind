@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts';
+---
+
+<BaseLayout>
+  <section class="hero" aria-labelledby="h1">
+    <h1 id="h1">
+      <span class="who rise" style="--d:120">{SITE.name}</span>
+      <span class="line rise" style="--d:190">Software you don’t have to think about.</span>
+    </h1>
+    <p class="sub rise" style="--d:270">
+      A software engineer in New Delhi. I build web and native apps, the backends behind them and the infrastructure
+      they run on.
+    </p>
+    <ul class="build lab rise" style="--d:340" aria-label="What I build">
+      <li>Shipping since {SITE.since}</li>
+      <li>Web apps</li>
+      <li>Native apps</li>
+      <li>Backends and APIs</li>
+      <li>Infrastructure</li>
+    </ul>
+  </section>
+</BaseLayout>

@@ -1,0 +1,63 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Intro from '../components/Intro.astro';
+import { SITE } from '../consts';
+
+export interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = SITE.title, description = SITE.description } = Astro.props;
+// No trailing slash (trailingSlash: 'never'); the root stays `/`.
+const path = Astro.url.pathname;
+const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Astro.site);
+// ponytail: theme-color follows the system only; a theme picked with the switch keeps the system's bar colour.
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <script is:inline>
+      // Before paint: `js` on <html>, and the theme picked with the switch (it follows the system until then).
+      (() => {
+        const root = document.documentElement;
+        root.classList.add('js');
+        try {
+          const t = localStorage.getItem('theme');
+          if (t === 'dark' || t === 'light') root.dataset.theme = t;
+        } catch {}
+        // Intro gate: on a first visit (or with ?intro=machine|bits) pick the intro before paint, so the page starts
+        // hidden instead of flashing. Never under reduced motion. If the intro has not started within 2.5 s (its
+        // script failed or is slow), show the page anyway.
+        try {
+          const q = new URLSearchParams(location.search).get('intro');
+          const pick = q === 'machine' || q === 'bits' ? q : localStorage.getItem('intro-seen') ? '' : Math.random() < 0.5 ? 'machine' : 'bits';
+          if (pick && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            root.classList.add('intro');
+            root.dataset.intro = pick;
+            setTimeout(() => { if (!('introRun' in root.dataset)) root.classList.remove('intro'); }, 2500);
+          }
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <Header />
+    <main class="wrap"><slot /></main>
+    <Intro />
+  </body>
+</html>
