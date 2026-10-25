@@ -48,9 +48,9 @@ animates them (800 ms, 20 px rise + opacity, `--ease` = `cubic-bezier(.2, .7, .2
 
 ### Intro (`components/Intro.astro`, `scripts/intro/`)
 
-On a first visit the mark assembles in the middle of the screen in the theme's ink, moves into the header logo
+On every load of the home page the mark assembles in the middle of the screen in the theme's ink, moves into the header logo
 (800 ms, centre linear in eased time, scale geometric), turns orange (350 ms) and the real SVG takes over in the same
-frame; the content rises from 200 ms into the move. Two intros, picked at random on the first visit; `?intro=machine`
+frame; the content rises from 200 ms into the move. Two intros, picked at random on each load; `?intro=machine`
 or `?intro=bits` forces one on any visit.
 
 - **Machine** (lands 3.25 s): 18 translucent triangular plates slide in as three trains and pile onto the triangle the
@@ -60,9 +60,9 @@ or `?intro=bits` forces one on any visit.
   landed digits are the ASCII bits of "rajiv.me". A diagonal sweep turns them into a pixel mosaic that resolves into the
   vector mark.
 
-Mechanics: the pre-paint gate in BaseLayout adds `html.intro` and `data-intro` (first visit: `localStorage
-['intro-seen']` unset; never under reduced motion), which hides `.mark` and `.rise`. Each intro's frame is a pure
-function of t (`kit.ts` holds the geometry; prototypes and frame-by-frame scrubbing live in the local
-`docs/v4-research/i-loaders/` playboard). Any click, key, wheel or touch skips: the canvas and logo cross-fade
-(300 ms) and the content rises. A theme change mid-intro redraws in the new ink. If the intro script hasn't started
-2.5 s after the gate, the page shows anyway. rAF stops at the landing.
+Mechanics: a page opts in with `<BaseLayout intro>` (only the home page does), which renders the pre-paint gate and the
+intro canvas. The gate adds `html.intro` and `data-intro` (never under reduced motion), which hide `.mark` and `.rise`
+until the intro lands. Each intro's frame is a pure function of t (`kit.ts` holds the geometry; prototypes and
+frame-by-frame scrubbing live in the local `docs/v4-research/i-loaders/` playboard). Any click, key, wheel or touch
+skips: the canvas and logo cross-fade (300 ms) and the content rises. A theme change mid-intro redraws in the new ink.
+If the intro script hasn't started 2.5 s after the gate, the page shows anyway. rAF stops at the landing.

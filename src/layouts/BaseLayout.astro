@@ -7,9 +7,11 @@ import { SITE } from '../consts';
 export interface Props {
   title?: string;
   description?: string;
+  /** Play the page-load intro on every load (the home page). */
+  intro?: boolean;
 }
 
-const { title = SITE.title, description = SITE.description } = Astro.props;
+const { title = SITE.title, description = SITE.description, intro = false } = Astro.props;
 // No trailing slash (trailingSlash: 'never'); the root stays `/`.
 const path = Astro.url.pathname;
 const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Astro.site);
@@ -40,24 +42,29 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
           const t = localStorage.getItem('theme');
           if (t === 'dark' || t === 'light') root.dataset.theme = t;
         } catch {}
-        // Intro gate: on a first visit (or with ?intro=machine|bits) pick the intro before paint, so the page starts
-        // hidden instead of flashing. Never under reduced motion. If the intro has not started within 2.5 s (its
-        // script failed or is slow), show the page anyway.
-        try {
-          const q = new URLSearchParams(location.search).get('intro');
-          const pick = q === 'machine' || q === 'bits' ? q : localStorage.getItem('intro-seen') ? '' : Math.random() < 0.5 ? 'machine' : 'bits';
-          if (pick && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            root.classList.add('intro');
-            root.dataset.intro = pick;
-            setTimeout(() => { if (!('introRun' in root.dataset)) root.classList.remove('intro'); }, 2500);
-          }
-        } catch {}
       })();
     </script>
+    {
+      intro && (
+        <script is:inline>
+          // Intro gate: pick the intro before paint (?intro=machine|bits forces one), so the page starts hidden instead
+          // of flashing. Never under reduced motion. If the intro has not started within 2.5 s (its script failed or
+          // is slow), show the page anyway.
+          (() => {
+            const root = document.documentElement;
+            if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const q = new URLSearchParams(location.search).get('intro');
+            root.dataset.intro = q === 'machine' || q === 'bits' ? q : Math.random() < 0.5 ? 'machine' : 'bits';
+            root.classList.add('intro');
+            setTimeout(() => { if (!('introRun' in root.dataset)) root.classList.remove('intro'); }, 2500);
+          })();
+        </script>
+      )
+    }
   </head>
   <body>
     <Header />
     <main class="wrap"><slot /></main>
-    <Intro />
+    {intro && <Intro />}
   </body>
 </html>

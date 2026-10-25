@@ -1,6 +1,7 @@
-// The page-load intro. On a first visit (or with ?intro=machine|bits) the mark assembles in the middle of the screen,
-// moves into the header logo, turns orange, and the content rises. The gate in BaseLayout's head decides before paint
-// and sets html.intro and data-intro; this file plays it. Any click, key, wheel or touch skips to the end.
+// The page-load intro, on every load of the home page (?intro=machine|bits forces one): the mark assembles in the
+// middle of the screen, moves into the header logo, turns orange, and the content rises. The gate in BaseLayout's
+// head decides before paint and sets html.intro and data-intro; this file plays it. Any click, key, wheel or touch
+// skips to the end.
 import { ORANGE, MONO, clamp, io3, mix, solid, type Env, type Intro } from './kit';
 import machine from './machine';
 import bits from './bits';
@@ -31,7 +32,6 @@ function play(intro: Intro, cv: HTMLCanvasElement, c: CanvasRenderingContext2D, 
   const env: Env = { W: 0, H: 0, dpr: 1, mobile: false, S0: 1, C0: [0, 0], S1: 1, C1: [0, 0], ink: '#ededea' };
   const END = intro.dock + DOCK + TINT;
   let raf = 0, t0 = 0, running = true, rose = false;
-  try { localStorage.setItem('intro-seen', '1'); } catch {}
   try { history.scrollRestoration = 'manual'; } catch {}
   scrollTo(0, 0);
 
