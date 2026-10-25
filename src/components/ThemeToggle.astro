@@ -1,22 +1,26 @@
-<button
-  class="theme lab rise"
-  style="--d:180"
-  type="button"
-  data-theme-toggle
-  ><span class="disc" aria-hidden="true"></span><span class="sr-only">Theme: </span><span class="tl">Dark</span></button
->
+---
+// Phosphor icons (regular), inlined at build time: no runtime icon code.
+import sun from '@phosphor-icons/core/assets/regular/sun.svg?raw';
+import moon from '@phosphor-icons/core/assets/regular/moon.svg?raw';
+const inner = (svg: string) => svg.replace(/^<svg[^>]*>|<\/svg>$/g, '');
+---
+
+<button class="theme rise" style="--d:180" type="button" aria-label="Switch to light theme" data-theme-toggle>
+  <svg class="i-sun" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(sun)} />
+  <svg class="i-moon" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(moon)} />
+</button>
 
 <script>
   // Follows the system until clicked, then flips dark and light and remembers it (localStorage 'theme').
   // Every change fires `theme:change` on window so the intro can redraw in the new ink.
   const root = document.documentElement;
   const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!;
-  const label = btn.querySelector('.tl')!;
   const light = matchMedia('(prefers-color-scheme: light)');
   const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : !light.matches);
 
   function sync() {
-    label.textContent = isDark() ? 'Dark' : 'Light';   // the name reads "Theme: Dark", visible label included
+    // The icon (CSS) and the name both say what a click does.
+    btn.setAttribute('aria-label', isDark() ? 'Switch to light theme' : 'Switch to dark theme');
   }
   const changed = () => window.dispatchEvent(new CustomEvent('theme:change'));
 

@@ -7,7 +7,6 @@ import ThemeToggle from './ThemeToggle.astro';
 <header class="top wrap">
   <a class="name lab" href="/" aria-label={`${SITE.brand}, home`}>
     <svg class="mark" data-logo viewBox="-2.01 0 30 30" fill="#ff5f1f" aria-hidden="true"><path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path></svg>
-    <span class="rise" style="--d:0">{SITE.brand}</span>
   </a>
   <nav class="lab" aria-label="Main">
     {SITE.nav.map((item, i) => <a class="rise" style={`--d:${60 + i * 40}`} href={item.href}>{item.label}</a>)}

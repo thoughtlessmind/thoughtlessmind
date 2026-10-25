@@ -32,12 +32,13 @@ Dark is the default. Light applies under `prefers-color-scheme: light` unless `d
 
 ## §3 Chrome
 
-- **Header** (`.top`): absolute over the page, flex. The logo link (`.name`, labelled "rajiv.me, home") holds the
-  hexagon mark (`.mark`, `data-logo`, 24px) and "rajiv.me"; then nav (Work, Writing, About) pushed right; then the
-  theme switch. Gap 40px, 16px under 700px; nav gap 22px, 14px under 700px. Hover: opacity .7.
-- **Theme switch** (`ThemeToggle.astro`): a button with a half-filled disc and the current theme's name; its name reads
-  "Theme: Dark" (visually hidden prefix), so the visible label is part of it. It follows the system until clicked, then
-  stores `localStorage['theme']` and fires `theme:change` on window.
+- **Header** (`.top`): absolute over the page, flex. The logo alone, no wordmark: the hexagon mark (`.mark`,
+  `data-logo`, 28px) in a link labelled "rajiv.me, home"; then nav (Work, Writing, About) pushed right; then the theme
+  switch. Gap 40px, 16px under 700px; nav gap 22px, 14px under 700px. Hover: opacity .7.
+- **Theme switch** (`ThemeToggle.astro`): an icon button (Phosphor regular, 20px, 32px hit area) showing the theme it
+  switches to: a sun on dark, a moon on light. CSS picks the icon with the same rules as the tokens, so it is right
+  before any script runs; the name says the action ("Switch to light theme"). It follows the system until clicked,
+  then stores `localStorage['theme']` and fires `theme:change` on window.
 - Side gutters `--gut` / `--gut-r` (16px or the safe area) via `.wrap`. Focus ring: 2px `--accent`, offset 2px.
 
 ## §4 Motion
