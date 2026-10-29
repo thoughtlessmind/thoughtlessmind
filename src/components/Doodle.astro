@@ -1,0 +1,95 @@
+---
+// The landing doodle: telescope, dotted route, ringed planet, moon, pendulum, stars and a rocket, traced from the
+// Codex line art into strokes on currentColor (the tracer lives in the local docs/v4-research/art/vector/). It draws
+// itself once when the content rises (DESIGN.md §4): each stroke carries its delay (--d) and duration (--t) in ms.
+// The planet is generated (scripts/planet.ts) and keeps turning, with its rings; the pendulum keeps swinging.
+import doodle from '../assets/doodle.svg?raw';
+import { withPlanet } from '../scripts/planet';
+
+const svg = withPlanet(doodle);
+---
+
+<Fragment set:html={svg} />
+
+<script>
+  import { BANDS, bandPath } from '../scripts/planet';
+  // The bands turn with the planet: projected each frame, only while the doodle is on screen and nothing covers it
+  // (the intro, or the rail once the landing has scrolled away). Time only runs while it does, so nothing jumps.
+  const root = document.documentElement;
+  const paths = [...document.querySelectorAll<SVGPathElement>('[data-band]')];
+  const svg = paths[0]?.ownerSVGElement;
+  if (svg && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let raf = 0, last = 0, t = 0, seen = false;
+    const tick = (now: number) => {
+      if (last) t += (now - last) / 1000;
+      last = now;
+      paths.forEach((p, i) => p.setAttribute('d', bandPath(BANDS[i], t)));
+      raf = requestAnimationFrame(tick);
+    };
+    const sync = () => {
+      const go = seen && !root.classList.contains('intro') && !root.classList.contains('rail-on');
+      if (go && !raf) raf = requestAnimationFrame(tick);
+      if (!go && raf) {
+        cancelAnimationFrame(raf);
+        raf = last = 0;
+      }
+    };
+    new IntersectionObserver(([e]) => {
+      seen = e.isIntersecting;
+      sync();
+    }).observe(svg);
+    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
+  }
+</script>
+
+<style is:global>
+  .doodle {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    color: var(--ink);
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    /* stroke widths scale with the drawing; the phone band thickens them */
+    --k: 1;
+  }
+  .doodle circle { fill: currentColor; stroke: none; }
+  .doodle .fill { fill: var(--logo); stroke: none; }
+  .doodle .body { fill: var(--bg); }
+  .doodle .w2 { stroke-width: calc(2px * var(--k)); }
+  .doodle .w25 { stroke-width: calc(2.5px * var(--k)); }
+  .doodle .w35 { stroke-width: calc(3.5px * var(--k)); }
+  .doodle .w45 { stroke-width: calc(4.5px * var(--k)); }
+  .doodle .w55 { stroke-width: calc(5.5px * var(--k)); }
+  .doodle .w10 { stroke-width: calc(10px * var(--k)); }
+
+  /* Strokes draw on (pathLength 1), dots and stars pop in, the flame fills in and the rocket lifts: once, fill mode
+     backwards, so each ends in its plain state. Then two things keep moving: the rings orbit (their dashes, inner
+     ringlets faster) and the pendulum swings between its drawn extremes. Both hold still once the rail takes over. */
+  @media (prefers-reduced-motion: no-preference) {
+    .doodle [pathLength] { animation: d-draw calc(var(--t) * 1ms) var(--ease) calc(var(--d) * 1ms) backwards; }
+    .doodle circle,
+    .doodle .star { animation: d-pop 450ms var(--ease) calc(var(--d) * 1ms) backwards; transform-box: fill-box; transform-origin: center; }
+    .doodle .star * { animation: none; }
+    .doodle .rings,
+    .doodle .bands { animation: d-fade 900ms var(--ease) 1250ms backwards; }
+    .doodle .ring { animation: d-orbit calc(var(--ms) * 1ms) linear infinite; }
+    .doodle .swing { animation: d-swing 1100ms cubic-bezier(0.37, 0, 0.63, 1) 1750ms infinite alternate; transform-box: view-box; transform-origin: 760px 799px; }
+    .doodle .rocket { animation: d-lift 750ms var(--ease) 1950ms backwards; }
+    .doodle .flame { animation: d-pop 450ms var(--ease) 1950ms backwards; transform-box: fill-box; transform-origin: 72% 4%; }
+    /* Held at the start while the intro plays; it runs once the content rises (html.go). */
+    html.intro:not(.go) .doodle,
+    html.intro:not(.go) .doodle * { animation-play-state: paused; }
+    html.rail-on .doodle .ring,
+    html.rail-on .doodle .swing { animation-play-state: paused; }
+  }
+  @keyframes d-draw { from { stroke-dasharray: 1; stroke-dashoffset: 1; visibility: hidden; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
+  @keyframes d-pop { from { opacity: 0; transform: scale(0.2); } }
+  @keyframes d-fade { from { opacity: 0; } }
+  @keyframes d-orbit { to { stroke-dashoffset: var(--shift); } }
+  @keyframes d-swing { to { transform: rotate(-55deg); } }
+  @keyframes d-lift { from { transform: translate(-7px, 11px); } }
+</style>

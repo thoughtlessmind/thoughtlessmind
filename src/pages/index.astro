@@ -1,24 +1,815 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Doodle from '../components/Doodle.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 import { SITE } from '../consts';
+
+// Each project links to the real thing. The stills are drawn in HTML below (DESIGN.md §5).
+const work = [
+  {
+    id: 'tooltip',
+    name: 'css-only-tooltip',
+    kind: 'Library',
+    year: 2021,
+    summary: 'A tooltip library with no JavaScript. Data attributes in, tooltip out.',
+    href: 'https://www.npmjs.com/package/css-only-tooltip',
+  },
+  {
+    id: 'diver',
+    name: 'Diver',
+    kind: 'Chrome extension',
+    year: 2023,
+    summary: 'Outlines every element on a page, so you can see the layout you are debugging.',
+    href: 'https://chrome.google.com/webstore/detail/diver/onfnfdmnccoaknhjinebmlncejnofhoc',
+  },
+  {
+    id: 'yt',
+    name: 'YouTube Playlist Info',
+    kind: 'Web app',
+    year: 2020,
+    summary: 'Paste a playlist link and see how long it really takes to watch.',
+    href: 'https://youtube-playlist-info.netlify.app',
+  },
+  {
+    id: 'site',
+    name: 'rajiv.me',
+    kind: 'This site',
+    year: 2026,
+    summary: 'Static pages, two hand-built intros, and no work at all once they land.',
+    href: `${SITE.socials.github}/thoughtlessmind`,
+  },
+];
+// ponytail: hand-listed until the writing collection lands; the /writing pages come with it.
+const posts = [
+  {
+    title: 'How to remove or restyle the MUI TextField outline',
+    says: 'The outlined border is a fieldset. Remove or recolour it with sx or the theme.',
+    slug: 'mui-textfield-remove-outline',
+    date: '2026-10-07',
+    code: '.MuiOutlinedInput-notchedOutline',
+  },
+  {
+    title: 'Using the MUI Link with the Next.js Link in the App Router',
+    says: 'Pass next/link to the component prop, and re-export it from a client file for Server Components.',
+    slug: 'mui-link-with-nextjs-link',
+    date: '2026-10-07',
+    code: 'component={Link}',
+  },
+  {
+    title: 'Function overloads in TypeScript',
+    says: 'Several signatures, one implementation: how overloads make a flexible function type-safe.',
+    slug: 'function-overload-in-typescript',
+    date: '2023-08-09',
+    code: 'function f(x: string): string;',
+  },
+  {
+    title: 'Tooltips with CSS only',
+    says: 'Two pseudo-elements and a data attribute are enough for most tooltips. No library required.',
+    slug: 'tooltip-using-only-css',
+    date: '2021-01-17',
+    code: 'content: attr(data-tooltip);',
+  },
+];
+// Each post's cover is a line doodle traced to SVG (ink on currentColor, orange as .o).
+const covers = import.meta.glob<string>('../assets/covers/*.svg', { query: '?raw', import: 'default', eager: true });
+const month = (d: string) => new Date(d).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+const socials = [
+  ['GitHub', SITE.socials.github],
+  ['LinkedIn', SITE.socials.linkedin],
+  ['X', SITE.socials.x],
+  ['dev.to', SITE.socials.devto],
+  ['Stack Overflow', SITE.socials.stackoverflow],
+];
+const sections = [
+  ['about', 'About me'],
+  ['projects', 'Projects'],
+  ['writing', 'Writing'],
+];
+const mark =
+  '<path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path>';
 ---
 
 <BaseLayout intro>
-  <section class="hero" aria-labelledby="h1">
-    <h1 id="h1">
-      <span class="who rise" style="--d:120">{SITE.name}</span>
-      <span class="line rise" style="--d:190">Software you don’t have to think about.</span>
-    </h1>
-    <p class="sub rise" style="--d:270">
-      A software engineer in New Delhi. I build web and native apps, the backends behind them and the infrastructure
-      they run on.
-    </p>
-    <ul class="build lab rise" style="--d:340" aria-label="What I build">
-      <li>Shipping since {SITE.since}</li>
-      <li>Web apps</li>
-      <li>Native apps</li>
-      <li>Backends and APIs</li>
-      <li>Infrastructure</li>
+  <aside class="rail" aria-label="On this page">
+    <a class="rail-mark" href="#about" aria-label="Back to top">
+      <svg viewBox="-2.01 0 30 30" fill="#ff5f1f" aria-hidden="true" set:html={mark}></svg>
+    </a>
+    <nav aria-label="Sections">
+      {
+        sections.map(([id, label], i) => (
+          <a class:list={['rail-a', { on: i === 0 }]} href={`#${id}`} aria-current={i === 0 ? 'true' : undefined} data-spy={id}>
+            {label}
+          </a>
+        ))
+      }
+    </nav>
+    <ThemeToggle />
+  </aside>
+
+  <section class="hero" id="about" aria-labelledby="h1">
+    <span class="sentinel" data-sentinel aria-hidden="true"></span>
+    <div class="art" aria-hidden="true"><Doodle /></div>
+    <div class="hero-text">
+      <h1 id="h1">
+        <span class="name rise" style="--d:120">{SITE.name}<span class="sr-only">,</span></span>
+        <span class="st rise" style="--d:190">Software you don’t <br />have to think about.</span>
+      </h1>
+      <dl class="facts">
+        <div class="rise" style="--d:300"><dt>Based in</dt><dd>{SITE.location}</dd></div>
+        <div class="rise" style="--d:340">
+          <dt>Builds</dt><dd>Web and native apps, backends and infrastructure, since {SITE.since}</dd>
+        </div>
+        <div class="rise" style="--d:380">
+          <dt>Cares about</dt><dd>Software that’s fast to load, clear to use and boring to run</dd>
+        </div>
+        <div class="rise" style="--d:420"><dt>Off screen</dt><dd>Astronomy, rockets, physics and sport</dd></div>
+        <div class="rise" style="--d:460">
+          <dt>Elsewhere</dt>
+          <dd>
+            <a class="ul" href={SITE.socials.github} rel="me">GitHub</a>, <a class="ul" href={SITE.socials.linkedin} rel="me"
+              >LinkedIn</a
+            >, <a class="ul" href={SITE.socials.x} rel="me">X</a>, <a class="ul" href={`mailto:${SITE.email}`}>email</a>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" id="projects" aria-labelledby="projects-h">
+    <div class="head">
+      <h2 class="h2" id="projects-h">Projects</h2>
+      <p class="note">Tools I built for my own problems, then released.</p>
+    </div>
+    <ul class="cards">
+      {
+        work.map((w) => (
+          <li>
+            <a class="card" href={w.href} rel="noopener" target="_blank">
+              <span class="still" aria-hidden="true">
+                <span class="st-in">
+                  {w.id === 'tooltip' && (
+                    <>
+                      <span class="tt" data-tip="Saved">
+                        Save changes
+                      </span>
+                      <code class="tt-code">&lt;button data-tooltip="Saved"&gt;</code>
+                    </>
+                  )}
+                  {w.id === 'diver' && (
+                    <span class="dv">
+                      <span class="dv-top">
+                        <span>rajiv.me</span>
+                        <span class="dv-nav">
+                          <span>Work</span>
+                          <span>Writing</span>
+                        </span>
+                      </span>
+                      <span class="dv-h">Software you don’t have to think about.</span>
+                      <span>A software engineer in New Delhi.</span>
+                    </span>
+                  )}
+                  {w.id === 'yt' && (
+                    <span class="yt">
+                      <span class="yt-total">11:42:37</span>
+                      <span class="yt-cap">Total watch time, 64 videos</span>
+                      <span class="yt-list">
+                        <span>Kepler’s laws of motion</span>
+                        <span>18:24</span>
+                        <span>Orbits and escape velocity</span>
+                        <span>21:10</span>
+                        <span>The Hohmann transfer</span>
+                        <span>16:52</span>
+                      </span>
+                    </span>
+                  )}
+                  {w.id === 'site' && <svg class="mk" viewBox="-2.01 0 30 30" fill="#ff5f1f" set:html={mark}></svg>}
+                </span>
+              </span>
+              <span class="cn">
+                {w.name}
+                <span class="cy">
+                  {w.kind}, {w.year}
+                </span>
+              </span>
+              <span class="cs">{w.summary}</span>
+            </a>
+          </li>
+        ))
+      }
     </ul>
   </section>
+
+  <section class="sec" id="writing" aria-labelledby="writing-h">
+    <div class="head">
+      <h2 class="h2" id="writing-h">Writing</h2>
+      <p class="note">Short notes on problems worth writing down.</p>
+    </div>
+    <ul class="cards">
+      {
+        posts.map((p) => (
+          <li>
+            <a class="post" href={`/writing/${p.slug}`}>
+              <span class="cover" aria-hidden="true" set:html={covers[`../assets/covers/${p.slug}.svg`]}></span>
+              <span class="pm">
+                <code class="tok" aria-hidden="true">
+                  {p.code}
+                </code>
+                <time datetime={p.date}>{month(p.date)}</time>
+              </span>
+              <span class="pt">{p.title}</span>
+              <span class="cs">{p.says}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <a class="ul all" href="/writing">All writing</a>
+  </section>
+
+  <footer slot="footer" class="foot wrap" data-foot>
+    <div class="foot-row">
+      <p class="mail">Write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+      <ul class="soc">
+        {
+          socials.map(([label, href]) => (
+            <li>
+              <a class="ul" href={href} rel="noopener me" target="_blank">
+                {label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p>© {new Date().getFullYear()} {SITE.name}</p>
+    </div>
+    <div class="word" aria-hidden="true"><span>rajiv</span></div>
+  </footer>
 </BaseLayout>
+
+<script>
+  const root = document.documentElement;
+
+  // The rail slides in once a point 32% down the landing has left the top; the doodle leaves with it.
+  const sentinel = document.querySelector('[data-sentinel]');
+  if (sentinel)
+    new IntersectionObserver(([e]) => {
+      root.classList.toggle('rail-on', !e.isIntersecting && e.boundingClientRect.top < 0);
+    }).observe(sentinel);
+
+  // Scroll spy: the section crossing the middle of the screen is the active one (the footer counts as Writing, so a
+  // jump to the end still lands there).
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
+  const foot = document.querySelector<HTMLElement>('[data-foot]');
+  const spy = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const id = e.target === foot ? 'writing' : e.target.id;
+        links.forEach((a) => {
+          const on = a.dataset.spy === id;
+          a.classList.toggle('on', on);
+          if (on) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      }),
+    { rootMargin: '-45% 0px -54% 0px' },
+  );
+  links.forEach((a) => {
+    const s = document.getElementById(a.dataset.spy ?? '');
+    if (s) spy.observe(s);
+  });
+  if (foot) spy.observe(foot);
+
+  // The footer's name rises once; on a phone the bottom bar steps aside while the footer is on screen.
+  if (foot)
+    new IntersectionObserver(
+      ([e]) => {
+        root.classList.toggle('foot-vis', e.isIntersecting);
+        if (e.isIntersecting) foot.classList.add('in');
+      },
+      { threshold: 0.25 },
+    ).observe(foot);
+</script>
+
+<style>
+  /* In-page links (the rail) scroll smoothly; instantly under reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html) {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Landing: about me on the left, the doodle on the right 48%. It runs to the right edge of the screen and clips
+     the doodle as it shifts out. */
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: clamp(640px, 100vh, 960px);
+    margin-right: calc(-1 * var(--gut-r));
+    padding-block: 112px 56px;
+    overflow-x: clip;
+  }
+  .sentinel {
+    position: absolute;
+    top: 32%;
+    left: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .hero-text {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 52vw);
+  }
+  h1 {
+    font-weight: 500;
+  }
+  .name {
+    display: block;
+    font-size: var(--t-m);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: var(--accent);
+  }
+  .st {
+    display: block;
+    margin-top: 16px;
+    font-size: var(--t-xl);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+  .facts {
+    max-width: 580px;
+    margin-top: 56px;
+  }
+  .facts > div {
+    display: grid;
+    grid-template-columns: 136px minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: baseline;
+    padding-block: 12px;
+    border-top: 1px solid var(--line);
+  }
+  dt {
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  dd {
+    text-wrap: pretty;
+  }
+  .art {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 48vw;
+    padding: 96px 56px 40px 0;
+    pointer-events: none;
+    transition:
+      opacity 600ms var(--ease),
+      transform 800ms var(--ease);
+  }
+  :global(html.rail-on) .art {
+    opacity: 0;
+    transform: translateX(3%);
+  }
+
+  /* Sections keep the rail's width clear on the right. */
+  .sec {
+    padding: 136px var(--rail) 0 0;
+  }
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 32px;
+  }
+  .h2 {
+    font-size: var(--t-l);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .note {
+    color: var(--muted);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 56px 40px;
+    margin-top: 44px;
+  }
+  .card,
+  .post {
+    display: block;
+    transition: color 200ms var(--ease);
+  }
+  .card:hover,
+  .post:hover {
+    color: var(--hi);
+  }
+  .still,
+  .cover {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .cn {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-top: 18px;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .cy,
+  time {
+    flex: none;
+    font-size: var(--t-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .cs {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+  }
+
+  /* Stills: each project drawn in HTML, a small illustration set at its own sizes and scaled up 1.35 where the
+     card is wide enough. */
+  .still {
+    container-type: inline-size;
+  }
+  .st-in {
+    display: grid;
+    justify-items: center;
+    scale: 1.35;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  @container (max-width: 420px) {
+    .st-in {
+      scale: 1;
+    }
+  }
+  /* css-only-tooltip, built the way the library builds it: a data attribute and two pseudo-elements. */
+  .tt {
+    position: relative;
+    margin-top: 30px;
+    padding: 9px 14px;
+    border-radius: 6px;
+    background: var(--bg);
+    font-weight: 500;
+  }
+  .tt::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    translate: -50% 0;
+    padding: 4px 9px;
+    border-radius: 5px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .tt::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 5px);
+    translate: -50% 0;
+    border: 5px solid transparent;
+    border-bottom: 0;
+    border-top-color: var(--ink);
+  }
+  .tt-code {
+    margin-top: 22px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  /* Diver: every element outlined. */
+  .dv {
+    display: grid;
+    gap: 7px;
+    width: 210px;
+    padding: 10px;
+    background: var(--bg);
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  .dv,
+  .dv * {
+    outline: 1px solid var(--accent);
+  }
+  .dv-top {
+    display: flex;
+    justify-content: space-between;
+  }
+  .dv-nav {
+    display: flex;
+    gap: 6px;
+  }
+  .dv-h {
+    margin-top: 8px;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  /* YouTube Playlist Info: the total, then the videos that add up to it. */
+  .yt {
+    display: grid;
+    width: 210px;
+    font-size: 12px;
+  }
+  .yt-total {
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .yt-cap,
+  .yt-list > :nth-child(even) {
+    color: var(--muted);
+  }
+  .yt-list {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 5px 12px;
+    margin-top: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .mk {
+    width: 72px;
+    height: 72px;
+    fill: var(--logo);
+  }
+
+  /* Writing: the doodle cover, the code the post is about and its date, then title and summary. */
+  .cover :global(svg) {
+    width: 100%;
+    height: 100%;
+    color: var(--ink);
+  }
+  .cover :global(.o) {
+    fill: var(--logo);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cover :global(svg) {
+      transition: transform 800ms var(--ease);
+    }
+    .post:hover .cover :global(svg) {
+      transform: scale(1.03);
+    }
+  }
+  .pm {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-top: 18px;
+  }
+  .tok {
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: var(--t-code);
+    color: var(--muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .pt {
+    display: block;
+    margin-top: 8px;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .post .cs {
+    margin-top: 6px;
+  }
+  .all {
+    display: inline-block;
+    margin-top: 40px;
+  }
+
+  /* Footer: the address, socials and copyright, then "rajiv" across the content width, half risen. */
+  .foot {
+    container-type: inline-size;
+    overflow: hidden;
+    padding-top: 168px;
+    padding-right: calc(var(--gut-r) + var(--rail));
+  }
+  .foot-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px 40px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .mail {
+    font-size: var(--t-s);
+    color: var(--ink);
+  }
+  .soc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+  .word {
+    height: 0.47em;
+    margin-top: 72px;
+    overflow: hidden;
+    font-size: calc(100cqw / 1.68);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.055em;
+    color: var(--logo);
+  }
+  .word span {
+    display: block;
+    margin-left: -0.065em;
+    transform: translateY(-0.11em);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .word span {
+      transform: translateY(0.42em);
+      transition: transform 1.4s var(--ease);
+    }
+    :global(html.js) .foot.in .word span {
+      transform: translateY(-0.11em);
+    }
+  }
+
+  /* The rail: mark (back to top), the three sections with the active one dotted, the theme switch. */
+  .rail {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: var(--rail);
+    padding: 28px 0 22px;
+    background: var(--bg);
+    border-left: 1px solid var(--line);
+    visibility: hidden;
+    transform: translateX(100%);
+    transition:
+      transform 550ms var(--ease),
+      visibility 0s 550ms;
+  }
+  :global(html.rail-on) .rail {
+    visibility: visible;
+    transform: none;
+    transition: transform 550ms var(--ease);
+  }
+  .rail-mark svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    fill: var(--logo);
+  }
+  .rail nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .rail-a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 4px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+    white-space: nowrap;
+    transition: color 300ms var(--ease);
+  }
+  .rail-a::before {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transition: background-color 300ms var(--ease);
+  }
+  .rail-a:hover,
+  .rail-a.on {
+    color: var(--ink);
+  }
+  .rail-a.on::before {
+    background: var(--accent);
+  }
+  .rail :global(.theme) {
+    margin: 0;
+  }
+
+  /* Phone: the doodle in a band under the header, the text under it; the rail becomes a bottom bar. */
+  @media (max-width: 720px) {
+    .hero {
+      display: block;
+      min-height: 0;
+      margin-right: 0;
+      padding-block: 300px 48px;
+    }
+    .hero-text {
+      width: auto;
+    }
+    .art {
+      inset: 76px 0 auto;
+      width: auto;
+      height: 208px;
+      padding: 0;
+    }
+    .art :global(.doodle) {
+      --k: 1.8;
+    }
+    .st {
+      margin-top: 12px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      text-wrap: balance;
+    }
+    .st br {
+      display: none;
+    }
+    .facts {
+      margin-top: 36px;
+    }
+    .facts > div {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 2px;
+      padding-block: 10px;
+    }
+    .sec {
+      padding: 104px 0 0;
+    }
+    .cards {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 44px;
+      margin-top: 32px;
+    }
+    .foot {
+      padding-top: 112px;
+      padding-right: var(--gut-r);
+    }
+    .foot-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .word {
+      margin-top: 48px;
+    }
+    .rail {
+      inset: auto 0 0;
+      width: auto;
+      height: calc(56px + env(safe-area-inset-bottom, 0px));
+      flex-direction: row;
+      padding: 0 calc(var(--gut-r) - 6px) env(safe-area-inset-bottom, 0px) var(--gut);
+      border-top: 1px solid var(--line);
+      border-left: 0;
+      transform: translateY(100%);
+    }
+    :global(html.rail-on.foot-vis) .rail {
+      visibility: hidden;
+      transform: translateY(100%);
+      transition:
+        transform 550ms var(--ease),
+        visibility 0s 550ms;
+    }
+    .rail-mark {
+      display: none;
+    }
+    .rail nav {
+      flex-direction: row;
+      align-items: center;
+      gap: 22px;
+    }
+    .rail-a {
+      gap: 8px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .art,
+    .rail,
+    :global(html.rail-on) .rail,
+    :global(html.rail-on.foot-vis) .rail {
+      transition: none;
+    }
+  }
+</style>

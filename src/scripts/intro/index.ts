@@ -1,25 +1,21 @@
-// The page-load intro, on every load of the home page (?intro=machine|bits forces one): the mark assembles in the
-// middle of the screen, moves into the header logo, turns orange, and the content rises. The gate in BaseLayout's
-// head decides before paint and sets html.intro and data-intro; this file plays it. Any click, key, wheel or touch
-// skips to the end.
+// The page-load intro, on every load of the home page: the mark gathers out of 0s and 1s in the middle of the screen
+// (bits.ts), moves into the header logo, turns orange, and the content rises. The gate in BaseLayout's head decides
+// before paint and sets html.intro; this file plays it. Any click, key, wheel or touch skips to the end.
 import { ORANGE, MONO, clamp, io3, mix, solid, type Env, type Intro } from './kit';
-import machine from './machine';
-import bits from './bits';
+import intro from './bits';
 
-const INTROS: Record<string, Intro> = { machine, bits };
 // ms: the move to the header, the tint to orange, how long after the move starts the content rises, and how long the
-// rises take (800 ms plus the last element's delay).
-const DOCK = 800, TINT = 350, CONTENT = 200, RISE = 1200;
+// rises take (the longest rise plus its delay: the last fact row, 800 ms at 460).
+const DOCK = 800, TINT = 350, CONTENT = 200, RISE = 1300;
 const SKIP = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
 
 const root = document.documentElement;
-const intro = INTROS[root.dataset.intro ?? ''];
 const cv = document.querySelector<HTMLCanvasElement>('[data-intro-stage]');
 const mark = document.querySelector<SVGSVGElement>('[data-logo]');
 const ctx = cv?.getContext('2d');
 
 if (root.classList.contains('intro')) {
-  if (intro && cv && ctx && mark) {
+  if (cv && ctx && mark) {
     root.dataset.introRun = '';   // tells the gate's safety timer the intro has started
     // The bits are Geist Mono: wait for it briefly so the first frame is not a fallback face.
     Promise.race([document.fonts.load(`500 12px ${MONO}`), new Promise((r) => setTimeout(r, 700))])
@@ -33,7 +29,7 @@ function play(intro: Intro, cv: HTMLCanvasElement, c: CanvasRenderingContext2D, 
   const END = intro.dock + DOCK + TINT;
   let raf = 0, t0 = 0, running = true, rose = false;
   try { history.scrollRestoration = 'manual'; } catch {}
-  scrollTo(0, 0);
+  scrollTo({ top: 0, behavior: 'instant' });   // the page scrolls smoothly otherwise (in-page links)
 
   function measure() {
     env.W = root.clientWidth; env.H = root.clientHeight;

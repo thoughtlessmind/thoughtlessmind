@@ -12,19 +12,21 @@ const inner = (svg: string) => svg.replace(/^<svg[^>]*>|<\/svg>$/g, '');
 
 <script>
   // Follows the system until clicked, then flips dark and light and remembers it (localStorage 'theme').
-  // Every change fires `theme:change` on window so the intro can redraw in the new ink.
+  // Every change fires `theme:change` on window so the intro can redraw in the new ink. The home page has two
+  // switches (the header and the rail).
   const root = document.documentElement;
-  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!;
+  const btns = document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]');
   const light = matchMedia('(prefers-color-scheme: light)');
   const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : !light.matches);
 
   function sync() {
     // The icon (CSS) and the name both say what a click does.
-    btn.setAttribute('aria-label', isDark() ? 'Switch to light theme' : 'Switch to dark theme');
+    const label = isDark() ? 'Switch to light theme' : 'Switch to dark theme';
+    btns.forEach((b) => b.setAttribute('aria-label', label));
   }
   const changed = () => window.dispatchEvent(new CustomEvent('theme:change'));
 
-  btn.addEventListener('click', () => {
+  const flip = () => {
     const next = isDark() ? 'light' : 'dark';
     root.dataset.theme = next;
     try {
@@ -32,7 +34,8 @@ const inner = (svg: string) => svg.replace(/^<svg[^>]*>|<\/svg>$/g, '');
     } catch {}
     sync();
     changed();
-  });
+  };
+  btns.forEach((b) => b.addEventListener('click', flip));
   light.addEventListener('change', () => {
     if (root.dataset.theme) return; // a picked theme ignores the system
     sync();

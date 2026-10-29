@@ -14,9 +14,21 @@
   --logo: #ff5f1f;
   --accent: #ff5f1f;
   --sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --gut: max(16px, env(safe-area-inset-left, 0px));
-  --gut-r: max(16px, env(safe-area-inset-right, 0px));
+  /* Mono is for code and the Bits intro's digits only. */
+  --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* taste-skill-ignore */
+  /* Type steps (DESIGN.md §1): full size at 1440, the phone size by 720 or so. */
+  --t-xl: clamp(40px, 5vw, 72px);
+  --t-l: clamp(28px, 2.4vw, 34px);
+  --t-m: clamp(20px, 1.95vw, 28px);
+  --t-sm: clamp(19px, 1.55vw, 22px);
+  --t-s: 17px;
+  --t-xs: 15px;
+  --t-code: 13px;
+  /* The frame: one pair of margins, the 42% axis of the header, and the right rail's width. */
+  --gut: max(clamp(20px, 3.4vw, 48px), env(safe-area-inset-left, 0px));
+  --gut-r: max(clamp(20px, 3.4vw, 48px), env(safe-area-inset-right, 0px));
+  --cols: minmax(0, 42fr) minmax(0, 58fr);
+  --rail: 168px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   color-scheme: dark;
 }
@@ -43,7 +55,7 @@
   color-scheme: light;
 }
 
-/* Tailwind utilities read the tokens (bg-bg, text-ink, border-line, font-mono…). The default palette is cleared so
+/* Tailwind utilities read the tokens (bg-bg, text-ink, border-line…). The default palette is cleared so
    only tokens exist. */
 @theme inline {
   --color-*: initial;
@@ -56,7 +68,6 @@
   --color-logo: var(--logo);
   --color-accent: var(--accent);
   --font-sans: var(--sans);
-  --font-mono: var(--mono);
 }
 
 @layer base {
@@ -67,7 +78,7 @@
   }
   body {
     font-family: var(--sans);
-    font-size: 17px;
+    font-size: var(--t-s);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
@@ -81,31 +92,32 @@
 }
 
 @layer components {
-  .lab {
-    font-family: var(--mono);
-    font-size: 13px;
-    line-height: 1.35;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    font-weight: 400;
-  }
   .wrap {
     padding-left: var(--gut);
     padding-right: var(--gut-r);
   }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 
-  /* Header: the logo, then nav and the theme switch */
+  /* Header: the logo in the first column; nav from the axis; the theme switch on the right margin. */
   .top {
     position: absolute;
     inset: 0 0 auto;
     z-index: 20;
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--cols);
     align-items: center;
-    gap: 40px;
-    padding-block: calc(env(safe-area-inset-top, 0px) + 20px) 12px;
+    padding-block: calc(env(safe-area-inset-top, 0px) + clamp(20px, 2.6vw, 36px)) 12px;
+    font-size: var(--t-xs);
   }
   .top .name {
-    display: block;
+    justify-self: start;
   }
   .mark {
     display: block;
@@ -114,10 +126,17 @@
     height: 28px;
     fill: var(--logo);
   }
+  .top .bar {
+    display: flex;
+    align-items: center;
+  }
   .top nav {
     display: flex;
-    gap: 22px;
-    margin-left: auto;
+    gap: 28px;
+  }
+  .top nav a,
+  .theme {
+    transition: opacity 200ms var(--ease);
   }
   .top a:hover,
   .theme:hover {
@@ -130,7 +149,7 @@
     appearance: none;
     background: none;
     border: 0;
-    margin: -6px -6px -6px 0;
+    margin: -6px -6px -6px auto;
     padding: 6px;
     cursor: pointer;
     color: var(--ink);
@@ -158,53 +177,32 @@
     display: block;
   }
 
-  /* Hero */
-  .hero {
-    padding-block: 168px 120px;
-    display: grid;
-    gap: 28px;
-    max-width: 1100px;
+  /* Text links: the underline thickens on hover. */
+  .ul {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color 200ms var(--ease), text-decoration-thickness 200ms var(--ease);
   }
-  .hero h1 {
-    display: grid;
-    gap: 18px;
-    font-weight: 500;
-  }
-  .hero .who {
-    color: var(--accent);
-    font-size: clamp(20px, 1.8vw, 28px);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-  }
-  .hero .line {
-    font-size: clamp(40px, 4.9vw, 76px);
-    line-height: 1;
-    letter-spacing: -0.04em;
-    max-width: 14ch;
-    text-wrap: balance;
-  }
-  .hero .sub {
-    font-size: clamp(17px, 1.3vw, 19px);
-    max-width: 44ch;
-    color: var(--muted);
-  }
-  .hero .build {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-    color: var(--muted);
-    padding-top: 12px;
+  .ul:hover {
+    text-decoration-thickness: 2px;
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 899px) {
     .top {
+      display: flex;
+      gap: 16px;
+    }
+    .top .bar {
+      flex: 1;
+      justify-content: flex-end;
       gap: 16px;
     }
     .top nav {
-      gap: 14px;
+      gap: 16px;
     }
-    .hero {
-      padding-top: 120px;
+    .theme {
+      margin-left: 0;
     }
   }
 }

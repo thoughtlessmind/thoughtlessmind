@@ -35,11 +35,13 @@ after a build.
 ## Layout of src
 
 ```
-components/   Header, ThemeToggle, Intro (canvas + styles for the page-load intro)
+assets/       doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG
+components/   Header, ThemeToggle, Intro (canvas + styles for the page-load intro), Doodle (draw-on, the planet, the loops)
 layouts/      BaseLayout (head, pre-paint script, header, main, intro)
 pages/        index, 404
-scripts/intro/ index (engine: gate hand-off, dock, tint, skip), kit (mark geometry), machine, bits (DESIGN.md §4)
-styles/       global.css (tokens, @theme, base, header and hero)
+scripts/      intro/ (index: engine, gate hand-off, dock, tint, skip; kit: mark geometry; bits: the intro),
+              planet.ts (the doodle's turning planet) (DESIGN.md §4)
+styles/       global.css (tokens, @theme, base, header, theme switch, links)
 consts.ts     facts: name, brand, title, email, socials, location, role, since, nav
 ```
 

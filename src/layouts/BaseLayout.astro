@@ -47,14 +47,13 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
     {
       intro && (
         <script is:inline>
-          // Intro gate: pick the intro before paint (?intro=machine|bits forces one), so the page starts hidden instead
-          // of flashing. Never under reduced motion. If the intro has not started within 2.5 s (its script failed or
-          // is slow), show the page anyway.
+          // Intro gate: decided before paint (?intro=off skips it), so the page starts hidden instead of flashing.
+          // Never under reduced motion. If the intro has not started within 2.5 s (its script failed or is slow), show
+          // the page anyway.
           (() => {
             const root = document.documentElement;
+            if (new URLSearchParams(location.search).get('intro') === 'off') return;
             if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-            const q = new URLSearchParams(location.search).get('intro');
-            root.dataset.intro = q === 'machine' || q === 'bits' ? q : Math.random() < 0.5 ? 'machine' : 'bits';
             root.classList.add('intro');
             setTimeout(() => { if (!('introRun' in root.dataset)) root.classList.remove('intro'); }, 2500);
           })();
@@ -65,6 +64,7 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
   <body>
     <Header />
     <main class="wrap"><slot /></main>
+    <slot name="footer" />
     {intro && <Intro />}
   </body>
 </html>
