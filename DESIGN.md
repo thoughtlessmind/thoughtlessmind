@@ -73,10 +73,11 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
     the resting 76px to 56px. See §4 for what moves it.
   - **Reading line** (`progress`, post pages): a 2px `--accent` line along the header's bottom edge, filling from the
     left with the page's scroll.
-- **Theme switch** (`ThemeToggle.astro`): an icon button (Phosphor regular, 20px, 32px hit area) showing the theme it
-  switches to: a sun on dark, a moon on light. CSS picks the icon with the same rules as the tokens, so it is right
-  before any script runs; the name says the action ("Switch to light theme"). It follows the system until clicked,
+- **Theme switch** (`ThemeToggle.astro`): an icon button (20px, 32px hit area, drawn in Phosphor's regular weight)
+  showing the theme it switches to: a sun on dark, a moon on light, one drawing that morphs between them (§4). CSS
+  sets its state, `--m` 0 or 1, with the same rules as the tokens, so it is right before any script runs; the name says the action ("Switch to light theme"). It follows the system until clicked,
   then stores `localStorage['theme']` and fires `theme:change` on window. One script drives every switch on a page.
+  A click pours the new theme out of the switch (§4).
 - **Footer** (`Footer.astro`, every page): one row of "Write to me at <email>", the socials (GitHub, LinkedIn, X,
   dev.to, Stack Overflow) and `llms.txt`, then "© 2026 Rajiv Kumar" (a column on a phone). Under it a giant lowercase
   "rajiv" as wide as the content, drawn like the doodle: Geist 500's outlines redrawn by hand (anchors nudged,
@@ -146,6 +147,23 @@ on it.
   reduced motion). The root cross-fades in 200 ms on `--ease`; the header (`view-transition-name: top`) holds still; a
   post card's cover (`cover-<id>`) morphs into the post's cover and a writing list title (`title-<id>`) into the
   post's h1.
+- **Theme pour** (`ThemeToggle.astro`): a click on the switch spills the new theme out of it over the old one, a
+  liquid blob centred on the switch, so from the top right it floods down and left. A same-document view transition
+  snapshots the page (`html.pour` drops every other view-transition-name, so the header and covers go with it, and
+  holds the old snapshot still with the new one opaque on top); the new snapshot's `clip-path` runs through 50
+  `path()` keyframes worked out on the click (WAAPI, no rAF). The radius eases out to the farthest corner while the
+  rim wobbles with three waves running round it, drawn with the footer blob's closed curve (`scripts/blob.ts`). No two
+  pours are alike: every click rolls each knob inside a range that still reads as liquid: 850 to 1250 ms, ease-out
+  power 1.7 to 2.6, and per wave its lobes (3 to 5, 6 to 9, 10 to 14), depth (4 to 8%, 2.5 to 5%, 1 to 3% of the
+  radius, so the rim never dips more than 16%), speed (3 to 6, 4 to 7, 2 to 5 rad/s, either way round) and phase.
+  A click mid-pour starts a new one from the current state. Under reduced motion, or without view transitions, the
+  theme flips at once.
+- **Switch morph** (`global.css`, `.theme`): as the theme flips the icon morphs over 600 ms `--ease`. Sun to moon:
+  the rays spin a quarter turn into the middle and vanish (opacity 200 ms), the orb grows by half (its outline
+  thinned to keep the weight) and a shade circle slides in along the diagonal from the top right; an svg mask cuts
+  the orb's outline under the shade and the shade's own outline, clipped to the orb, closes the crescent. Moon to
+  sun runs it back, the rays fading in only after 250 ms, once they are outside the orb. Every part is a CSS
+  transition on `--m`, so a system theme change morphs too. Under reduced motion it swaps at once.
 - **Footer name**: the first time a quarter of the footer is on screen, "rajiv" draws itself like the doodle: each
   outline from its start, left to right, 130 ms apart, each taking 350 ms plus its length (up to 1.1 s), about 2 s in
   all. Without JS or under reduced motion it is drawn from the start.

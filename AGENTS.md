@@ -44,7 +44,8 @@ layouts/         BaseLayout (head, pre-paint script, header, main, footer, splas
 lib/writing.ts   getPosts, cover, reading time, date formats
 pages/           index, writing/index, writing/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, 404
 scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
-                 planet.ts (the doodle's turning planet) (DESIGN.md §4)
+                 planet.ts (the doodle's turning planet), blob.ts (the liquid blob outline the footer and the theme
+                 pour share) (DESIGN.md §4)
 styles/          global.css (tokens, @theme, base, header, theme switch, links, view transitions), prose.css (posts)
 consts.ts        facts: name, brand, title, description, email, socials, location, role, since, nav
 ```

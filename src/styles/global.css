@@ -282,8 +282,9 @@
     color: var(--accent);
   }
 
-  /* Theme switch: an icon button showing the theme it switches to (sun on dark, moon on light). Which icon shows
-     follows the same rules as the tokens, so it is right before any script runs. */
+  /* Theme switch: an icon button showing the theme it switches to (sun on dark, moon on light), one drawing that
+     morphs between the two (ThemeToggle.astro). --m is 0 for the sun and 1 for the moon, set by the same rules as
+     the tokens, so it is right before any script runs; every part follows it. */
   .theme {
     appearance: none;
     background: none;
@@ -297,23 +298,44 @@
   .theme svg {
     width: 20px;
     height: 20px;
-  }
-  .theme .i-moon {
-    display: none;
+    --m: 0;
   }
   @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) .theme .i-sun {
-      display: none;
-    }
-    :root:not([data-theme="dark"]) .theme .i-moon {
-      display: block;
+    :root:not([data-theme="dark"]) .theme svg {
+      --m: 1;
     }
   }
-  :root[data-theme="light"] .theme .i-sun {
-    display: none;
+  :root[data-theme="light"] .theme svg {
+    --m: 1;
   }
-  :root[data-theme="light"] .theme .i-moon {
-    display: block;
+  /* The rays spin a quarter turn into the middle; the orb grows half again (its outline thinned to keep the weight);
+     the shade slides in along the diagonal from outside the orb to bite the crescent. */
+  .theme .sm-rays,
+  .theme .sm-orb {
+    transform-origin: 128px 128px;
+  }
+  .theme .sm-rays {
+    transform: rotate(calc(var(--m) * 90deg)) scale(calc(1 - var(--m)));
+    opacity: calc(1 - var(--m));
+  }
+  .theme .sm-orb {
+    transform: scale(calc(1 + var(--m) * 0.5));
+    stroke-width: calc(16px / (1 + var(--m) * 0.5));
+  }
+  .theme .sm-b {
+    transform: translate(calc(85px - var(--m) * 61px), calc(var(--m) * 61px - 85px));
+  }
+  /* The rays fade fast on the way in and only once they are back outside the orb on the way out, so no faint ray
+     shows inside it. */
+  @media (prefers-reduced-motion: no-preference) {
+    .theme .sm-rays,
+    .theme .sm-orb,
+    .theme .sm-b {
+      transition:
+        transform 600ms var(--ease),
+        opacity 200ms var(--ease) calc((1 - var(--m)) * 250ms),
+        stroke-width 600ms var(--ease);
+    }
   }
 
   /* Text links: on hover or keyboard focus the text and its underline turn orange and the underline thickens. */
@@ -378,4 +400,14 @@
 }
 ::view-transition-group(root) {
   animation-duration: 200ms;
+}
+/* The theme switch's pour (ThemeToggle.astro): the whole page is one snapshot, the old theme holds still and the new
+   one lies opaque over it, clipped by the script's blob. */
+:root.pour * {
+  view-transition-name: none !important;
+}
+:root.pour::view-transition-old(root),
+:root.pour::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
