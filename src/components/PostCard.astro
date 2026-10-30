@@ -54,7 +54,12 @@ const art = cover(post.id);
     text-wrap: balance;
     transition: color 200ms var(--ease);
   }
-  .post:hover .pt {
+  @media (hover: hover) {
+    .post:hover .pt {
+      color: var(--accent);
+    }
+  }
+  .post:focus-visible .pt {
     color: var(--accent);
   }
   .cs {

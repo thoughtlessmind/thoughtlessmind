@@ -205,10 +205,22 @@ const arrow = inner(arrowLeft);
     align-items: center;
     gap: 8px;
     font-size: var(--t-xs);
-    transition: opacity 200ms var(--ease);
+    transition: color 200ms var(--ease);
   }
-  .back:hover {
-    opacity: 0.7;
+  /* Back, the contents, Copy and the Markdown link turn orange on hover or keyboard focus, like every link. */
+  @media (hover: hover) {
+    .back:hover,
+    .toc a:hover,
+    .copy:hover,
+    .md:hover {
+      color: var(--accent);
+    }
+  }
+  .back:focus-visible,
+  .toc a:focus-visible,
+  .copy:focus-visible,
+  .md:focus-visible {
+    color: var(--accent);
   }
   .back svg {
     width: 16px;
@@ -252,7 +264,6 @@ const arrow = inner(arrowLeft);
     border-radius: 50%;
     transition: background-color 200ms var(--ease);
   }
-  .toc a:hover,
   .toc a[aria-current] {
     color: var(--ink);
   }
@@ -276,10 +287,7 @@ const arrow = inner(arrowLeft);
     color: var(--ink);
     font: inherit;
     cursor: pointer;
-    transition: opacity 200ms var(--ease);
-  }
-  .copy:hover {
-    opacity: 0.7;
+    transition: color 200ms var(--ease);
   }
   /* Both Markdown controls lead with a 16px Phosphor icon; the copy icon turns into an accent tick once copied. */
   .copy,
@@ -287,6 +295,7 @@ const arrow = inner(arrowLeft);
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    transition: color 200ms var(--ease);
   }
   .i {
     flex: none;

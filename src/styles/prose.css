@@ -41,9 +41,16 @@
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.22em;
-  transition: text-decoration-thickness 200ms var(--ease);
+  transition: color 200ms var(--ease), text-decoration-thickness 200ms var(--ease);
 }
-.prose a:hover {
+@media (hover: hover) {
+  .prose a:hover {
+    color: var(--accent);
+    text-decoration-thickness: 2px;
+  }
+}
+.prose a:focus-visible {
+  color: var(--accent);
   text-decoration-thickness: 2px;
 }
 

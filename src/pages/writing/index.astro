@@ -121,10 +121,18 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     opacity: 0;
     transition: opacity 200ms var(--ease);
   }
-  .row:hover .rt::before {
+  @media (hover: hover) {
+    .row:hover .rt::before {
+      opacity: 1;
+    }
+    .row:hover .rt {
+      color: var(--accent);
+    }
+  }
+  .row:focus-visible .rt::before {
     opacity: 1;
   }
-  .row:hover .rt {
+  .row:focus-visible .rt {
     color: var(--accent);
   }
   .rd {

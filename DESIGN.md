@@ -42,6 +42,8 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 | `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark, the doodles' orange, the footer name's revealed fill (decorative) |
 | `--accent` | `#ff5f1f`               | `#c2410c`             | text orange, focus ring, active dots, reading line |
 | `--shadow` | `rgba(0,0,0,.55)`       | `rgba(38,34,26,.14)`  | the lifted header's drop shadow, nothing else |
+| `--sel-bg` | `#f3f2ee`               | `#141414`             | selected text's ground: the other theme's page |
+| `--sel-ink`| `#c2410c`               | `#ff5f1f`             | selected text: the other theme's text orange (4.6:1 / 6.1:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
 `data-theme="light"`. Both pass WCAG AA for text; `--logo` is only ever the mark, drawings and the decorative
@@ -64,7 +66,7 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
   28px), then the theme switch on the right margin. The current link is `--ink` with a 6px `--accent` dot hung before
   it, so no label moves: `aria-current="page"` on the writing pages (`current="writing"`), and on the home page the
   scroll spy's `.on` + `aria-current="true"`. At 720px and under it is a flex row (gap 16px, nav gap 20px); all three
-  labels fit at 375. Hover: opacity .7.
+  labels fit at 375. Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
   - **Blended, then lifted**: at scroll 0 it is no surface at all. One registered property, `--lift` (0 to 1), drives
     the bar: background `--bg` mixed in at up to 80%, `backdrop-filter: blur(16px) saturate(160%)`, a `--line`
     hairline, two offset shadows in `--shadow` (`0 4px 10px -6px`, `0 14px 32px -16px`), and padding compacting from
@@ -82,8 +84,16 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
   local `docs/v4-research/art/vector/name.mjs`). Outline only, round-capped, in `--muted` at 70% (3.5 units, 7 at
   720px and under, so about 2.5px at 1440 and 1.3px at 375). The viewBox crops it to its top half at the bottom of
   the page. The `--logo` fill shows only where the cursor's blob is (§4).
-- **Text links** (`.ul`): 1px underline at 0.22em offset, 2px on hover. Focus ring: 2px `--accent`, offset 2px.
-- **Browser surfaces**: `::selection` is `--ink` on a 30% `--accent` tint, the caret is `--accent`, the scrollbar is
+- **Text links** (`.ul`, and links in posts): 1px underline at 0.22em offset; on hover or keyboard focus the text and
+  its underline turn `--accent` and the underline goes to 2px. Focus ring: 2px `--accent`, offset 2px.
+- **Hover**: one answer everywhere. Whatever you point at or tab to turns `--accent` over 200ms `--ease`, the colour
+  of the focus ring and the "you are here" dots: nav links, the theme switch, text links, the post page's Back,
+  contents, Copy and Markdown links, and the title of every clickable item (post rows, project rows, the /writing
+  list, "Read all 12 posts"). Nothing fades. Hover rules sit under `@media (hover: hover)`, so a tap on a touch
+  screen never leaves anything orange; `:focus-visible` gets the same colour. The two hover moments that are not
+  links, the landing phrase (§5) and the footer name's blob (§4), are slow and large, so they do not read as links.
+- **Browser surfaces**: `::selection` turns the site inside out, `--sel-ink` on `--sel-bg` (the other theme's text
+  orange on its page: burnt orange on paper in dark, brand orange on black in light), the caret is `--accent`, the scrollbar is
   thin in half-`--muted` on transparent, and every `time` uses tabular numbers.
 - Hairlines between label rows (the landing facts, Lately), between writing list rows and years, and under the lifted
   header. No boxes or gradients; the lifted header is the only shadow. Surfaces change by a tone step (`--panel` under
@@ -210,8 +220,9 @@ Sections, in order:
      `PostCard` rows, then a row of its own between hairlines: "Read all 12 posts" (`--t-sm`, 500, the live count)
      with a `--accent` arrow at the far end that slides 6px on hover (reduced motion: it stays); the label turns
      `--accent` too.
-   - Every clickable item (post rows, project rows, the /writing list) turns its title `--accent` over 200ms while
-     the pointer is anywhere on the item, cover and still included. Nothing else in the row changes colour.
+   - Every clickable item (post rows, project rows, the /writing list) turns its title `--accent` while the pointer
+     is anywhere on the item, cover and still included, or the item has keyboard focus (§3 Hover). Nothing else in
+     the row changes colour.
    - Projects: the note "Tools I built for my own problems, then released." One row per project on a `--line`
      hairline (28px padding, about 340px tall at 1440, so two fit on a screen), each a link to the real thing, split
      2fr / 3fr with a 32px gap: the text ("Kind, year" in `--muted`, the name in `--t-sm`, a muted two-sentence

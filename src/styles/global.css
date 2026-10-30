@@ -21,6 +21,10 @@
   --hi: #ffffff;
   --logo: #ff5f1f;
   --accent: #ff5f1f;
+  /* Selected text shows the other theme: its page as the ground, its text orange as the letters (4.6:1 here,
+     6.1:1 on light), so a selection reads as the site turned inside out and both pass AA. */
+  --sel-bg: #f3f2ee;
+  --sel-ink: #c2410c;
   /* The lifted header's drop shadow. */
   --shadow: rgba(0, 0, 0, 0.55);
   --sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -51,6 +55,8 @@
     --muted: #63635e;
     --hi: #000000;
     --accent: #c2410c;
+    --sel-bg: #141414;
+    --sel-ink: #ff5f1f;
     --shadow: rgba(38, 34, 26, 0.14);
     color-scheme: light;
   }
@@ -63,6 +69,8 @@
   --muted: #63635e;
   --hi: #000000;
   --accent: #c2410c;
+  --sel-bg: #141414;
+  --sel-ink: #ff5f1f;
   --shadow: rgba(38, 34, 26, 0.14);
   color-scheme: light;
 }
@@ -111,8 +119,8 @@
   }
   /* Selected text turns --ink on an accent tint: AA on both themes, muted text included. */
   ::selection {
-    background: color-mix(in oklab, var(--accent) 30%, transparent);
-    color: var(--ink);
+    background: var(--sel-bg);
+    color: var(--sel-ink);
   }
   time {
     font-variant-numeric: tabular-nums;
@@ -256,13 +264,22 @@
   .top nav a[aria-current]::before {
     opacity: 1;
   }
+  /* Hover and keyboard focus answer in one colour: what you point at or tab to turns --accent, the colour of the
+     focus ring and the "you are here" dots. Hover only where there is a real pointer, so a tap on a phone never
+     leaves a link stuck orange. The logo is already orange and stays as it is. */
   .top nav a,
   .theme {
-    transition: opacity 200ms var(--ease);
+    transition: color 200ms var(--ease);
   }
-  .top a:hover,
-  .theme:hover {
-    opacity: 0.7;
+  @media (hover: hover) {
+    .top nav a:hover,
+    .theme:hover {
+      color: var(--accent);
+    }
+  }
+  .top nav a:focus-visible,
+  .theme:focus-visible {
+    color: var(--accent);
   }
 
   /* Theme switch: an icon button showing the theme it switches to (sun on dark, moon on light). Which icon shows
@@ -299,14 +316,21 @@
     display: block;
   }
 
-  /* Text links: the underline thickens on hover. */
+  /* Text links: on hover or keyboard focus the text and its underline turn orange and the underline thickens. */
   .ul {
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.22em;
-    transition: text-decoration-color 200ms var(--ease), text-decoration-thickness 200ms var(--ease);
+    transition: color 200ms var(--ease), text-decoration-thickness 200ms var(--ease);
   }
-  .ul:hover {
+  @media (hover: hover) {
+    .ul:hover {
+      color: var(--accent);
+      text-decoration-thickness: 2px;
+    }
+  }
+  .ul:focus-visible {
+    color: var(--accent);
     text-decoration-thickness: 2px;
   }
 

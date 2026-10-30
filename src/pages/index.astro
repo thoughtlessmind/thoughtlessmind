@@ -278,8 +278,10 @@ const mark =
       transition: background-position 1100ms var(--ease);
     }
   }
-  .intro:hover .hl {
-    background-position: 0 0;
+  @media (hover: hover) {
+    .intro:hover .hl {
+      background-position: 0 0;
+    }
   }
   .aside {
     max-width: 36em;
@@ -287,8 +289,17 @@ const mark =
     color: var(--muted);
     text-wrap: pretty;
   }
+  /* Its links sit in --ink on the muted line, which outranks the global link hover, so they repeat it here. */
   .aside a {
     color: var(--ink);
+  }
+  @media (hover: hover) {
+    .aside a:hover {
+      color: var(--accent);
+    }
+  }
+  .aside a:focus-visible {
+    color: var(--accent);
   }
   .art {
     position: absolute;
@@ -397,7 +408,12 @@ const mark =
     letter-spacing: -0.015em;
     transition: color 200ms var(--ease);
   }
-  .all:hover {
+  @media (hover: hover) {
+    .all:hover {
+      color: var(--accent);
+    }
+  }
+  .all:focus-visible {
     color: var(--accent);
   }
   .all span {
@@ -435,8 +451,13 @@ const mark =
     letter-spacing: -0.015em;
     transition: color 200ms var(--ease);
   }
-  /* Every clickable item's title turns orange while the pointer is anywhere on the item. */
-  .proj:hover .pn {
+  /* Every clickable item's title turns orange while the pointer is anywhere on the item, or it has keyboard focus. */
+  @media (hover: hover) {
+    .proj:hover .pn {
+      color: var(--accent);
+    }
+  }
+  .proj:focus-visible .pn {
     color: var(--accent);
   }
   .cs {
