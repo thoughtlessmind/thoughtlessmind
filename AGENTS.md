@@ -35,9 +35,10 @@ after a build.
 ## Layout of src
 
 ```
-assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG
-components/      Header (fixed, lifts on scroll), Footer, ThemeToggle, PostCard, Splash (canvas + styles for the
-                 splash screen), Doodle (draw-on, the planet, the loops)
+assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG;
+                 name.svg (the footer's hand-drawn "rajiv")
+components/      Header (fixed, lifts on scroll), Footer (the name draws, a blob reveals it), ThemeToggle, PostCard,
+                 Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet, the loops)
 content/writing/ the posts, <slug>.md (frontmatter in content.config.ts)
 layouts/         BaseLayout (head, pre-paint script, header, main, footer, splash)
 lib/writing.ts   getPosts, cover, reading time, date formats

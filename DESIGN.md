@@ -15,16 +15,16 @@ kinds of page: the home page, the writing list and a post. Product truth (who it
 | ---------- | ----------------------------- | ------------------------------------------------ |
 | `--t-xl`   | `clamp(40px, 5vw, 72px)`      | the headline                                     |
 | `--t-l`    | `clamp(28px, 2.4vw, 34px)`    | h2s                                              |
-| `--t-m`    | `clamp(20px, 1.95vw, 28px)`   | the name over the headline                       |
-| `--t-sm`   | `clamp(19px, 1.55vw, 22px)`   | project names, post titles, leads, deks, h2 in posts |
+| `--t-m`    | `clamp(20px, 1.95vw, 28px)`   | the name over the headline, post and project row titles |
+| `--t-sm`   | `clamp(19px, 1.55vw, 22px)`   | the landing paragraph, list titles, deks, h2 in posts |
 | `--t-s`    | `17px`                        | body (line-height 1.5; 1.7 in posts)             |
-| `--t-xs`   | `15px`                        | nav, fact labels, meta, dates, contents, footer  |
+| `--t-xs`   | `15px`                        | nav, meta, dates, contents, footer               |
 | `--t-code` | `13px`                        | the posts' code tokens                           |
 
   Display type: weight 500, leading 0.98 (1 on a phone), tracking -0.045em (-0.04em on a phone). A post's title is
   the one size between steps: `clamp(34px, 3.6vw, 54px)`, leading 1.04, tracking -0.035em, balanced. Code in posts is
   14px/1.6. The project stills are small illustrations with their own sizes inside, not text steps. The footer's
-  "rajiv" is sized to the content width, not a step.
+  "rajiv" is a drawing as wide as the content, not a step.
 
 ## §2 Colour
 
@@ -39,7 +39,7 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 | `--ink`    | `#ededea`               | `#151515`             | text                      |
 | `--muted`  | `#8f8f8a`               | `#63635e`             | secondary text            |
 | `--hi`     | `#ffffff`               | `#000000`             | emphasis                  |
-| `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark, the doodles' orange, the footer's "rajiv" (decorative) |
+| `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark, the doodles' orange, the footer name's revealed fill (decorative) |
 | `--accent` | `#ff5f1f`               | `#c2410c`             | text orange, focus ring, active dots, reading line |
 | `--shadow` | `rgba(0,0,0,.55)`       | `rgba(38,34,26,.14)`  | the lifted header's drop shadow, nothing else |
 
@@ -77,8 +77,11 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
   then stores `localStorage['theme']` and fires `theme:change` on window. One script drives every switch on a page.
 - **Footer** (`Footer.astro`, every page): one row of "Write to me at <email>", the socials (GitHub, LinkedIn, X,
   dev.to, Stack Overflow) and `llms.txt`, then "© 2026 Rajiv Kumar" (a column on a phone). Under it a giant lowercase
-  "rajiv" in `--logo`, weight 500, tracking -0.055em, as wide as the content (font-size `100cqw / 1.68`), cropped to
-  its top half by a 0.47em box at the bottom of the page.
+  "rajiv" as wide as the content, drawn like the doodle: Geist 500's outlines redrawn by hand (anchors nudged,
+  straight runs bowed, each line running a little past its start), traced to `src/assets/name.svg` (generator in the
+  local `docs/v4-research/art/vector/name.mjs`). Outline only, round-capped, in `--muted` at 70% (3.5 units, 7 at
+  720px and under, so about 2.5px at 1440 and 1.3px at 375). The viewBox crops it to its top half at the bottom of
+  the page. The `--logo` fill shows only where the cursor's blob is (§4).
 - **Text links** (`.ul`): 1px underline at 0.22em offset, 2px on hover. Focus ring: 2px `--accent`, offset 2px.
 - **Browser surfaces**: `::selection` is `--ink` on a 30% `--accent` tint, the caret is `--accent`, the scrollbar is
   thin in half-`--muted` on transparent, and every `time` uses tabular numbers.
@@ -90,7 +93,8 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
 
 One easing, `--ease` = `cubic-bezier(.2, .7, .2, 1)`. Every motion has a reduced-motion path, and idle means zero work:
 CSS animations and transitions only, state from IntersectionObserver, no scroll listeners. rAF runs only in the splash
-screen and for the planet's bands, and only while they are on screen.
+screen and for the planet's bands, and only while they are on screen, and for the footer name's blob while a mouse is
+on it.
 
 - **Content rise**: `.rise` elements carry `--d` (unitless ms): header 0 / 60 / 100 / 140 / 180; the name 120, the
   headline 190, the six fact rows 300 to 500. Only the splash animates them (800 ms, 20 px rise + opacity).
@@ -132,9 +136,15 @@ screen and for the planet's bands, and only while they are on screen.
   reduced motion). The root cross-fades in 200 ms on `--ease`; the header (`view-transition-name: top`) holds still; a
   post card's cover (`cover-<id>`) morphs into the post's cover and a writing list title (`title-<id>`) into the
   post's h1.
-- **Footer rise**: "rajiv" sits in a box 0.47em tall with overflow hidden; the first time a quarter of the footer is
-  on screen it rises from translateY(0.42em) to -0.11em (1.4 s), so its top half shows. Without JS or under reduced
-  motion it is risen from the start.
+- **Footer name**: the first time a quarter of the footer is on screen, "rajiv" draws itself like the doodle: each
+  outline from its start, left to right, 130 ms apart, each taking 350 ms plus its length (up to 1.1 s), about 2 s in
+  all. Without JS or under reduced motion it is drawn from the start.
+  - **Reveal**: a mouse over the name (`hover: hover` and `pointer: fine`, never touch) carries a liquid blob, the
+    clip path of a `--logo` copy of the same outlines under the pen, so the letters fill orange inside it and the
+    outline stays as it is. The blob (radius 140 units, about 100px at 1440) swells in on a bouncy spring, its centre
+    trails the cursor on a looser one, it stretches along its speed (up to 1.5x, thinner across) and its rim wobbles
+    (three sines turning at different rates). On leaving it shrinks away and rAF stops. Under reduced motion it is a
+    plain circle on the cursor, drawn on pointer moves only.
 - **Hover**: links thicken their underline, cards lighten to `--hi`, post covers scale to 1.03 (800 ms, not under
   reduced motion), writing list titles go to `--hi` with the `--accent` dot beside them.
 
@@ -162,42 +172,49 @@ the landing.
 
 ## §5 Home page (`pages/index.astro`)
 
-Quiet: about him in a few exact lines, what he works on now, what he wrote, the things he made. One drawing, one
+Quiet: about him in one paragraph, what he works on now, what he wrote, the things he made. One drawing, one
 moving moment (the doodle drawing itself), the header for getting around. The AI depth is shown, never titled: no
-"AI engineer" anywhere. Sections, in order:
+"AI engineer" anywhere. Copy is written the way the best engineers' own sites are (Lee Robinson, Mitchell Hashimoto,
+Hamel Husain): who and where, what now, one line of values, one human line. No labels, no adjectives about himself.
+Sections, in order:
 
 1. **Landing** (`#about`): `min-height: clamp(640px, 100vh, 960px)`, the text vertically centred. Left column
    `min(760px, 52vw)`: the name (`--t-m`, `--accent`), then the h1 "Software you don’t / have to think about."
-   (`--t-xl`, two authored lines). Under it a `dl` of six rows on `--line` hairlines, label (15px, `--muted`) in a
-   136px column: Based in New Delhi, India; Builds web and native apps, backends and infrastructure, since 2019;
-   Lately putting language models to work inside real products; Cares about software that’s fast to load, clear to use
-   and boring to run; Off screen astronomy, rockets, physics and sport; Elsewhere GitHub, LinkedIn, X, email. The right
+   (`--t-xl`, two authored lines). Under it one paragraph (`--t-sm`, `--ink`, max 31em): "I’m a software engineer in
+   New Delhi. I’ve been building web and native apps since 2019, along with the backends behind them and the
+   infrastructure they run on. These days most of my time goes to putting language models to work inside real
+   products. The goal hasn’t changed: software that’s fast to load, clear to use and boring to run." Then one muted
+   line, its links in `--ink`: "Off screen: astronomy, rockets, physics and sport. Say hello by email, or find me on
+   GitHub, LinkedIn and X." The right
    48% (to the screen edge) holds the doodle, centred with 96 / 56 / 40 px of air: a sketchbook line drawing of a
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local
    `docs/v4-research/art/vector/`; the planet is generated, see §4): strokes on `currentColor` (`--ink`), the flame and
    one hexagon in `--logo`, so it follows the theme. At 720px and under: the doodle in a 208px band under the header
-   (strokes 1.8x thicker), the text below, the headline balanced over three lines (no forced break), the fact labels
-   above their values.
-2. **Lately** (`#lately`): a grid on `--cols`. The first column holds the h2 "Lately" and the lead (`--t-sm`, `--ink`,
-   max 34em): "Most of my week now goes to putting language models to work inside real products. The model is rarely
-   the hard part. Everything around it is: the tools it can call, the data it may see, what happens when it is slow or
-   wrong, and how you know a change made it better rather than just different." From the axis, rows like the
-   landing's facts: Tools for agents, In production, Evals, Day to day, Coming soon (Orca, a macOS menu bar timer that
-   a person and an agent drive together over MCP; no link until it ships). Under 1000px the rows follow the lead.
-3. **Writing** (`#writing`): h2 with the note "Notes on models, the web and problems worth writing down.", the four
-   newest posts as `PostCard`s in two columns (one on a phone), then "All writing".
-4. **Projects** (`#projects`): h2 with the note "Tools I built for my own problems, then released." beside it. Two
-   columns of cards (one on a phone), each a link to the real thing: a 16:10 `--panel` still drawn in HTML (the
-   CSS-only tooltip with its attribute, the Diver outline on a mini page, the playlist total, the mark; scaled 1.35
-   when the card is wider than 420px), the name (`--t-sm`) with "Kind, year" on the right, and a muted summary.
+   (strokes 1.8x thicker), the text below, the headline balanced over three lines (no forced break).
+2. **Now** (`#now`, counted as About by the scroll spy): a grid on `--cols`. The h2 "Now" in the first column; from
+   the axis, on its baseline, the thesis (`--t-l`, 500, max 18em, balanced): "The model is rarely the hard part.
+   Everything around it is." Under it its four parts in two columns (one on a phone), each a 500 title and a muted
+   sentence on a `--line` hairline. The titles echo the posts: Tools, not paragraphs (MCP servers); A budget for every
+   call (features in production, time and cost limits, a fallback); Evals before vibes; Agents on the team. Last, a
+   muted line led by "Coming soon" in `--accent`: Orca, a macOS menu bar timer that you and an agent drive together
+   over MCP (no link until it ships). Under 1000px everything stacks under the h2.
+3. **Writing** (`#writing`): h2 with the note "Notes on putting models to work and building for the web.", the four
+   newest posts as `PostCard` rows, then "All writing".
+4. **Projects** (`#projects`): h2 with the note "Tools I built for my own problems, then released." beside it. One
+   row per project on a `--line` hairline, each a link to the real thing: the text in the first `--cols` column
+   ("Kind, year" in `--muted`, the name in `--t-m`, a muted two-sentence summary, then where the link goes, underlined:
+   View on npm, Chrome Web Store, Open the app, Read the source), and from the axis a 16:10 `--panel` still drawn in
+   HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini page, the playlist total, the mark;
+   scaled 1, 1.35 from 420px wide and 1.75 from 640px). On a phone the still sits above the text.
 
 Sections sit 136px apart (104px on a phone). The footer is the layout's (§3).
 
-**Post card** (`components/PostCard.astro`, used on the home page and under every post): a 16:10 `--panel` cover (the
-post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in `--logo`; a
-post with no cover yet shows its line of code there, in mono), the code the post is about in mono (`--t-code`,
-`--muted`, one line, ellipsised) with the month on the right, the title (`--t-sm`) and a muted summary.
+**Post row** (`components/PostCard.astro`, on the home page and under every post): on a `--line` hairline, the text on
+the left ("Oct 2026 · 4 min read" in `--muted`, the title in `--t-m`, max 24em, and the muted summary, max 38em) and a
+16:10 `--panel` cover on the right, `clamp(240px, 26vw, 360px)` wide: the post's line doodle, traced to SVG in
+`src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in `--logo`; a post with no cover yet shows its line of
+code there, in mono. On a phone the cover sits above the text.
 
 ## §6 Writing list (`pages/writing/index.astro`)
 
