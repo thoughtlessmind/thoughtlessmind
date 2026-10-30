@@ -92,7 +92,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     border-top: 1px solid var(--line);
   }
 
-  /* A row is one link. On hover the title brightens and the accent dot (the nav's "you are here") appears in the
+  /* A row is one link. On hover the title turns orange and the accent dot (the nav's "you are here") appears in the
      margin beside it. */
   .row {
     display: grid;
@@ -125,7 +125,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     opacity: 1;
   }
   .row:hover .rt {
-    color: var(--hi);
+    color: var(--accent);
   }
   .rd {
     max-width: 40em;

@@ -5,14 +5,15 @@ import PostCard from '../components/PostCard.astro';
 import { SITE } from '../consts';
 import { getPosts } from '../lib/writing';
 
-// Each project links to the real thing. The stills are drawn in HTML below (DESIGN.md §5).
+// Each project links to the real thing; `go` says where. The stills are drawn in HTML below (DESIGN.md §5).
 const work = [
   {
     id: 'tooltip',
     name: 'css-only-tooltip',
     kind: 'Library',
     year: 2021,
-    summary: 'A tooltip library with no JavaScript. Data attributes in, tooltip out.',
+    summary: 'A tooltip library with no JavaScript. Data attributes in, tooltip out, with light and dark themes and nothing to bundle.',
+    go: 'View on npm',
     href: 'https://www.npmjs.com/package/css-only-tooltip',
   },
   {
@@ -20,7 +21,8 @@ const work = [
     name: 'Diver',
     kind: 'Chrome extension',
     year: 2023,
-    summary: 'Outlines every element on a page, so you can see the layout you are debugging.',
+    summary: 'Outlines every element on a page in one click, so you can see the boxes, nesting and spacing of a layout you didn’t write.',
+    go: 'Chrome Web Store',
     href: 'https://chrome.google.com/webstore/detail/diver/onfnfdmnccoaknhjinebmlncejnofhoc',
   },
   {
@@ -28,7 +30,8 @@ const work = [
     name: 'YouTube Playlist Info',
     kind: 'Web app',
     year: 2020,
-    summary: 'Paste a playlist link and see how long it really takes to watch.',
+    summary: 'Paste a playlist link and see how long it really takes to watch, video by video, before you commit to it.',
+    go: 'Open the app',
     href: 'https://youtube-playlist-info.netlify.app',
   },
   {
@@ -36,19 +39,20 @@ const work = [
     name: 'rajiv.me',
     kind: 'This site',
     year: 2026,
-    summary: 'Static pages, one hand-built intro, and no work at all once it lands.',
+    summary: 'Static pages, one hand-built intro and zero work once it has loaded. Every post is also served as Markdown, so agents can read it too.',
+    go: 'Read the source',
     href: `${SITE.socials.github}/thoughtlessmind`,
   },
 ];
 // The four newest posts; /writing has the rest.
-const posts = (await getPosts()).slice(0, 4);
-// Lately's rows, under its lead: what the work is made of now (DESIGN.md §5).
-const lately = [
-  ['Tools for agents', 'MCP servers that give a model typed access to a product’s data and actions, with errors it can recover from.'],
-  ['In production', 'Chat, extraction and matching features that real people use, each with a budget for latency and cost, and a fallback.'],
-  ['Evals', 'Checks that run on every prompt and model change, so a regression fails a test before it reaches a user.'],
-  ['Day to day', 'Coding agents as part of the team, with skills, hooks and review loops that keep every diff small and verified.'],
-  ['Coming soon', 'Orca, a macOS menu bar timer that a person and an agent drive together over MCP.'],
+const all = await getPosts();
+const posts = all.slice(0, 4);
+// Now: one line on the problem, then the four parts of the answer (DESIGN.md §5).
+const now = [
+  ['Tools, not paragraphs', 'MCP servers that give a model typed access to a product’s real data and actions, with errors it can recover from.'],
+  ['A budget for every call', 'Chat, extraction and matching features real people use, each with a time and cost limit and a fallback that always answers.'],
+  ['Evals before vibes', 'Checks on every prompt and model change, so a regression fails a test before it reaches a user.'],
+  ['Agents on the team', 'Coding agents in my daily work, with skills, hooks and review loops that keep every diff small and verified.'],
 ];
 const mark =
   '<path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path>';
@@ -62,76 +66,85 @@ const mark =
         <span class="name rise" style="--d:120">{SITE.name}<span class="sr-only">,</span></span>
         <span class="st rise" style="--d:190">Software you don’t <br />have to think about.</span>
       </h1>
-      <dl class="facts rows">
-        <div class="rise" style="--d:300"><dt>Based in</dt><dd>{SITE.location}</dd></div>
-        <div class="rise" style="--d:340">
-          <dt>Builds</dt><dd>Web and native apps, backends and infrastructure, since {SITE.since}</dd>
-        </div>
-        <div class="rise" style="--d:380"><dt>Lately</dt><dd>Putting language models to work inside real products</dd></div>
-        <div class="rise" style="--d:420">
-          <dt>Cares about</dt><dd>Software that’s fast to load, clear to use and boring to run</dd>
-        </div>
-        <div class="rise" style="--d:460"><dt>Off screen</dt><dd>Astronomy, rockets, physics and sport</dd></div>
-        <div class="rise" style="--d:500">
-          <dt>Elsewhere</dt>
-          <dd>
-            <a class="ul" href={SITE.socials.github} rel="me">GitHub</a>, <a class="ul" href={SITE.socials.linkedin} rel="me"
-              >LinkedIn</a
-            >, <a class="ul" href={SITE.socials.x} rel="me">X</a>, <a class="ul" href={`mailto:${SITE.email}`}>email</a>
-          </dd>
-        </div>
-      </dl>
-    </div>
-  </section>
-
-  <section class="sec lately" id="lately" aria-labelledby="lately-h">
-    <div class="ly-head">
-      <h2 class="h2" id="lately-h">Lately</h2>
-      <p class="lead">
-        Most of my week now goes to putting language models to work inside real products. The model is rarely the hard
-        part. Everything around it is: the tools it can call, the data it may see, what happens when it is slow or wrong,
-        and how you know a change made it better rather than just different.
+      <div class="intro">
+        <p class="rise" style="--d:300">
+          I’m a software engineer. I’ve been building web and native apps since {SITE.since}, along with the backends
+          behind them and the infrastructure they run on.
+        </p>
+        <p class="rise" style="--d:340">
+          These days most of my time goes to putting language models to work inside real products. The goal hasn’t
+          changed: <span class="hl">software that’s fast to load, clear to use and boring to run</span>.
+        </p>
+      </div>
+      <p class="aside rise" style="--d:380">
+        Off screen: astronomy, rockets, physics and sport. Say hello by <a class="ul" href={`mailto:${SITE.email}`}
+          >email</a
+        >, or find me on <a class="ul" href={SITE.socials.github} rel="me">GitHub</a>, <a
+          class="ul"
+          href={SITE.socials.linkedin}
+          rel="me">LinkedIn</a
+        > and <a class="ul" href={SITE.socials.x} rel="me">X</a>.
       </p>
     </div>
-    <dl class="rows">
-      {
-        lately.map(([dt, dd]) => (
-          <div>
-            <dt>{dt}</dt>
-            <dd>{dd}</dd>
-          </div>
-        ))
-      }
-    </dl>
   </section>
 
-  <section class="sec" id="writing" aria-labelledby="writing-h">
+  <section class="sec now" id="now" aria-labelledby="now-h">
+    <h2 class="h2" id="now-h">Now</h2>
+    <div>
+      <p class="thesis">The model is rarely the hard part. Everything around it is.</p>
+      <ul class="parts">
+        {
+          now.map(([h, p]) => (
+            <li>
+              <h3>{h}</h3>
+              <p>{p}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="soon">
+        <span>Coming soon</span>Orca, a macOS menu bar timer that you and an agent drive together over MCP.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec split" id="writing" aria-labelledby="writing-h">
     <div class="head">
       <h2 class="h2" id="writing-h">Writing</h2>
-      <p class="note">Notes on models, the web and problems worth writing down.</p>
+      <p class="note">Notes on putting models to work and building for the web.</p>
     </div>
-    <ul class="cards">
-      {
-        posts.map((p) => (
-          <li>
-            <PostCard post={p} />
-          </li>
-        ))
-      }
-    </ul>
-    <a class="ul all" href="/writing">All writing</a>
+    <div class="list">
+      <ul>
+        {
+          posts.map((p) => (
+            <li>
+              <PostCard post={p} />
+            </li>
+          ))
+        }
+      </ul>
+      <a class="all" href="/writing">Read all {all.length} posts<span aria-hidden="true">→</span></a>
+    </div>
   </section>
 
-  <section class="sec" id="projects" aria-labelledby="projects-h">
+  <section class="sec split" id="projects" aria-labelledby="projects-h">
     <div class="head">
       <h2 class="h2" id="projects-h">Projects</h2>
       <p class="note">Tools I built for my own problems, then released.</p>
     </div>
-    <ul class="cards">
+    <ul class="list">
       {
         work.map((w) => (
           <li>
-            <a class="card" href={w.href} rel="noopener" target="_blank">
+            <a class="proj" href={w.href} rel="noopener" target="_blank">
+              <span class="pj">
+                <span class="pm">
+                  {w.kind}, {w.year}
+                </span>
+                <span class="pn">{w.name}</span>
+                <span class="cs">{w.summary}</span>
+                <span class="go">{w.go}</span>
+              </span>
               <span class="still" aria-hidden="true">
                 <span class="st-in">
                   {w.id === 'tooltip' && (
@@ -147,12 +160,12 @@ const mark =
                       <span class="dv-top">
                         <span>rajiv.me</span>
                         <span class="dv-nav">
-                          <span>Work</span>
+                          <span>About</span>
                           <span>Writing</span>
                         </span>
                       </span>
                       <span class="dv-h">Software you don’t have to think about.</span>
-                      <span>A software engineer in New Delhi.</span>
+                      <span>I’m a software engineer.</span>
                     </span>
                   )}
                   {w.id === 'yt' && (
@@ -172,13 +185,6 @@ const mark =
                   {w.id === 'site' && <svg class="mk" viewBox="-2.01 0 30 30" fill="#ff5f1f" set:html={mark}></svg>}
                 </span>
               </span>
-              <span class="cn">
-                {w.name}
-                <span class="cy">
-                  {w.kind}, {w.year}
-                </span>
-              </span>
-              <span class="cs">{w.summary}</span>
             </a>
           </li>
         ))
@@ -188,7 +194,7 @@ const mark =
 </BaseLayout>
 
 <script>
-  // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Lately counts as
+  // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Now counts as
   // About and the footer as Projects, so a jump to the end still lands there.
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
   const foot = document.querySelector('footer');
@@ -196,7 +202,7 @@ const mark =
     (entries) =>
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
-        const id = e.target === foot ? 'projects' : e.target.id === 'lately' ? 'about' : e.target.id;
+        const id = e.target === foot ? 'projects' : e.target.id === 'now' ? 'about' : e.target.id;
         links.forEach((a) => {
           const on = a.dataset.spy === id;
           a.classList.toggle('on', on);
@@ -206,7 +212,7 @@ const mark =
       }),
     { rootMargin: '-45% 0px -54% 0px' },
   );
-  ['about', 'lately', 'writing', 'projects'].forEach((id) => {
+  ['about', 'now', 'writing', 'projects'].forEach((id) => {
     const s = document.getElementById(id);
     if (s) spy.observe(s);
   });
@@ -247,25 +253,42 @@ const mark =
     line-height: 0.98;
     letter-spacing: -0.045em;
   }
-  .facts {
-    max-width: 580px;
-    margin-top: 56px;
-  }
-  /* Label and value rows on hairlines: the landing's facts and Lately's. */
-  .rows > div {
-    display: grid;
-    grid-template-columns: 136px minmax(0, 1fr);
-    column-gap: 24px;
-    align-items: baseline;
-    padding-block: 12px;
-    border-top: 1px solid var(--line);
-  }
-  dt {
-    font-size: var(--t-xs);
-    color: var(--muted);
-  }
-  dd {
+  /* About in two short paragraphs, then a muted line with the person and the ways to reach him. */
+  .intro {
+    max-width: 31em;
+    margin-top: 44px;
+    font-size: var(--t-sm);
+    line-height: 1.45;
+    letter-spacing: -0.01em;
     text-wrap: pretty;
+  }
+  .intro p + p {
+    margin-top: 16px;
+  }
+  /* The values phrase reads as plain text until the pointer is on the paragraphs. Then the orange flows through it
+     left to right, line after line (the gradient spans the phrase as one strip), and ebbs back on leave. */
+  .hl {
+    background: linear-gradient(90deg, var(--accent) 40%, var(--ink) 60%) 100% 0 / 250% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hl {
+      transition: background-position 1100ms var(--ease);
+    }
+  }
+  .intro:hover .hl {
+    background-position: 0 0;
+  }
+  .aside {
+    max-width: 36em;
+    margin-top: 20px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .aside a {
+    color: var(--ink);
   }
   .art {
     position: absolute;
@@ -278,39 +301,77 @@ const mark =
   .sec {
     padding-top: 136px;
   }
-  /* Lately: the h2 and the lead in the first column, the rows from the axis, so they line up with the header nav. */
-  .lately {
+  /* Now: the h2 in the first column; from the axis (in line with the header nav) the thesis, its four parts in two
+     columns on hairlines, then what ships next. */
+  .now {
+    display: grid;
+    grid-template-columns: var(--cols);
+    align-items: baseline;
+  }
+  .thesis {
+    max-width: 18em;
+    font-size: var(--t-l);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .parts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px;
+    margin-top: 48px;
+  }
+  .parts li {
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  h3 {
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .parts p {
+    margin-top: 6px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .soon {
+    margin-top: 48px;
+    color: var(--muted);
+  }
+  .soon span {
+    margin-right: 12px;
+    color: var(--accent);
+  }
+  @media (max-width: 999px) {
+    .now {
+      display: block;
+    }
+    .thesis {
+      margin-top: 24px;
+    }
+  }
+  /* Writing and Projects: the h2 and its note in the first column, sticky, the rows from the axis like Now's. */
+  .split {
     display: grid;
     grid-template-columns: var(--cols);
     align-items: start;
   }
-  .ly-head {
+  .split .head {
+    position: sticky;
+    top: calc(var(--head-h) + 40px);
     padding-right: clamp(32px, 4.4vw, 72px);
   }
-  .lead {
-    max-width: 34em;
-    margin-top: 24px;
-    font-size: var(--t-sm);
-    line-height: 1.4;
-    letter-spacing: -0.01em;
-    text-wrap: pretty;
-  }
-  .lately .rows {
-    margin-top: 10px;
-  }
   @media (max-width: 999px) {
-    .lately {
+    .split {
       display: block;
     }
-    .lately .rows {
-      margin-top: 40px;
+    .split .head {
+      position: static;
     }
-  }
-  .head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px 32px;
+    .list {
+      margin-top: 32px;
+    }
   }
   .h2 {
     font-size: var(--t-l);
@@ -319,21 +380,81 @@ const mark =
     letter-spacing: -0.02em;
   }
   .note {
+    max-width: 22em;
+    margin-top: 12px;
     color: var(--muted);
+    text-wrap: pretty;
   }
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 56px 40px;
-    margin-top: 44px;
-  }
-  /* Project cards (post cards are PostCard's): the still, name with kind and year, then the summary. */
-  .card {
-    display: block;
+  /* After the post rows, the way to the rest: a row of its own, the arrow in orange. */
+  .all {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-block: 22px;
+    border-block: 1px solid var(--line);
+    font-size: var(--t-sm);
+    font-weight: 500;
+    letter-spacing: -0.015em;
     transition: color 200ms var(--ease);
   }
-  .card:hover {
-    color: var(--hi);
+  .all:hover {
+    color: var(--accent);
+  }
+  .all span {
+    color: var(--accent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .all span {
+      transition: translate 200ms var(--ease);
+    }
+    .all:hover span {
+      translate: 6px 0;
+    }
+  }
+  /* A project row: the text on the left, the still on the right with the larger share. */
+  .proj {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 32px;
+    align-items: start;
+    padding-block: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .pm {
+    display: block;
+    font-size: var(--t-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .pn {
+    display: block;
+    margin-top: 10px;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    transition: color 200ms var(--ease);
+  }
+  /* Every clickable item's title turns orange while the pointer is anywhere on the item. */
+  .proj:hover .pn {
+    color: var(--accent);
+  }
+  .cs {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .go {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: var(--t-xs);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+  .proj:hover .go {
+    text-decoration-thickness: 2px;
   }
   .still {
     display: grid;
@@ -342,32 +463,8 @@ const mark =
     overflow: hidden;
     background: var(--panel);
   }
-  .cn {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    margin-top: 18px;
-    font-size: var(--t-sm);
-    font-weight: 500;
-    letter-spacing: -0.015em;
-  }
-  .cy {
-    flex: none;
-    font-size: var(--t-xs);
-    font-weight: 400;
-    letter-spacing: 0;
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .cs {
-    display: block;
-    margin-top: 4px;
-    color: var(--muted);
-  }
 
-  /* Stills: each project drawn in HTML, a small illustration set at its own sizes and scaled up 1.35 where the
-     card is wide enough. */
+  /* Stills: each project drawn in HTML, a small illustration set at its own sizes and scaled to the still's width. */
   .still {
     container-type: inline-size;
   }
@@ -479,12 +576,8 @@ const mark =
     height: 72px;
     fill: var(--logo);
   }
-  .all {
-    display: inline-block;
-    margin-top: 40px;
-  }
 
-  /* Phone: the doodle in a band under the header, the text under it; Lately's rows stack under its h2. */
+  /* Phone: the doodle in a band under the header, the text under it; one column everywhere, stills above their text. */
   @media (max-width: 720px) {
     .hero {
       display: block;
@@ -513,27 +606,27 @@ const mark =
     .st br {
       display: none;
     }
-    .facts {
-      margin-top: 36px;
-    }
-    .rows > div {
-      grid-template-columns: minmax(0, 1fr);
-      row-gap: 2px;
-      padding-block: 10px;
+    .intro {
+      margin-top: 28px;
     }
     .sec {
       padding-top: 104px;
     }
-    .lead {
-      margin-top: 20px;
-    }
-    .lately .rows {
-      margin-top: 32px;
-    }
-    .cards {
+    .parts {
       grid-template-columns: minmax(0, 1fr);
-      gap: 44px;
-      margin-top: 32px;
+      gap: 28px;
+      margin-top: 36px;
+    }
+    .soon {
+      margin-top: 36px;
+    }
+    .proj {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+      padding-block: 28px;
+    }
+    .still {
+      order: -1;
     }
   }
 </style>

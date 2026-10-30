@@ -5,7 +5,7 @@ export const SITE = {
   description:
     'Software engineer in New Delhi. I build web and native apps, their backends and infrastructure, and the tools that let language models work inside them. Shipping since 2019.',
   url: 'https://thoughtlessmind.dev',
-  email: 'me.rajiv21@gmail.com',
+  email: 'hello@rajiv.me',
   role: 'Senior Frontend Engineer',
   previousCompany: 'Influence',
   since: 2019,

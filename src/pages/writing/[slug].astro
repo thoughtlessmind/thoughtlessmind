@@ -129,7 +129,7 @@ const arrow = inner(arrowLeft);
           <h2 id="more-h">More writing</h2>
           <a class="ul" href="/writing">All writing</a>
         </div>
-        <div class="cards">
+        <div class="rows">
           {more.map((p) => (
             <PostCard post={p} />
           ))}
@@ -368,11 +368,24 @@ const arrow = inner(arrowLeft);
     line-height: 1.15;
     letter-spacing: -0.02em;
   }
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 56px 40px;
-    margin-top: 44px;
+  .rows {
+    margin-top: 32px;
+  }
+  /* From 1000px, like the home page's Writing: the heading and link in the first column, the rows from the axis. */
+  @media (min-width: 1000px) {
+    .more {
+      display: grid;
+      grid-template-columns: var(--cols);
+      align-items: start;
+    }
+    .more-head {
+      display: grid;
+      justify-items: start;
+      gap: 12px;
+    }
+    .rows {
+      margin-top: 0;
+    }
   }
 
   /* One column: back link, title, dek, meta line, cover, body, then the contents and Markdown controls. */

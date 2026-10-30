@@ -180,12 +180,16 @@ Sections, in order:
 
 1. **Landing** (`#about`): `min-height: clamp(640px, 100vh, 960px)`, the text vertically centred. Left column
    `min(760px, 52vw)`: the name (`--t-m`, `--accent`), then the h1 "Software you don’t / have to think about."
-   (`--t-xl`, two authored lines). Under it one paragraph (`--t-sm`, `--ink`, max 31em): "I’m a software engineer in
-   New Delhi. I’ve been building web and native apps since 2019, along with the backends behind them and the
-   infrastructure they run on. These days most of my time goes to putting language models to work inside real
-   products. The goal hasn’t changed: software that’s fast to load, clear to use and boring to run." Then one muted
-   line, its links in `--ink`: "Off screen: astronomy, rockets, physics and sport. Say hello by email, or find me on
-   GitHub, LinkedIn and X." The right
+   (`--t-xl`, two authored lines). Under it two short paragraphs (`--t-sm`, `--ink`, max 31em, 16px apart): "I’m a
+   software engineer. I’ve been building web and native apps since 2019, along with the backends behind them and the
+   infrastructure they run on." / "These days most of my time goes to putting language models to work inside real
+   products. The goal hasn’t changed: software that’s fast to load, clear to use and boring to run." The values phrase
+   (`.hl`) looks like the rest until the pointer is anywhere on the two paragraphs; then `--accent` flows through it
+   left to right, line after line, and ebbs back on leave. It is text clipped to a `--accent` to `--ink` gradient
+   (soft 40% to 60% edge, 250% wide, one strip across the line break) whose position slides 100% to 0 over 1100ms
+   `--ease`. Reduced motion: the colour switches at once. Touch shows plain text. Then one muted line, its links in
+   `--ink`: "Off screen: astronomy, rockets, physics and sport. Say hello by email, or find me on GitHub, LinkedIn and
+   X." The right
    48% (to the screen edge) holds the doodle, centred with 96 / 56 / 40 px of air: a sketchbook line drawing of a
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local
@@ -199,22 +203,31 @@ Sections, in order:
    call (features in production, time and cost limits, a fallback); Evals before vibes; Agents on the team. Last, a
    muted line led by "Coming soon" in `--accent`: Orca, a macOS menu bar timer that you and an agent drive together
    over MCP (no link until it ships). Under 1000px everything stacks under the h2.
-3. **Writing** (`#writing`): h2 with the note "Notes on putting models to work and building for the web.", the four
-   newest posts as `PostCard` rows, then "All writing".
-4. **Projects** (`#projects`): h2 with the note "Tools I built for my own problems, then released." beside it. One
-   row per project on a `--line` hairline, each a link to the real thing: the text in the first `--cols` column
-   ("Kind, year" in `--muted`, the name in `--t-m`, a muted two-sentence summary, then where the link goes, underlined:
-   View on npm, Chrome Web Store, Open the app, Read the source), and from the axis a 16:10 `--panel` still drawn in
-   HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini page, the playlist total, the mark;
-   scaled 1, 1.35 from 420px wide and 1.75 from 640px). On a phone the still sits above the text.
+3. **Writing** (`#writing`) and 4. **Projects** (`#projects`) share one grid on `--cols`: the h2 and its note (muted,
+   max 22em, under it) in the first column, sticky at `--head-h` + 40px, the rows from the axis. Under 1000px the head
+   is static and the rows follow it.
+   - Writing: the note "Notes on putting models to work and building for the web.", the four newest posts as
+     `PostCard` rows, then a row of its own between hairlines: "Read all 12 posts" (`--t-sm`, 500, the live count)
+     with a `--accent` arrow at the far end that slides 6px on hover (reduced motion: it stays); the label turns
+     `--accent` too.
+   - Every clickable item (post rows, project rows, the /writing list) turns its title `--accent` over 200ms while
+     the pointer is anywhere on the item, cover and still included. Nothing else in the row changes colour.
+   - Projects: the note "Tools I built for my own problems, then released." One row per project on a `--line`
+     hairline (28px padding, about 340px tall at 1440, so two fit on a screen), each a link to the real thing, split
+     2fr / 3fr with a 32px gap: the text ("Kind, year" in `--muted`, the name in `--t-sm`, a muted two-sentence
+     summary, then where the link goes, underlined: View on npm, Chrome Web Store, Open the app, Read the source) and
+     a 16:10 `--panel` still drawn in HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini copy
+     of this page, the playlist total, the mark; scaled 1.35 when wider than 420px). On a phone the still sits above
+     the text.
 
 Sections sit 136px apart (104px on a phone). The footer is the layout's (§3).
 
-**Post row** (`components/PostCard.astro`, on the home page and under every post): on a `--line` hairline, the text on
-the left ("Oct 2026 · 4 min read" in `--muted`, the title in `--t-m`, max 24em, and the muted summary, max 38em) and a
-16:10 `--panel` cover on the right, `clamp(240px, 26vw, 360px)` wide: the post's line doodle, traced to SVG in
-`src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in `--logo`; a post with no cover yet shows its line of
-code there, in mono. On a phone the cover sits above the text.
+**Post row** (`components/PostCard.astro`, on the home page and in "More writing", which uses the same split from
+1000px): on a `--line` hairline with 24px padding, the text on the left ("Oct 2026 · 4 min read" in `--muted`, the
+title in `--t-sm`, the muted summary, max 38em) and, 32px away, a 16:10 `--panel` cover `clamp(152px, 14vw, 208px)`
+wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in
+`--logo`, scaled 1.25 so the drawing (at most 70% of its frame) keeps only a thin margin; a post with no cover yet
+shows its line of code there, in mono at `--t-code`. On a phone the cover sits above the text.
 
 ## §6 Writing list (`pages/writing/index.astro`)
 

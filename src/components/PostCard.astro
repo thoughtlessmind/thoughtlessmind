@@ -1,8 +1,8 @@
 ---
-// One post as a card: the doodle cover (or its line of code, set large, when it has no cover yet), the code the
-// post is about and its date, then the title and summary. Used by the home page, /writing and a post's "More
-// writing". The cover carries a view-transition-name, so it morphs into the post's own cover on navigation.
-import { cover, iso, month, type Post } from '../lib/writing';
+// One post as a row: the date and reading time, the title and summary on the left, the doodle cover on the right (or
+// its line of code, set large, when it has no cover yet). Used by the home page and a post's "More writing". The
+// cover carries a view-transition-name, so it morphs into the post's own cover on navigation.
+import { cover, iso, minutes, month, type Post } from '../lib/writing';
 
 interface Props {
   post: Post;
@@ -13,6 +13,11 @@ const art = cover(post.id);
 ---
 
 <a class="post" href={`/writing/${post.id}`}>
+  <span class="pc">
+    <span class="pm"><time datetime={iso(date)}>{month(date)}</time> · {minutes(post.body)} min read</span>
+    <span class="pt">{title}</span>
+    <span class="cs">{description}</span>
+  </span>
   {
     art ? (
       <span class="cover" style={`view-transition-name: cover-${post.id}`} aria-hidden="true" set:html={art} />
@@ -22,21 +27,42 @@ const art = cover(post.id);
       </span>
     )
   }
-  <span class="pm">
-    <code class="tok" aria-hidden="true">{code}</code>
-    <time datetime={iso(date)}>{month(date)}</time>
-  </span>
-  <span class="pt">{title}</span>
-  <span class="cs">{description}</span>
 </a>
 
 <style>
   .post {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(152px, 14vw, 208px);
+    gap: 32px;
+    align-items: start;
+    padding-block: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .pm {
     display: block;
+    font-size: var(--t-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .pt {
+    display: block;
+    margin-top: 8px;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
     transition: color 200ms var(--ease);
   }
-  .post:hover {
-    color: var(--hi);
+  .post:hover .pt {
+    color: var(--accent);
+  }
+  .cs {
+    display: block;
+    max-width: 38em;
+    margin-top: 8px;
+    color: var(--muted);
+    text-wrap: pretty;
   }
   .cover {
     display: grid;
@@ -45,18 +71,20 @@ const art = cover(post.id);
     overflow: hidden;
     background: var(--panel);
   }
+  /* The drawings fill at most 70% of their frame; at 1.25 they keep a thin margin in the small cover. */
   .cover :global(svg) {
     width: 100%;
     height: 100%;
+    scale: 1.25;
     color: var(--ink);
   }
   .cover :global(.o) {
     fill: var(--logo);
   }
   .cover-code code {
-    max-width: 78%;
+    max-width: 86%;
     font-family: var(--mono);
-    font-size: clamp(13px, 1.3vw, 16px);
+    font-size: var(--t-code);
     line-height: 1.5;
     color: var(--ink);
     text-align: center;
@@ -73,41 +101,15 @@ const art = cover(post.id);
       transform: scale(1.03);
     }
   }
-  .pm {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    margin-top: 18px;
-  }
-  .tok {
-    min-width: 0;
-    overflow: hidden;
-    font-family: var(--mono);
-    font-size: var(--t-code);
-    color: var(--muted);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  time {
-    flex: none;
-    font-size: var(--t-xs);
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .pt {
-    display: block;
-    margin-top: 8px;
-    font-size: var(--t-sm);
-    font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.015em;
-    text-wrap: balance;
-  }
-  .cs {
-    display: block;
-    margin-top: 6px;
-    color: var(--muted);
-    text-wrap: pretty;
+  /* Phone: the cover on top, the text under it. */
+  @media (max-width: 720px) {
+    .post {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+      padding-block: 28px;
+    }
+    .cover {
+      order: -1;
+    }
   }
 </style>
