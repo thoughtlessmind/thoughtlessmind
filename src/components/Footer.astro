@@ -1,0 +1,109 @@
+---
+import { SITE } from '../consts';
+
+const socials = [
+  ['GitHub', SITE.socials.github],
+  ['LinkedIn', SITE.socials.linkedin],
+  ['X', SITE.socials.x],
+  ['dev.to', SITE.socials.devto],
+  ['Stack Overflow', SITE.socials.stackoverflow],
+];
+// `data-foot` is also the home page's scroll spy hook (the footer counts as Projects there).
+---
+
+<footer class="foot wrap" data-foot>
+  <div class="foot-row">
+    <p class="mail">Write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+    <ul class="soc">
+      {
+        socials.map(([label, href]) => (
+          <li>
+            <a class="ul" href={href} rel="noopener me" target="_blank">
+              {label}
+            </a>
+          </li>
+        ))
+      }
+      <li><a class="ul" href="/llms.txt">llms.txt</a></li>
+    </ul>
+    <p>© {new Date().getFullYear()} {SITE.name}</p>
+  </div>
+  <div class="word" aria-hidden="true"><span>rajiv</span></div>
+</footer>
+
+<script>
+  // The name rises once, the first time a quarter of the footer is on screen.
+  const foot = document.querySelector<HTMLElement>('[data-foot]');
+  if (foot)
+    new IntersectionObserver(
+      ([e], io) => {
+        if (!e.isIntersecting) return;
+        foot.classList.add('in');
+        io.disconnect();
+      },
+      { threshold: 0.25 },
+    ).observe(foot);
+</script>
+
+<style>
+  /* The address, socials and copyright, then "rajiv" across the content width, half risen. */
+  .foot {
+    container-type: inline-size;
+    overflow: hidden;
+    padding-top: 168px;
+  }
+  .foot-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px 40px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .mail {
+    font-size: var(--t-s);
+    color: var(--ink);
+  }
+  .soc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+  .word {
+    height: 0.47em;
+    margin-top: 72px;
+    overflow: hidden;
+    font-size: calc(100cqw / 1.68);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.055em;
+    color: var(--logo);
+  }
+  .word span {
+    display: block;
+    margin-left: -0.065em;
+    transform: translateY(-0.11em);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .word span {
+      transform: translateY(0.42em);
+      transition: transform 1.4s var(--ease);
+    }
+    :global(html.js) .foot.in .word span {
+      transform: translateY(-0.11em);
+    }
+  }
+  @media (max-width: 720px) {
+    .foot {
+      padding-top: 112px;
+    }
+    .foot-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .word {
+      margin-top: 48px;
+    }
+  }
+</style>

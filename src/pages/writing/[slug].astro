@@ -1,0 +1,441 @@
+---
+import { render } from 'astro:content';
+// Phosphor regular, inlined at build time as ThemeToggle does.
+import arrowLeft from '@phosphor-icons/core/assets/regular/arrow-left.svg?raw';
+import copyIcon from '@phosphor-icons/core/assets/regular/copy.svg?raw';
+import checkIcon from '@phosphor-icons/core/assets/regular/check.svg?raw';
+import mdIcon from '@phosphor-icons/core/assets/regular/markdown-logo.svg?raw';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { cover, day, getPosts, iso, minutes, type Post } from '../../lib/writing';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post, more: posts.filter((p) => p.id !== post.id).slice(0, 3) },
+  }));
+}
+
+interface Props {
+  post: Post;
+  more: Post[];
+}
+const { post, more } = Astro.props;
+const { title, description, date, updated, canonical } = post.data;
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth === 2);
+const art = cover(post.id);
+const read = `${minutes(post.body)} min read`;
+const md = `/writing/${post.id}.md`;
+const inner = (svg: string) => svg.replace(/^<svg[^>]*>|<\/svg>$/g, '');
+const arrow = inner(arrowLeft);
+---
+
+<BaseLayout title={`${title}, Rajiv Kumar`} description={description} current="writing" progress>
+  {/* Desktop: the aside (back, meta, contents, Markdown) sticks in the first column and the article runs from the
+      axis. Under 1000px the article's own back link and meta line show instead, and the contents and Markdown
+      controls follow the article, so the reading order is the visual order in both. */}
+  <div class="post">
+    <aside class="side" aria-label="About this post">
+      <a class="back" href="/writing">
+        <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={arrow} />Writing
+      </a>
+      <p class="meta">
+        <time datetime={iso(date)}>{day(date)}</time>
+        {updated && <span>Updated <time datetime={iso(updated)}>{day(updated)}</time></span>}
+        <span>{read}</span>
+      </p>
+      {
+        toc.length > 1 && (
+          <nav class="toc" aria-labelledby="toc-side">
+            <p id="toc-side">On this page</p>
+            <ol>
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+      <div class="tools">
+        <button class="copy" type="button" data-copy={md}>
+          <svg class="i i-copy" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(copyIcon)} />
+          <svg class="i i-done" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(checkIcon)} />
+          <span aria-live="polite">Copy as Markdown</span>
+        </button>
+        <a class="md" href={md}>
+          <svg class="i" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(mdIcon)} />
+          <span class="ul">View as Markdown</span>
+        </a>
+      </div>
+    </aside>
+
+    <article class="body">
+      <a class="back m" href="/writing">
+        <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={arrow} />Writing
+      </a>
+      <h1 style={`view-transition-name: title-${post.id}`}>{title}</h1>
+      <p class="dek">{description}</p>
+      <p class="meta m">
+        <time datetime={iso(date)}>{day(date)}</time> · {read}{updated && <> · Updated <time datetime={iso(updated)}>{day(updated)}</time></>}
+      </p>
+      {art && <div class="cover" style={`view-transition-name: cover-${post.id}`} aria-hidden="true" set:html={art} />}
+      <div class="prose"><Content /></div>
+      {
+        canonical && (
+          <p class="canon">
+            First published on <a class="ul" href={canonical}>{new URL(canonical).hostname.replace(/^www\./, '')}</a>.
+          </p>
+        )
+      }
+      <div class="end">
+        {
+          toc.length > 1 && (
+            <nav class="toc" aria-labelledby="toc-end">
+              <p id="toc-end">On this page</p>
+              <ol>
+                {toc.map((h) => (
+                  <li>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+        <div class="tools">
+          <button class="copy" type="button" data-copy={md}>
+            <svg class="i i-copy" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(copyIcon)} />
+            <svg class="i i-done" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(checkIcon)} />
+            <span aria-live="polite">Copy as Markdown</span>
+          </button>
+          <a class="md" href={md}>
+            <svg class="i" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(mdIcon)} />
+            <span class="ul">View as Markdown</span>
+          </a>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  {
+    more.length > 0 && (
+      <section class="more" aria-labelledby="more-h">
+        <div class="more-head">
+          <h2 id="more-h">More writing</h2>
+          <a class="ul" href="/writing">All writing</a>
+        </div>
+        <div class="cards">
+          {more.map((p) => (
+            <PostCard post={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<script>
+  // Contents scroll spy: the active heading is the last one above 30% of the viewport. The observer's root runs from
+  // far above the page down to that line, so a heading flips exactly when it crosses it, however far a jump goes,
+  // and a still page does no work.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+  const heads = [...new Set(links.map((a) => decodeURIComponent(a.hash.slice(1))))]
+    .map((id) => document.getElementById(id))
+    .filter((h) => h !== null);
+  const spy = () => {
+    let on = '';
+    for (const h of heads) if (h.getBoundingClientRect().top < innerHeight * 0.3) on = h.id;
+    for (const a of links) {
+      if (on && decodeURIComponent(a.hash.slice(1)) === on) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    }
+  };
+  if (heads.length) {
+    const io = new IntersectionObserver(spy, { rootMargin: '100000px 0px -70% 0px' });
+    heads.forEach((h) => io.observe(h));
+  }
+
+  // Copy as Markdown: fetch the post's .md and put it on the clipboard. Safari only allows a clipboard write inside
+  // the click itself, so where it can, the fetch goes in as a pending ClipboardItem rather than being awaited first.
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+    const label = btn.querySelector('span')!;
+    let reset = 0;
+    btn.addEventListener('click', async () => {
+      const text = () => fetch(btn.dataset.copy!).then((r) => (r.ok ? r.text() : Promise.reject(r.status)));
+      try {
+        if ('ClipboardItem' in window) {
+          const blob = text().then((s) => new Blob([s], { type: 'text/plain' }));
+          await navigator.clipboard.write([new ClipboardItem({ 'text/plain': blob })]);
+        } else {
+          await navigator.clipboard.writeText(await text());
+        }
+        label.textContent = 'Copied';
+        btn.classList.add('done');
+      } catch {
+        label.textContent = 'Copy failed';
+      }
+      clearTimeout(reset);
+      reset = window.setTimeout(() => {
+        label.textContent = 'Copy as Markdown';
+        btn.classList.remove('done');
+      }, 2000);
+    });
+  }
+</script>
+
+<style>
+  .post {
+    display: grid;
+    grid-template-columns: var(--cols);
+    padding-top: calc(var(--head-h) + 72px);
+  }
+  .side {
+    position: sticky;
+    top: calc(var(--head-h) + 40px);
+    align-self: start;
+    padding-right: 48px;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--t-xs);
+    transition: opacity 200ms var(--ease);
+  }
+  .back:hover {
+    opacity: 0.7;
+  }
+  .back svg {
+    width: 16px;
+    height: 16px;
+  }
+  .meta {
+    display: grid;
+    gap: 2px;
+    margin-top: 28px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Contents: the active heading is --ink with the nav's 6px accent dot before it. */
+  .toc {
+    margin-top: 40px;
+    font-size: var(--t-xs);
+  }
+  .toc p {
+    color: var(--muted);
+  }
+  .toc ol {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .toc a {
+    display: grid;
+    grid-template-columns: 6px minmax(0, 1fr);
+    column-gap: 12px;
+    color: var(--muted);
+    text-wrap: pretty;
+    transition: color 200ms var(--ease);
+  }
+  .toc a::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    margin-top: calc(0.75em - 3px);
+    border-radius: 50%;
+    transition: background-color 200ms var(--ease);
+  }
+  .toc a:hover,
+  .toc a[aria-current] {
+    color: var(--ink);
+  }
+  .toc a[aria-current]::before {
+    background: var(--accent);
+  }
+
+  .tools {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 40px;
+    font-size: var(--t-xs);
+  }
+  .copy {
+    appearance: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+    transition: opacity 200ms var(--ease);
+  }
+  .copy:hover {
+    opacity: 0.7;
+  }
+  /* Both Markdown controls lead with a 16px Phosphor icon; the copy icon turns into an accent tick once copied. */
+  .copy,
+  .md {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .i {
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+  .copy .i-done,
+  .copy.done .i-copy {
+    display: none;
+  }
+  .copy.done .i-done {
+    display: block;
+    color: var(--accent);
+  }
+  .md:hover .ul {
+    text-decoration-thickness: 2px;
+  }
+
+  h1 {
+    font-size: clamp(34px, 3.6vw, 54px);
+    font-weight: 500;
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .dek {
+    max-width: 34em;
+    margin-top: 20px;
+    font-size: var(--t-sm);
+    line-height: 1.4;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .cover {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    margin-top: 48px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .cover :global(svg) {
+    width: 100%;
+    height: 100%;
+    color: var(--ink);
+  }
+  .cover :global(.o) {
+    fill: var(--logo);
+  }
+  .prose {
+    margin-top: 56px;
+  }
+  .canon {
+    max-width: 68ch;
+    margin-top: 56px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .m,
+  .end {
+    display: none;
+  }
+
+  /* More writing spans the full width under a hairline. */
+  .more {
+    margin-top: 136px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+  }
+  .more-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .more-head h2 {
+    font-size: var(--t-l);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 56px 40px;
+    margin-top: 44px;
+  }
+
+  /* One column: back link, title, dek, meta line, cover, body, then the contents and Markdown controls. */
+  @media (max-width: 999px) {
+    .post {
+      display: block;
+    }
+    .side {
+      display: none;
+    }
+    .back.m {
+      display: flex;
+      width: fit-content;
+      margin-bottom: 32px;
+    }
+    .meta.m {
+      display: block;
+      margin-top: 16px;
+    }
+    .end {
+      display: block;
+      margin-top: 56px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+    .end .toc {
+      margin-top: 24px;
+    }
+    .end .tools {
+      margin-top: 32px;
+    }
+  }
+  @media (max-width: 1099px) {
+    .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 720px) {
+    .post {
+      padding-top: calc(var(--head-h) + 40px);
+    }
+    h1 {
+      letter-spacing: -0.03em;
+    }
+    .cover {
+      margin-top: 36px;
+    }
+    .prose {
+      margin-top: 40px;
+    }
+    .end .toc {
+      display: none;
+    }
+    .end .tools {
+      margin-top: 24px;
+    }
+    .more {
+      margin-top: 104px;
+    }
+    .cards {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 44px;
+      margin-top: 32px;
+    }
+  }
+</style>

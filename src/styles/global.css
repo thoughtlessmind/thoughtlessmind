@@ -2,6 +2,14 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 
+/* How far the header has lifted off the page, 0 at rest to 1 as a bar (see the header below). Registered so it can
+   animate and transition. */
+@property --lift {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 /* Tokens. Dark is the default; light follows the system until the switch picks one (data-theme on <html>).
    The logo is #ff5f1f in both themes; text orange darkens to #c2410c on light for AA. */
 :root {
@@ -13,6 +21,8 @@
   --hi: #ffffff;
   --logo: #ff5f1f;
   --accent: #ff5f1f;
+  /* The lifted header's drop shadow. */
+  --shadow: rgba(0, 0, 0, 0.55);
   --sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   /* Mono is for code and the Bits intro's digits only. */
   --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* taste-skill-ignore */
@@ -24,11 +34,11 @@
   --t-s: 17px;
   --t-xs: 15px;
   --t-code: 13px;
-  /* The frame: one pair of margins, the 42% axis of the header, and the right rail's width. */
+  /* The frame: one pair of margins, the 42% axis of the header, and the header's height at rest (pages clear it). */
   --gut: max(clamp(20px, 3.4vw, 48px), env(safe-area-inset-left, 0px));
   --gut-r: max(clamp(20px, 3.4vw, 48px), env(safe-area-inset-right, 0px));
   --cols: minmax(0, 42fr) minmax(0, 58fr);
-  --rail: 168px;
+  --head-h: 76px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   color-scheme: dark;
 }
@@ -41,6 +51,7 @@
     --muted: #63635e;
     --hi: #000000;
     --accent: #c2410c;
+    --shadow: rgba(38, 34, 26, 0.14);
     color-scheme: light;
   }
 }
@@ -52,6 +63,7 @@
   --muted: #63635e;
   --hi: #000000;
   --accent: #c2410c;
+  --shadow: rgba(38, 34, 26, 0.14);
   color-scheme: light;
 }
 
@@ -76,12 +88,34 @@
     background: var(--bg);
     color: var(--ink);
   }
+  /* Anchors land clear of the fixed header. The browser's own surfaces (scrollbar, caret, selection) wear the
+     tokens. */
+  html {
+    scroll-padding-top: calc(var(--head-h) + 24px);
+    scrollbar-color: color-mix(in oklab, var(--muted) 50%, transparent) transparent;
+    scrollbar-width: thin;
+    caret-color: var(--accent);
+  }
+  /* In-page links scroll smoothly; instantly under reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
   body {
     font-family: var(--sans);
     font-size: var(--t-s);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+  /* Selected text turns --ink on an accent tint: AA on both themes, muted text included. */
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 30%, transparent);
+    color: var(--ink);
+  }
+  time {
+    font-variant-numeric: tabular-nums;
   }
   a:focus-visible,
   button:focus-visible,
@@ -105,17 +139,82 @@
     white-space: nowrap;
   }
 
-  /* Header: the logo in the first column; nav from the axis; the theme switch on the right margin. */
+  /* Header (DESIGN.md §3): fixed; the logo in the first column, the nav from the axis, the theme switch on the right
+     margin. At scroll 0 it is no surface at all; over the first 120px of scroll --lift goes 0 to 1 and it becomes a
+     bar: --bg at 80% with blur, a hairline and an offset shadow, its padding compacting to about 56px tall. */
   .top {
-    position: absolute;
+    --pt: clamp(20px, 2.6vw, 36px);
+    position: fixed;
     inset: 0 0 auto;
     z-index: 20;
     display: grid;
     grid-template-columns: var(--cols);
     align-items: center;
-    padding-block: calc(env(safe-area-inset-top, 0px) + clamp(20px, 2.6vw, 36px)) 12px;
+    padding-block:
+      calc(env(safe-area-inset-top, 0px) + var(--pt) + (14px - var(--pt)) * var(--lift))
+      calc(12px + 2px * var(--lift));
     font-size: var(--t-xs);
+    background: color-mix(in oklab, var(--bg) calc(var(--lift) * 80%), transparent);
+    backdrop-filter: blur(calc(var(--lift) * 16px)) saturate(calc(1 + var(--lift) * 0.6));
+    box-shadow:
+      0 1px 0 color-mix(in oklab, var(--line) calc(var(--lift) * 100%), transparent),
+      0 4px 10px -6px color-mix(in oklab, var(--shadow) calc(var(--lift) * 100%), transparent),
+      0 14px 32px -16px color-mix(in oklab, var(--shadow) calc(var(--lift) * 100%), transparent);
+    /* Holds still across page navigations (the view transitions below). */
+    view-transition-name: top;
   }
+  /* The lift follows the scroll. Without scroll-driven animations the header's script sets html.lifted once a
+     sentinel 60px down has gone, and --lift eases over instead. */
+  @supports (animation-timeline: scroll()) {
+    .top {
+      animation: lift linear both;
+    }
+    /* Post pages: reading progress, a 2px accent line filling the header's bottom edge from the left. */
+    .top[data-progress]::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 -1px;
+      height: 2px;
+      background: var(--accent);
+      transform-origin: left;
+      scale: 0 1;
+      animation: progress linear both;
+    }
+    /* The timeline and range sit in their own, more specific rules: the minifier folds same-rule longhands into the
+       `animation` shorthand, where animation-timeline is reset-only, and the browser then drops the declaration. */
+    :root .top {
+      animation-timeline: scroll(root);
+      animation-range: 0 120px;
+    }
+    :root .top[data-progress]::after {
+      animation-timeline: scroll(root);
+    }
+  }
+  @supports not (animation-timeline: scroll()) {
+    .top {
+      transition: --lift 300ms var(--ease);
+    }
+    html.lifted .top {
+      --lift: 1;
+    }
+  }
+  /* Reduced motion: the surface still changes, the bar does not shrink. */
+  @media (prefers-reduced-motion: reduce) {
+    .top {
+      padding-block: calc(env(safe-area-inset-top, 0px) + var(--pt)) 12px;
+    }
+  }
+  @keyframes lift {
+    to {
+      --lift: 1;
+    }
+  }
+  @keyframes progress {
+    to {
+      scale: 1 1;
+    }
+  }
+
   .top .name {
     justify-self: start;
   }
@@ -133,6 +232,29 @@
   .top nav {
     display: flex;
     gap: 28px;
+  }
+  .top nav a {
+    position: relative;
+    white-space: nowrap;
+  }
+  /* The current link (aria-current on its page, .on from the home page's scroll spy): a 6px accent dot hung
+     before the label, so no label moves when it changes. */
+  .top nav a::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    width: 6px;
+    height: 6px;
+    margin: -3px 7px 0 0;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 300ms var(--ease);
+  }
+  .top nav a.on::before,
+  .top nav a[aria-current]::before {
+    opacity: 1;
   }
   .top nav a,
   .theme {
@@ -188,7 +310,8 @@
     text-decoration-thickness: 2px;
   }
 
-  @media (max-width: 899px) {
+  /* Phone: the same bar as a flex row, the mark left, the nav and the switch right. */
+  @media (max-width: 720px) {
     .top {
       display: flex;
       gap: 16px;
@@ -199,10 +322,36 @@
       gap: 16px;
     }
     .top nav {
-      gap: 16px;
+      gap: 20px;
     }
     .theme {
       margin-left: 0;
     }
   }
+}
+
+/* The fallback lift's sentinel (Header.astro): 1px, 60px down the page. */
+.top-at {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* Cross-document view transitions: pages cross-fade in 200 ms, the header holds still, and post covers and titles
+   morph by their view-transition-name. Off under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-timing-function: var(--ease);
+}
+::view-transition-group(root) {
+  animation-duration: 200ms;
 }

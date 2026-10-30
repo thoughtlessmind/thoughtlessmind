@@ -1,0 +1,181 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { day, getPosts, iso, minutes } from '../../lib/writing';
+
+// Every post, grouped by year, newest first. The title carries a view-transition-name, so it morphs into the
+// post's own heading on navigation.
+const posts = await getPosts();
+const years = [...Map.groupBy(posts, (p) => p.data.date.getUTCFullYear())];
+const first = posts.at(-1)?.data.date.getUTCFullYear();
+const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ? ` since ${first}` : ''}`;
+---
+
+<BaseLayout title="Writing, Rajiv Kumar" description="Notes on putting models to work, building for the web, and the problems I would rather solve once." current="writing">
+  <div class="list">
+    <header class="head">
+      <h1>Writing</h1>
+      <p class="dek">Notes on putting models to work, building for the web, and the problems I would rather solve once.</p>
+      <p class="count">{count}</p>
+    </header>
+    <div class="years">
+      {
+        years.map(([year, list]) => (
+          <section class="year" aria-labelledby={`y${year}`}>
+            <h2 class="yr" id={`y${year}`}>{year}</h2>
+            <ol>
+              {list.map((p) => (
+                <li>
+                  <a class="row" href={`/writing/${p.id}`}>
+                    <span class="rt" style={`view-transition-name: title-${p.id}`}>{p.data.title}</span>
+                    <span class="rd">{p.data.description}</span>
+                    <span class="rm">
+                      <time datetime={iso(p.data.date)}>{day(p.data.date)}</time>
+                      <span>{minutes(p.body)} min read</span>
+                      <code>{p.data.code}</code>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .list {
+    display: grid;
+    grid-template-columns: var(--cols);
+    padding-top: calc(var(--head-h) + 72px);
+  }
+  .head {
+    position: sticky;
+    top: calc(var(--head-h) + 40px);
+    align-self: start;
+    padding-right: 48px;
+  }
+  h1 {
+    font-size: var(--t-xl);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+  .dek {
+    max-width: 22em;
+    margin-top: 20px;
+    font-size: var(--t-sm);
+    line-height: 1.4;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .count {
+    margin-top: 20px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .year + .year {
+    margin-top: 48px;
+  }
+  .yr {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: var(--t-xs);
+    font-weight: 400;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  /* A row is one link. On hover the title brightens and the accent dot (the nav's "you are here") appears in the
+     margin beside it. */
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding-block: 24px;
+  }
+  .rt {
+    position: relative;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    transition: color 200ms var(--ease);
+  }
+  .rt::before {
+    content: '';
+    position: absolute;
+    top: calc(0.625em - 3px);
+    left: -18px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 200ms var(--ease);
+  }
+  .row:hover .rt::before {
+    opacity: 1;
+  }
+  .row:hover .rt {
+    color: var(--hi);
+  }
+  .rd {
+    max-width: 40em;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .rm {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-top: 4px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .rm > * {
+    flex: none;
+  }
+  .rm code {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: var(--t-code);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* One column: the head on top, not sticky. */
+  @media (max-width: 999px) {
+    .list {
+      display: block;
+    }
+    .head {
+      position: static;
+      padding-right: 0;
+    }
+    .years {
+      margin-top: 56px;
+    }
+  }
+  @media (max-width: 720px) {
+    .list {
+      padding-top: calc(var(--head-h) + 40px);
+    }
+    h1 {
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+    .rt::before {
+      left: -13px;
+    }
+  }
+</style>

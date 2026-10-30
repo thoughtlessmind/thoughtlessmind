@@ -1,0 +1,109 @@
+---
+title: 'How to remove or restyle the MUI TextField outline'
+description: 'The outlined TextField border is a fieldset. Remove or recolour it with sx or the theme in MUI v9, where the old InputProps route is gone.'
+date: 2026-10-07
+code: '.MuiOutlinedInput-notchedOutline'
+---
+
+The outline around an MUI TextField is a `<fieldset>` with the class `MuiOutlinedInput-notchedOutline`. To remove it, set `border: 'none'` on that class from the TextField's `sx` prop. To restyle it, target the same class, plus hover and focus rules that leave the error and disabled states alone. Everything here is checked against `@mui/material` 9.4.0, the current release.
+
+## Remove the outline from one field
+
+```tsx title="PhoneField.tsx"
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+
+export default function PhoneField() {
+  return (
+    <TextField
+      placeholder="Phone number"
+      fullWidth
+      sx={{ '& .MuiOutlinedInput-notchedOutline': { border: 'none' } }}
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">
+              <AccountCircle />
+            </InputAdornment>
+          ),
+        },
+      }}
+    />
+  );
+}
+```
+
+`outlined` is the default variant, so the field needs no `variant` prop. `sx` styles the TextField's root element, and the `& .MuiOutlinedInput-notchedOutline` selector reaches the fieldset inside it. The adornment goes through `slotProps.input`, because v9 removed the `InputProps` prop. More on that at the end.
+
+One rule covers every state. MUI's hover, focus, error and disabled rules for the outlined input only change the border colour, and focus also sets the width to 2px. None of them sets the border style. `border: 'none'` sets the style to `none`, and CSS computes the width of a border with style `none` to zero, whatever width a later rule asks for. In 9.4.0 the fieldset's border is 0px at rest, on focus and with `error`.
+
+The border is also the clearest sign that the field has focus. WCAG 2.4.7 asks for a visible focus indicator, so if nothing around the field shows focus, add a style for it. While the field has focus, MUI puts a `Mui-focused` class on the input root, so `'& .MuiOutlinedInput-root.Mui-focused'` in the same `sx` is the hook. A wrapper around the field can use `:focus-within` instead.
+
+## Remove it from every TextField
+
+```tsx title="theme.ts"
+import { createTheme } from '@mui/material/styles';
+
+export const theme = createTheme({
+  components: {
+    MuiOutlinedInput: {
+      styleOverrides: {
+        notchedOutline: { border: 'none' },
+      },
+    },
+  },
+});
+```
+
+Pass the theme to `ThemeProvider` at the root of the app. An outlined TextField renders an `OutlinedInput`, and `notchedOutline` is that component's style slot for the fieldset. So the override reaches every outlined TextField, and also the outlined `Select`, which renders the same input.
+
+## Restyle it instead
+
+To change the colour rather than drop the line, the obvious rule is not enough. With only `'& .MuiOutlinedInput-notchedOutline': { borderColor: ... }`, focus brings the primary colour back. MUI's focus rule hangs off the input root's class as well as `.Mui-focused`, so it is more specific than yours. Hover does the same with the text colour.
+
+The fix is to match MUI's selectors for hover and focus, and nothing else:
+
+```tsx title="EmailField.tsx"
+import TextField from '@mui/material/TextField';
+
+export default function EmailField() {
+  return (
+    <TextField
+      label="Email"
+      sx={{
+        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'grey.400' },
+        '& .MuiOutlinedInput-root:not(.Mui-error, .Mui-disabled)': {
+          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'grey.700' },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'secondary.main',
+          },
+        },
+      }}
+    />
+  );
+}
+```
+
+Three details make this hold up:
+
+- The resting colour keeps the short selector on purpose. MUI's hover, focus, error and disabled rules all outrank it, so every state still gets its own colour.
+- The hover and focus rules sit under `.MuiOutlinedInput-root`, which makes them more specific than MUI's. Focus is declared after hover, so a focused field keeps the focus colour while the pointer is over it.
+- `:not(.Mui-error, .Mui-disabled)` keeps both rules off invalid and disabled fields. Without it, hovering or focusing an invalid field paints over the red.
+
+`grey.400` and `secondary.main` are theme palette paths, which `sx` resolves against your theme; any CSS colour works too. Focus still thickens the line to 2px, as it does by default. If all you want is a different focus colour from the palette, `color="secondary"` on the TextField does it with no selectors. The [Text Field docs](https://mui.com/material-ui/react-text-field/#customization) show the theme-wide version of this under Customization.
+
+## On older versions
+
+I wrote my original answer for Material UI v4 (`@material-ui/core`) in December 2020. It created a `noBorder` class with `makeStyles` and passed it in as `InputProps={{ classes: { notchedOutline: classes.noBorder } }}`. The idea, targeting the `notchedOutline` slot, still holds. Both APIs it used are gone:
+
+- MUI's `makeStyles` now lives only in the legacy `@mui/styles` package, which MUI deprecated with v5 and which does not support React 18 or later. Use `sx`, `styled` or the theme instead.
+- `InputProps` was deprecated in v6 in favour of `slotProps.input`, and v9 removed it. On 9.4.0 TypeScript rejects it and MUI no longer applies it. The codemod `npx @mui/codemod@latest deprecations/text-field-props <path>` rewrites it for you.
+
+The `sx` rules above work from v5, where `sx` arrived. On v5 you pass the adornment through `InputProps`, since `slotProps` on TextField only arrived in v6.
+
+One more thing from the original question: `disableUnderline` is not an outlined-input prop. Only the standard and filled inputs have it. If you don't need the outlined shape at all, `variant="standard"` with `slotProps={{ input: { disableUnderline: true } }}` gives you a field with no line.
+
+---
+
+I first answered this [on Stack Overflow](https://stackoverflow.com/a/65163992) in 2020. The question has been viewed about 111,000 times.

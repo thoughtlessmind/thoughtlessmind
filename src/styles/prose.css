@@ -1,0 +1,141 @@
+/* A post's body: plain Markdown rendered by Astro, styled here because it carries no classes. Tailwind's preflight
+   has reset every margin and list, so this puts back only what reading needs. */
+.prose {
+  max-width: 68ch;
+  font-size: var(--t-s);
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+.prose > * + * {
+  margin-top: 1.1em;
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose h2 {
+  margin: 2.4em 0 0.6em;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.prose h3 {
+  margin: 1.8em 0 0.4em;
+  font-size: var(--t-s);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.prose :is(h2, h3) + * {
+  margin-top: 0;
+}
+.prose strong {
+  font-weight: 500;
+  color: var(--hi);
+}
+
+/* Links read like .ul in global.css. */
+.prose a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-thickness 200ms var(--ease);
+}
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.3em;
+}
+.prose ul {
+  list-style: disc;
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose li::marker {
+  color: var(--muted);
+}
+.prose li + li,
+.prose li :is(ul, ol),
+.prose li > p + p {
+  margin-top: 0.4em;
+}
+
+.prose blockquote {
+  padding-left: 20px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.prose hr {
+  margin-block: 2.4em;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.prose img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Tables stay display: table (a block table loses its semantics in Safari), so on a phone their cells wrap. */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
+}
+.prose :is(th, td) {
+  padding: 10px 24px 10px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  font-weight: 500;
+}
+
+.prose code {
+  font-family: var(--mono);
+}
+.prose :not(pre) > code {
+  padding: 0.12em 0.36em;
+  border-radius: 4px;
+  background: var(--panel);
+  font-size: 0.88em;
+}
+
+/* Code blocks: Shiki writes both themes on every token (--shiki-light, --shiki-dark; astro.config.mjs) and the
+   same rules as the tokens pick one. The themes' own backgrounds are ignored for --panel. */
+.prose pre {
+  padding: 20px 24px;
+  overflow-x: auto;
+  background: var(--panel);
+  font-size: 14px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.prose pre:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.prose pre,
+.prose pre span {
+  color: var(--shiki-dark);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .prose pre,
+  :root:not([data-theme="dark"]) .prose pre span {
+    color: var(--shiki-light);
+  }
+}
+:root[data-theme="light"] .prose pre,
+:root[data-theme="light"] .prose pre span {
+  color: var(--shiki-light);
+}

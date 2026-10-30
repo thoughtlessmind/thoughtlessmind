@@ -1,17 +1,47 @@
 ---
 import { SITE } from '../consts';
 import ThemeToggle from './ThemeToggle.astro';
-// `.rise` + `--d` (ms) are the intro's hooks: the lead's intro staggers them in. No CSS here hides or animates them.
+
+export interface Props {
+  /** The section the page belongs to: its nav link gets aria-current="page" and the dot. */
+  current?: 'writing';
+  /** A reading-progress line along the header's bottom edge (post pages). */
+  progress?: boolean;
+}
+const { current, progress = false } = Astro.props;
+// `.rise` + `--d` (ms) are the intro's hooks: the intro staggers them in. No CSS here hides or animates them.
+// The home page's scroll spy toggles `on` + aria-current="true" on the `[data-spy]` links.
 ---
 
-<header class="top wrap">
+<header class="top wrap" data-progress={progress ? '' : undefined}>
   <a class="name" href="/" aria-label={`${SITE.brand}, home`}>
     <svg class="mark" data-logo viewBox="-2.01 0 30 30" fill="#ff5f1f" aria-hidden="true"><path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path></svg>
   </a>
   <div class="bar">
     <nav aria-label="Main">
-      {SITE.nav.map((item, i) => <a class="rise" style={`--d:${60 + i * 40}`} href={item.href}>{item.label}</a>)}
+      {
+        SITE.nav.map((item, i) => (
+          <a
+            class="rise"
+            style={`--d:${60 + i * 40}`}
+            href={item.href}
+            data-spy={item.spy}
+            aria-current={current === item.spy ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
     </nav>
     <ThemeToggle />
   </div>
 </header>
+<div class="top-at" data-top-at aria-hidden="true"></div>
+
+<script>
+  // The header lifts on scroll through a CSS scroll-driven animation (global.css). Where `animation-timeline` is
+  // missing, a 1px sentinel 60px down the page sets html.lifted once it has scrolled out of view.
+  const at = document.querySelector('[data-top-at]');
+  if (at && !CSS.supports('animation-timeline: scroll()'))
+    new IntersectionObserver(([e]) => document.documentElement.classList.toggle('lifted', !e.isIntersecting)).observe(at);
+</script>

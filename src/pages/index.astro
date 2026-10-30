@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Doodle from '../components/Doodle.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import PostCard from '../components/PostCard.astro';
 import { SITE } from '../consts';
+import { getPosts } from '../lib/writing';
 
 // Each project links to the real thing. The stills are drawn in HTML below (DESIGN.md §5).
 const work = [
@@ -35,95 +36,43 @@ const work = [
     name: 'rajiv.me',
     kind: 'This site',
     year: 2026,
-    summary: 'Static pages, two hand-built intros, and no work at all once they land.',
+    summary: 'Static pages, one hand-built intro, and no work at all once it lands.',
     href: `${SITE.socials.github}/thoughtlessmind`,
   },
 ];
-// ponytail: hand-listed until the writing collection lands; the /writing pages come with it.
-const posts = [
-  {
-    title: 'How to remove or restyle the MUI TextField outline',
-    says: 'The outlined border is a fieldset. Remove or recolour it with sx or the theme.',
-    slug: 'mui-textfield-remove-outline',
-    date: '2026-10-07',
-    code: '.MuiOutlinedInput-notchedOutline',
-  },
-  {
-    title: 'Using the MUI Link with the Next.js Link in the App Router',
-    says: 'Pass next/link to the component prop, and re-export it from a client file for Server Components.',
-    slug: 'mui-link-with-nextjs-link',
-    date: '2026-10-07',
-    code: 'component={Link}',
-  },
-  {
-    title: 'Function overloads in TypeScript',
-    says: 'Several signatures, one implementation: how overloads make a flexible function type-safe.',
-    slug: 'function-overload-in-typescript',
-    date: '2023-08-09',
-    code: 'function f(x: string): string;',
-  },
-  {
-    title: 'Tooltips with CSS only',
-    says: 'Two pseudo-elements and a data attribute are enough for most tooltips. No library required.',
-    slug: 'tooltip-using-only-css',
-    date: '2021-01-17',
-    code: 'content: attr(data-tooltip);',
-  },
-];
-// Each post's cover is a line doodle traced to SVG (ink on currentColor, orange as .o).
-const covers = import.meta.glob<string>('../assets/covers/*.svg', { query: '?raw', import: 'default', eager: true });
-const month = (d: string) => new Date(d).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-const socials = [
-  ['GitHub', SITE.socials.github],
-  ['LinkedIn', SITE.socials.linkedin],
-  ['X', SITE.socials.x],
-  ['dev.to', SITE.socials.devto],
-  ['Stack Overflow', SITE.socials.stackoverflow],
-];
-const sections = [
-  ['about', 'About me'],
-  ['projects', 'Projects'],
-  ['writing', 'Writing'],
+// The four newest posts; /writing has the rest.
+const posts = (await getPosts()).slice(0, 4);
+// Lately's rows, under its lead: what the work is made of now (DESIGN.md §5).
+const lately = [
+  ['Tools for agents', 'MCP servers that give a model typed access to a product’s data and actions, with errors it can recover from.'],
+  ['In production', 'Chat, extraction and matching features that real people use, each with a budget for latency and cost, and a fallback.'],
+  ['Evals', 'Checks that run on every prompt and model change, so a regression fails a test before it reaches a user.'],
+  ['Day to day', 'Coding agents as part of the team, with skills, hooks and review loops that keep every diff small and verified.'],
+  ['Coming soon', 'Orca, a macOS menu bar timer that a person and an agent drive together over MCP.'],
 ];
 const mark =
   '<path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path>';
 ---
 
 <BaseLayout intro>
-  <aside class="rail" aria-label="On this page">
-    <a class="rail-mark" href="#about" aria-label="Back to top">
-      <svg viewBox="-2.01 0 30 30" fill="#ff5f1f" aria-hidden="true" set:html={mark}></svg>
-    </a>
-    <nav aria-label="Sections">
-      {
-        sections.map(([id, label], i) => (
-          <a class:list={['rail-a', { on: i === 0 }]} href={`#${id}`} aria-current={i === 0 ? 'true' : undefined} data-spy={id}>
-            {label}
-          </a>
-        ))
-      }
-    </nav>
-    <ThemeToggle />
-  </aside>
-
   <section class="hero" id="about" aria-labelledby="h1">
-    <span class="sentinel" data-sentinel aria-hidden="true"></span>
     <div class="art" aria-hidden="true"><Doodle /></div>
     <div class="hero-text">
       <h1 id="h1">
         <span class="name rise" style="--d:120">{SITE.name}<span class="sr-only">,</span></span>
         <span class="st rise" style="--d:190">Software you don’t <br />have to think about.</span>
       </h1>
-      <dl class="facts">
+      <dl class="facts rows">
         <div class="rise" style="--d:300"><dt>Based in</dt><dd>{SITE.location}</dd></div>
         <div class="rise" style="--d:340">
           <dt>Builds</dt><dd>Web and native apps, backends and infrastructure, since {SITE.since}</dd>
         </div>
-        <div class="rise" style="--d:380">
+        <div class="rise" style="--d:380"><dt>Lately</dt><dd>Putting language models to work inside real products</dd></div>
+        <div class="rise" style="--d:420">
           <dt>Cares about</dt><dd>Software that’s fast to load, clear to use and boring to run</dd>
         </div>
-        <div class="rise" style="--d:420"><dt>Off screen</dt><dd>Astronomy, rockets, physics and sport</dd></div>
-        <div class="rise" style="--d:460">
+        <div class="rise" style="--d:460"><dt>Off screen</dt><dd>Astronomy, rockets, physics and sport</dd></div>
+        <div class="rise" style="--d:500">
           <dt>Elsewhere</dt>
           <dd>
             <a class="ul" href={SITE.socials.github} rel="me">GitHub</a>, <a class="ul" href={SITE.socials.linkedin} rel="me"
@@ -133,6 +82,44 @@ const mark =
         </div>
       </dl>
     </div>
+  </section>
+
+  <section class="sec lately" id="lately" aria-labelledby="lately-h">
+    <div class="ly-head">
+      <h2 class="h2" id="lately-h">Lately</h2>
+      <p class="lead">
+        Most of my week now goes to putting language models to work inside real products. The model is rarely the hard
+        part. Everything around it is: the tools it can call, the data it may see, what happens when it is slow or wrong,
+        and how you know a change made it better rather than just different.
+      </p>
+    </div>
+    <dl class="rows">
+      {
+        lately.map(([dt, dd]) => (
+          <div>
+            <dt>{dt}</dt>
+            <dd>{dd}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="sec" id="writing" aria-labelledby="writing-h">
+    <div class="head">
+      <h2 class="h2" id="writing-h">Writing</h2>
+      <p class="note">Notes on models, the web and problems worth writing down.</p>
+    </div>
+    <ul class="cards">
+      {
+        posts.map((p) => (
+          <li>
+            <PostCard post={p} />
+          </li>
+        ))
+      }
+    </ul>
+    <a class="ul all" href="/writing">All writing</a>
   </section>
 
   <section class="sec" id="projects" aria-labelledby="projects-h">
@@ -198,73 +185,18 @@ const mark =
       }
     </ul>
   </section>
-
-  <section class="sec" id="writing" aria-labelledby="writing-h">
-    <div class="head">
-      <h2 class="h2" id="writing-h">Writing</h2>
-      <p class="note">Short notes on problems worth writing down.</p>
-    </div>
-    <ul class="cards">
-      {
-        posts.map((p) => (
-          <li>
-            <a class="post" href={`/writing/${p.slug}`}>
-              <span class="cover" aria-hidden="true" set:html={covers[`../assets/covers/${p.slug}.svg`]}></span>
-              <span class="pm">
-                <code class="tok" aria-hidden="true">
-                  {p.code}
-                </code>
-                <time datetime={p.date}>{month(p.date)}</time>
-              </span>
-              <span class="pt">{p.title}</span>
-              <span class="cs">{p.says}</span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-    <a class="ul all" href="/writing">All writing</a>
-  </section>
-
-  <footer slot="footer" class="foot wrap" data-foot>
-    <div class="foot-row">
-      <p class="mail">Write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
-      <ul class="soc">
-        {
-          socials.map(([label, href]) => (
-            <li>
-              <a class="ul" href={href} rel="noopener me" target="_blank">
-                {label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-      <p>© {new Date().getFullYear()} {SITE.name}</p>
-    </div>
-    <div class="word" aria-hidden="true"><span>rajiv</span></div>
-  </footer>
 </BaseLayout>
 
 <script>
-  const root = document.documentElement;
-
-  // The rail slides in once a point 32% down the landing has left the top; the doodle leaves with it.
-  const sentinel = document.querySelector('[data-sentinel]');
-  if (sentinel)
-    new IntersectionObserver(([e]) => {
-      root.classList.toggle('rail-on', !e.isIntersecting && e.boundingClientRect.top < 0);
-    }).observe(sentinel);
-
-  // Scroll spy: the section crossing the middle of the screen is the active one (the footer counts as Writing, so a
-  // jump to the end still lands there).
+  // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Lately counts as
+  // About and the footer as Projects, so a jump to the end still lands there.
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
-  const foot = document.querySelector<HTMLElement>('[data-foot]');
+  const foot = document.querySelector('footer');
   const spy = new IntersectionObserver(
     (entries) =>
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
-        const id = e.target === foot ? 'writing' : e.target.id;
+        const id = e.target === foot ? 'projects' : e.target.id === 'lately' ? 'about' : e.target.id;
         links.forEach((a) => {
           const on = a.dataset.spy === id;
           a.classList.toggle('on', on);
@@ -274,33 +206,16 @@ const mark =
       }),
     { rootMargin: '-45% 0px -54% 0px' },
   );
-  links.forEach((a) => {
-    const s = document.getElementById(a.dataset.spy ?? '');
+  ['about', 'lately', 'writing', 'projects'].forEach((id) => {
+    const s = document.getElementById(id);
     if (s) spy.observe(s);
   });
   if (foot) spy.observe(foot);
-
-  // The footer's name rises once; on a phone the bottom bar steps aside while the footer is on screen.
-  if (foot)
-    new IntersectionObserver(
-      ([e]) => {
-        root.classList.toggle('foot-vis', e.isIntersecting);
-        if (e.isIntersecting) foot.classList.add('in');
-      },
-      { threshold: 0.25 },
-    ).observe(foot);
 </script>
 
 <style>
-  /* In-page links (the rail) scroll smoothly; instantly under reduced motion. */
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html) {
-      scroll-behavior: smooth;
-    }
-  }
-
   /* Landing: about me on the left, the doodle on the right 48%. It runs to the right edge of the screen and clips
-     the doodle as it shifts out. */
+     the doodle there. */
   .hero {
     position: relative;
     display: flex;
@@ -309,13 +224,6 @@ const mark =
     margin-right: calc(-1 * var(--gut-r));
     padding-block: 112px 56px;
     overflow-x: clip;
-  }
-  .sentinel {
-    position: absolute;
-    top: 32%;
-    left: 0;
-    width: 1px;
-    height: 1px;
   }
   .hero-text {
     position: relative;
@@ -343,7 +251,8 @@ const mark =
     max-width: 580px;
     margin-top: 56px;
   }
-  .facts > div {
+  /* Label and value rows on hairlines: the landing's facts and Lately's. */
+  .rows > div {
     display: grid;
     grid-template-columns: 136px minmax(0, 1fr);
     column-gap: 24px;
@@ -364,18 +273,38 @@ const mark =
     width: 48vw;
     padding: 96px 56px 40px 0;
     pointer-events: none;
-    transition:
-      opacity 600ms var(--ease),
-      transform 800ms var(--ease);
-  }
-  :global(html.rail-on) .art {
-    opacity: 0;
-    transform: translateX(3%);
   }
 
-  /* Sections keep the rail's width clear on the right. */
   .sec {
-    padding: 136px var(--rail) 0 0;
+    padding-top: 136px;
+  }
+  /* Lately: the h2 and the lead in the first column, the rows from the axis, so they line up with the header nav. */
+  .lately {
+    display: grid;
+    grid-template-columns: var(--cols);
+    align-items: start;
+  }
+  .ly-head {
+    padding-right: clamp(32px, 4.4vw, 72px);
+  }
+  .lead {
+    max-width: 34em;
+    margin-top: 24px;
+    font-size: var(--t-sm);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+  .lately .rows {
+    margin-top: 10px;
+  }
+  @media (max-width: 999px) {
+    .lately {
+      display: block;
+    }
+    .lately .rows {
+      margin-top: 40px;
+    }
   }
   .head {
     display: flex;
@@ -398,17 +327,15 @@ const mark =
     gap: 56px 40px;
     margin-top: 44px;
   }
-  .card,
-  .post {
+  /* Project cards (post cards are PostCard's): the still, name with kind and year, then the summary. */
+  .card {
     display: block;
     transition: color 200ms var(--ease);
   }
-  .card:hover,
-  .post:hover {
+  .card:hover {
     color: var(--hi);
   }
-  .still,
-  .cover {
+  .still {
     display: grid;
     place-items: center;
     aspect-ratio: 16 / 10;
@@ -425,8 +352,7 @@ const mark =
     font-weight: 500;
     letter-spacing: -0.015em;
   }
-  .cy,
-  time {
+  .cy {
     flex: none;
     font-size: var(--t-xs);
     font-weight: 400;
@@ -553,173 +479,12 @@ const mark =
     height: 72px;
     fill: var(--logo);
   }
-
-  /* Writing: the doodle cover, the code the post is about and its date, then title and summary. */
-  .cover :global(svg) {
-    width: 100%;
-    height: 100%;
-    color: var(--ink);
-  }
-  .cover :global(.o) {
-    fill: var(--logo);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .cover :global(svg) {
-      transition: transform 800ms var(--ease);
-    }
-    .post:hover .cover :global(svg) {
-      transform: scale(1.03);
-    }
-  }
-  .pm {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    margin-top: 18px;
-  }
-  .tok {
-    min-width: 0;
-    overflow: hidden;
-    font-family: var(--mono);
-    font-size: var(--t-code);
-    color: var(--muted);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  .pt {
-    display: block;
-    margin-top: 8px;
-    font-size: var(--t-sm);
-    font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.015em;
-    text-wrap: balance;
-  }
-  .post .cs {
-    margin-top: 6px;
-  }
   .all {
     display: inline-block;
     margin-top: 40px;
   }
 
-  /* Footer: the address, socials and copyright, then "rajiv" across the content width, half risen. */
-  .foot {
-    container-type: inline-size;
-    overflow: hidden;
-    padding-top: 168px;
-    padding-right: calc(var(--gut-r) + var(--rail));
-  }
-  .foot-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px 40px;
-    font-size: var(--t-xs);
-    color: var(--muted);
-  }
-  .mail {
-    font-size: var(--t-s);
-    color: var(--ink);
-  }
-  .soc {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-  }
-  .word {
-    height: 0.47em;
-    margin-top: 72px;
-    overflow: hidden;
-    font-size: calc(100cqw / 1.68);
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: -0.055em;
-    color: var(--logo);
-  }
-  .word span {
-    display: block;
-    margin-left: -0.065em;
-    transform: translateY(-0.11em);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html.js) .word span {
-      transform: translateY(0.42em);
-      transition: transform 1.4s var(--ease);
-    }
-    :global(html.js) .foot.in .word span {
-      transform: translateY(-0.11em);
-    }
-  }
-
-  /* The rail: mark (back to top), the three sections with the active one dotted, the theme switch. */
-  .rail {
-    position: fixed;
-    inset: 0 0 0 auto;
-    z-index: 30;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    width: var(--rail);
-    padding: 28px 0 22px;
-    background: var(--bg);
-    border-left: 1px solid var(--line);
-    visibility: hidden;
-    transform: translateX(100%);
-    transition:
-      transform 550ms var(--ease),
-      visibility 0s 550ms;
-  }
-  :global(html.rail-on) .rail {
-    visibility: visible;
-    transform: none;
-    transition: transform 550ms var(--ease);
-  }
-  .rail-mark svg {
-    display: block;
-    width: 24px;
-    height: 24px;
-    fill: var(--logo);
-  }
-  .rail nav {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
-  .rail-a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-block: 4px;
-    font-size: var(--t-xs);
-    color: var(--muted);
-    white-space: nowrap;
-    transition: color 300ms var(--ease);
-  }
-  .rail-a::before {
-    content: '';
-    flex: none;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    transition: background-color 300ms var(--ease);
-  }
-  .rail-a:hover,
-  .rail-a.on {
-    color: var(--ink);
-  }
-  .rail-a.on::before {
-    background: var(--accent);
-  }
-  .rail :global(.theme) {
-    margin: 0;
-  }
-
-  /* Phone: the doodle in a band under the header, the text under it; the rail becomes a bottom bar. */
+  /* Phone: the doodle in a band under the header, the text under it; Lately's rows stack under its h2. */
   @media (max-width: 720px) {
     .hero {
       display: block;
@@ -751,65 +516,24 @@ const mark =
     .facts {
       margin-top: 36px;
     }
-    .facts > div {
+    .rows > div {
       grid-template-columns: minmax(0, 1fr);
       row-gap: 2px;
       padding-block: 10px;
     }
     .sec {
-      padding: 104px 0 0;
+      padding-top: 104px;
+    }
+    .lead {
+      margin-top: 20px;
+    }
+    .lately .rows {
+      margin-top: 32px;
     }
     .cards {
       grid-template-columns: minmax(0, 1fr);
       gap: 44px;
       margin-top: 32px;
-    }
-    .foot {
-      padding-top: 112px;
-      padding-right: var(--gut-r);
-    }
-    .foot-row {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .word {
-      margin-top: 48px;
-    }
-    .rail {
-      inset: auto 0 0;
-      width: auto;
-      height: calc(56px + env(safe-area-inset-bottom, 0px));
-      flex-direction: row;
-      padding: 0 calc(var(--gut-r) - 6px) env(safe-area-inset-bottom, 0px) var(--gut);
-      border-top: 1px solid var(--line);
-      border-left: 0;
-      transform: translateY(100%);
-    }
-    :global(html.rail-on.foot-vis) .rail {
-      visibility: hidden;
-      transform: translateY(100%);
-      transition:
-        transform 550ms var(--ease),
-        visibility 0s 550ms;
-    }
-    .rail-mark {
-      display: none;
-    }
-    .rail nav {
-      flex-direction: row;
-      align-items: center;
-      gap: 22px;
-    }
-    .rail-a {
-      gap: 8px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .art,
-    .rail,
-    :global(html.rail-on) .rail,
-    :global(html.rail-on.foot-vis) .rail {
-      transition: none;
     }
   }
 </style>

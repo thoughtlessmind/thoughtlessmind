@@ -3,7 +3,7 @@ export const SITE = {
   brand: 'rajiv.me',
   title: 'Rajiv Kumar, software engineer in New Delhi',
   description:
-    'Software engineer in New Delhi. I build web and native apps, the backends behind them and the infrastructure they run on. Shipping since 2019.',
+    'Software engineer in New Delhi. I build web and native apps, their backends and infrastructure, and the tools that let language models work inside them. Shipping since 2019.',
   url: 'https://thoughtlessmind.dev',
   email: 'me.rajiv21@gmail.com',
   role: 'Senior Frontend Engineer',
@@ -19,10 +19,11 @@ export const SITE = {
   location: 'New Delhi, India',
   coords: '28.6139° N, 77.2090° E',
   timezone: 'Asia/Kolkata',
+  // The header nav, in the home page's section order. `spy` is the home page section the scroll spy matches.
   nav: [
-    { label: 'Work', href: '/work' },
-    { label: 'Writing', href: '/writing' },
-    { label: 'About', href: '/about' },
+    { label: 'About', href: '/#about', spy: 'about' },
+    { label: 'Writing', href: '/writing', spy: 'writing' },
+    { label: 'Projects', href: '/#projects', spy: 'projects' },
   ],
 } as const;
 

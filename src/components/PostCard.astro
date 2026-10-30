@@ -1,0 +1,113 @@
+---
+// One post as a card: the doodle cover (or its line of code, set large, when it has no cover yet), the code the
+// post is about and its date, then the title and summary. Used by the home page, /writing and a post's "More
+// writing". The cover carries a view-transition-name, so it morphs into the post's own cover on navigation.
+import { cover, iso, month, type Post } from '../lib/writing';
+
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const { title, description, date, code } = post.data;
+const art = cover(post.id);
+---
+
+<a class="post" href={`/writing/${post.id}`}>
+  {
+    art ? (
+      <span class="cover" style={`view-transition-name: cover-${post.id}`} aria-hidden="true" set:html={art} />
+    ) : (
+      <span class="cover cover-code" style={`view-transition-name: cover-${post.id}`} aria-hidden="true">
+        <code>{code}</code>
+      </span>
+    )
+  }
+  <span class="pm">
+    <code class="tok" aria-hidden="true">{code}</code>
+    <time datetime={iso(date)}>{month(date)}</time>
+  </span>
+  <span class="pt">{title}</span>
+  <span class="cs">{description}</span>
+</a>
+
+<style>
+  .post {
+    display: block;
+    transition: color 200ms var(--ease);
+  }
+  .post:hover {
+    color: var(--hi);
+  }
+  .cover {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .cover :global(svg) {
+    width: 100%;
+    height: 100%;
+    color: var(--ink);
+  }
+  .cover :global(.o) {
+    fill: var(--logo);
+  }
+  .cover-code code {
+    max-width: 78%;
+    font-family: var(--mono);
+    font-size: clamp(13px, 1.3vw, 16px);
+    line-height: 1.5;
+    color: var(--ink);
+    text-align: center;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cover :global(svg),
+    .cover-code code {
+      transition: transform 800ms var(--ease);
+    }
+    .post:hover .cover :global(svg),
+    .post:hover .cover-code code {
+      transform: scale(1.03);
+    }
+  }
+  .pm {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-top: 18px;
+  }
+  .tok {
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: var(--t-code);
+    color: var(--muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  time {
+    flex: none;
+    font-size: var(--t-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .pt {
+    display: block;
+    margin-top: 8px;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .cs {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+</style>

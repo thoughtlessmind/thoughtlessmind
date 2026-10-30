@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 import Intro from '../components/Intro.astro';
 import { SITE } from '../consts';
 
@@ -9,9 +10,13 @@ export interface Props {
   description?: string;
   /** Play the page-load intro on every load (the home page). */
   intro?: boolean;
+  /** The section the page belongs to, for the header nav's current link. */
+  current?: 'writing';
+  /** The header's reading-progress line (post pages). */
+  progress?: boolean;
 }
 
-const { title = SITE.title, description = SITE.description, intro = false } = Astro.props;
+const { title = SITE.title, description = SITE.description, intro = false, current, progress = false } = Astro.props;
 // No trailing slash (trailingSlash: 'never'); the root stays `/`.
 const path = Astro.url.pathname;
 const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Astro.site);
@@ -25,6 +30,12 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
     <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
@@ -62,9 +73,9 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
     }
   </head>
   <body>
-    <Header />
+    <Header current={current} progress={progress} />
     <main class="wrap"><slot /></main>
-    <slot name="footer" />
+    <Footer />
     {intro && <Intro />}
   </body>
 </html>

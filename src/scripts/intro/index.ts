@@ -5,8 +5,8 @@ import { ORANGE, MONO, clamp, io3, mix, solid, type Env, type Intro } from './ki
 import intro from './bits';
 
 // ms: the move to the header, the tint to orange, how long after the move starts the content rises, and how long the
-// rises take (the longest rise plus its delay: the last fact row, 800 ms at 460).
-const DOCK = 800, TINT = 350, CONTENT = 200, RISE = 1300;
+// rises take (the longest rise plus its delay: the last fact row, 800 ms at 500).
+const DOCK = 800, TINT = 350, CONTENT = 200, RISE = 1340;
 const SKIP = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
 
 const root = document.documentElement;

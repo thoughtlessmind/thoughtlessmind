@@ -30,20 +30,27 @@ after a build.
 - Astro 7, `output: 'static'`, `trailingSlash: 'never'` (output stays `about/index.html`), prefetch on hover, sitemap.
 - Tailwind v4 via `@tailwindcss/vite`. Every token lives in `src/styles/global.css`.
 - Geist and Geist Mono from fontsource (variable).
-- No React, MDX or content collections yet; they come with the content.
+- One content collection, `writing`: plain Markdown, Shiki for code (themes in `astro.config.mjs`). No React or MDX.
 
 ## Layout of src
 
 ```
-assets/       doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG
-components/   Header, ThemeToggle, Intro (canvas + styles for the page-load intro), Doodle (draw-on, the planet, the loops)
-layouts/      BaseLayout (head, pre-paint script, header, main, intro)
-pages/        index, 404
-scripts/      intro/ (index: engine, gate hand-off, dock, tint, skip; kit: mark geometry; bits: the intro),
-              planet.ts (the doodle's turning planet) (DESIGN.md §4)
-styles/       global.css (tokens, @theme, base, header, theme switch, links)
-consts.ts     facts: name, brand, title, email, socials, location, role, since, nav
+assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG
+components/      Header (fixed, lifts on scroll), Footer, ThemeToggle, PostCard, Intro (canvas + styles for the
+                 page-load intro), Doodle (draw-on, the planet, the loops)
+content/writing/ the posts, <slug>.md (frontmatter in content.config.ts)
+layouts/         BaseLayout (head, pre-paint script, header, main, footer, intro)
+lib/writing.ts   getPosts, cover, reading time, date formats
+pages/           index, writing/index, writing/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, 404
+scripts/         intro/ (index: engine, gate hand-off, dock, tint, skip; kit: mark geometry; bits: the intro),
+                 planet.ts (the doodle's turning planet) (DESIGN.md §4)
+styles/          global.css (tokens, @theme, base, header, theme switch, links, view transitions), prose.css (posts)
+consts.ts        facts: name, brand, title, description, email, socials, location, role, since, nav
 ```
+
+Posts marked `# Placeholder: replace with a real post.` in their frontmatter are stand-ins until he writes real ones.
+New posts get a cover drawn the same way as the others (Codex line art, traced; see `docs/v4-research/art/`) or show
+their line of code until they have one.
 
 ## Facts
 
