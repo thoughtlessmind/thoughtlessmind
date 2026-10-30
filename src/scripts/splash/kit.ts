@@ -1,4 +1,4 @@
-// Shared kit for the page-load intros: the mark's geometry, easing and drawing helpers.
+// Shared kit for the splash screen: the mark's geometry, easing and drawing helpers.
 
 export interface Cam { x: number; y: number; s: number }
 export interface Env {
@@ -7,8 +7,8 @@ export interface Env {
   S1: number; C1: [number, number];   // the header logo
   ink: string;                        // the theme's --ink
 }
-/** An intro paints frame t (ms) as a pure function of t. By t = dock it shows the finished mark in ink at the centre. */
-export interface Intro {
+/** The splash paints frame t (ms) as a pure function of t. By t = dock it shows the finished mark in ink at the centre. */
+export interface Splash {
   dock: number;
   init?(env: Env): void;
   draw(c: CanvasRenderingContext2D, t: number, cam: Cam, env: Env): void;

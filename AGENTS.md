@@ -36,13 +36,13 @@ after a build.
 
 ```
 assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG
-components/      Header (fixed, lifts on scroll), Footer, ThemeToggle, PostCard, Intro (canvas + styles for the
-                 page-load intro), Doodle (draw-on, the planet, the loops)
+components/      Header (fixed, lifts on scroll), Footer, ThemeToggle, PostCard, Splash (canvas + styles for the
+                 splash screen), Doodle (draw-on, the planet, the loops)
 content/writing/ the posts, <slug>.md (frontmatter in content.config.ts)
-layouts/         BaseLayout (head, pre-paint script, header, main, footer, intro)
+layouts/         BaseLayout (head, pre-paint script, header, main, footer, splash)
 lib/writing.ts   getPosts, cover, reading time, date formats
 pages/           index, writing/index, writing/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, 404
-scripts/         intro/ (index: engine, gate hand-off, dock, tint, skip; kit: mark geometry; bits: the intro),
+scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
                  planet.ts (the doodle's turning planet) (DESIGN.md §4)
 styles/          global.css (tokens, @theme, base, header, theme switch, links, view transitions), prose.css (posts)
 consts.ts        facts: name, brand, title, description, email, socials, location, role, since, nav

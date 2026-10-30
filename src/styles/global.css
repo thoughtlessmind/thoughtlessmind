@@ -24,7 +24,7 @@
   /* The lifted header's drop shadow. */
   --shadow: rgba(0, 0, 0, 0.55);
   --sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* Mono is for code and the Bits intro's digits only. */
+  /* Mono is for code and the splash screen's digits only. */
   --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* taste-skill-ignore */
   /* Type steps (DESIGN.md §1): full size at 1440, the phone size by 720 or so. */
   --t-xl: clamp(40px, 5vw, 72px);

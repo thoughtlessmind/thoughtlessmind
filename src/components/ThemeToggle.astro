@@ -12,7 +12,7 @@ const inner = (svg: string) => svg.replace(/^<svg[^>]*>|<\/svg>$/g, '');
 
 <script>
   // Follows the system until clicked, then flips dark and light and remembers it (localStorage 'theme').
-  // Every change fires `theme:change` on window so the intro can redraw in the new ink. One script drives every
+  // Every change fires `theme:change` on window so the splash can redraw in the new ink. One script drives every
   // switch on the page.
   const root = document.documentElement;
   const btns = document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]');

@@ -8,7 +8,7 @@ kinds of page: the home page, the writing list and a post. Product truth (who it
 
 - **Geist** (`--sans`) does every visible word. Weights 400 and 500. Sentence case, no emoji, no em or en dashes.
 - **Geist Mono** (`--mono`) only for code: the posts' code tokens (cards, the writing list), code in posts, the
-  tooltip still's markup and the Bits intro's digits. No mono labels, no small uppercase labels.
+  tooltip still's markup and the splash screen's digits. No mono labels, no small uppercase labels.
 - Seven steps, tokens on `:root`. Each is its full size at 1440 and its phone size by about 720:
 
 | Token      | Size                          | Use                                              |
@@ -89,20 +89,20 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
 ## §4 Motion
 
 One easing, `--ease` = `cubic-bezier(.2, .7, .2, 1)`. Every motion has a reduced-motion path, and idle means zero work:
-CSS animations and transitions only, state from IntersectionObserver, no scroll listeners. rAF runs only in the intro
-and for the planet's bands, and only while they are on screen.
+CSS animations and transitions only, state from IntersectionObserver, no scroll listeners. rAF runs only in the splash
+screen and for the planet's bands, and only while they are on screen.
 
 - **Content rise**: `.rise` elements carry `--d` (unitless ms): header 0 / 60 / 100 / 140 / 180; the name 120, the
-  headline 190, the six fact rows 300 to 500. Only the intro animates them (800 ms, 20 px rise + opacity).
+  headline 190, the six fact rows 300 to 500. Only the splash animates them (800 ms, 20 px rise + opacity).
 - **Doodle draw** (`Doodle.astro`): the landing drawing draws itself once, from the moment the content rises
-  (`html.go`; on load when no intro plays), in the order of the composition: the telescope from the ground up
+  (`html.go`; on load when no splash plays), in the order of the composition: the telescope from the ground up
   (200 ms), the dotted route as a pen moving to the rocket (650 to 1500), the planet's outline (1150), its bands and
   rings fading in (1250, 900 ms), the orbit's dashes sweeping round (1000 to 1850), the moon (1250), the pendulum's
   bar, string and trail (1300), the pendulum starting to swing (1750), the stars popping in one at
   a time from lower left to upper right (1450 to 2150), and last the rocket: its outline (1600), the orange flame
   filling in from the nozzle and a small lift along its heading (1950, 750 ms). About 2.4 s in all. Strokes draw with
   `pathLength="1"` and `stroke-dashoffset`; each carries its delay `--d` and duration `--t` in ms. Fill mode
-  `backwards`, so once done every element is back to its plain state. While the intro plays the animations are held
+  `backwards`, so once done every element is back to its plain state. While the splash plays the animations are held
   (`animation-play-state: paused`) at their hidden start. Under reduced motion the finished drawing shows at once.
 - **Doodle, alive**: two things keep moving after the draw, and both hold still while the doodle is off screen (the
   svg's `.idle`, set by its IntersectionObserver) and under reduced motion.
@@ -114,7 +114,7 @@ and for the planet's bands, and only while they are on screen.
   as real rings do, and its dash clumps orbit by `stroke-dashoffset` with a period ∝ r^1.5 (about 45 s inside to 75 s
   outside). The body hides the far half; a second copy clipped to the near half passes over it. Bands: seven broken
   latitude lines projected on the sphere each frame (64 s day), so they slow and shorten towards the limb and end
-  exactly at it; the loop runs only while the doodle is on screen and not covered by the intro, and its clock stops
+  exactly at it; the loop runs only while the doodle is on screen and not covered by the splash, and its clock stops
   with it.
 - **Header lift**: a CSS scroll-driven animation, `lift` on `animation-timeline: scroll(root)` over
   `animation-range: 0 120px`, takes `--lift` from 0 to 1, so the bar forms as the page leaves the top and dissolves
@@ -138,22 +138,27 @@ and for the planet's bands, and only while they are on screen.
 - **Hover**: links thicken their underline, cards lighten to `--hi`, post covers scale to 1.03 (800 ms, not under
   reduced motion), writing list titles go to `--hi` with the `--accent` dot beside them.
 
-### Intro (`components/Intro.astro`, `scripts/intro/`)
+### Splash screen (`components/Splash.astro`, `scripts/splash/`)
 
-On every load of the home page the mark assembles in the middle of the screen in the theme's ink, moves into the header logo
-(800 ms, centre linear in eased time, scale geometric), turns orange (350 ms) and the real SVG takes over in the same
-frame; the content rises from 200 ms into the move. `?intro=off` skips it (for screenshots and checks).
+On a fresh load or a reload of the home page the mark assembles in the middle of the screen in the theme's ink, moves
+into the header logo (800 ms, centre linear in eased time, scale geometric), turns orange (350 ms) and the real SVG
+takes over in the same frame; the content rises from 200 ms into the move. It does not play when the home page is
+reached from another page of the site (the header logo included) or by back and forward. `?splash=off` skips it (for
+screenshots and checks).
 
-- **Bits** (`bits.ts`, lands 4.05 s), the one intro: a faint field of 0s and 1s gathers into the mark hexagon by
+- **Bits** (`bits.ts`, lands 4.05 s), the one splash: a faint field of 0s and 1s gathers into the mark hexagon by
   hexagon; read row by row the landed digits are the ASCII bits of "rajiv.me". A diagonal sweep turns them into a pixel
   mosaic that resolves into the vector mark. (Machine, the plates that unfolded into the mark, was dropped on 30 Oct.)
 
-Mechanics: a page opts in with `<BaseLayout intro>` (only the home page does), which renders the pre-paint gate and the
-intro canvas. The gate adds `html.intro` (never under reduced motion), which hides `.mark` and `.rise` until the intro
-lands. The intro's frame is a pure function of t (`kit.ts` holds the geometry; prototypes and
-frame-by-frame scrubbing live in the local `docs/v4-research/i-loaders/` playboard). Any click, key, wheel or touch
-skips: the canvas and logo cross-fade (300 ms) and the content rises. A theme change mid-intro redraws in the new ink.
-If the intro script hasn't started 2.5 s after the gate, the page shows anyway. rAF stops at the landing.
+Mechanics: a page opts in with `<BaseLayout splash>` (only the home page does), which renders the pre-paint gate and the
+splash canvas. The gate plays it only when the navigation type is `reload`, or `navigate` with no same-origin referrer;
+it adds `html.splash` (never under reduced motion), which hides `.mark` and `.rise` until the splash lands, and
+everything after the landing too (a screen taller than the hero shows it); that rises with the last fact row (500).
+The splash's frame is a pure function of t (`kit.ts` holds the geometry; prototypes and frame-by-frame scrubbing live
+in the local `docs/v4-research/i-loaders/` playboard). It always plays to the end: clicks and keys don't cut it short,
+and the page holds at the top (`overflow: hidden`, gutter kept) until the content rises. A theme change mid-splash
+redraws in the new ink. If the splash script hasn't started 2.5 s after the gate, the page shows anyway. rAF stops at
+the landing.
 
 ## §5 Home page (`pages/index.astro`)
 

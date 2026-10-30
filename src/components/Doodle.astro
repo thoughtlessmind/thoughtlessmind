@@ -14,7 +14,7 @@ const svg = withPlanet(doodle);
 
 <script>
   import { BANDS, bandPath } from '../scripts/planet';
-  // The bands turn with the planet: projected each frame, only while the doodle is on screen and the intro is not
+  // The bands turn with the planet: projected each frame, only while the doodle is on screen and the splash is not
   // covering it. Time only runs while it does, so nothing jumps. Off screen the svg is also `.idle`, which pauses the
   // CSS loops (the rings and the pendulum).
   const root = document.documentElement;
@@ -29,7 +29,7 @@ const svg = withPlanet(doodle);
       raf = requestAnimationFrame(tick);
     };
     const sync = () => {
-      const go = seen && !root.classList.contains('intro');
+      const go = seen && !root.classList.contains('splash');
       if (go && !raf) raf = requestAnimationFrame(tick);
       if (!go && raf) {
         cancelAnimationFrame(raf);
@@ -84,9 +84,9 @@ const svg = withPlanet(doodle);
     .doodle .swing { animation: d-swing 1100ms cubic-bezier(0.37, 0, 0.63, 1) 1750ms infinite alternate; transform-box: view-box; transform-origin: 760px 799px; }
     .doodle .rocket { animation: d-lift 750ms var(--ease) 1950ms backwards; }
     .doodle .flame { animation: d-pop 450ms var(--ease) 1950ms backwards; transform-box: fill-box; transform-origin: 72% 4%; }
-    /* Held at the start while the intro plays; it runs once the content rises (html.go). */
-    html.intro:not(.go) .doodle,
-    html.intro:not(.go) .doodle * { animation-play-state: paused; }
+    /* Held at the start while the splash plays; it runs once the content rises (html.go). */
+    html.splash:not(.go) .doodle,
+    html.splash:not(.go) .doodle * { animation-play-state: paused; }
     .doodle.idle .ring,
     .doodle.idle .swing { animation-play-state: paused; }
   }

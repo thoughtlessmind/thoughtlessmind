@@ -48,7 +48,7 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
 }
 ```
 
-That is a simplified version of what the home page runs. The real one has a second reason to stop: while the page-load intro covers the drawing, the bands hold still. A MutationObserver watches the class on the root element, and the loop runs only when the drawing is on screen and nothing is in front of it. Both observers feed one `sync` function that decides whether the loop should be running, so there is exactly one place where it starts or stops.
+That is a simplified version of what the home page runs. The real one has a second reason to stop: while the splash screen covers the drawing, the bands hold still. A MutationObserver watches the class on the root element, and the loop runs only when the drawing is on screen and nothing is in front of it. Both observers feed one `sync` function that decides whether the loop should be running, so there is exactly one place where it starts or stops.
 
 The `if (!raf)` guard matters as soon as more than one thing can call `start()`, as in the real version. Without it, a second call would begin a second loop, drawing every frame twice.
 
@@ -68,7 +68,7 @@ With `prefers-reduced-motion: reduce`, none of this runs. The CSS animations are
 @media (prefers-reduced-motion: no-preference) {
   .doodle [pathLength] { animation: d-draw calc(var(--t) * 1ms) var(--ease) calc(var(--d) * 1ms) backwards; }
   .doodle .ring { animation: d-orbit calc(var(--ms) * 1ms) linear infinite; }
-  html.intro:not(.go) .doodle * { animation-play-state: paused; }
+  html.splash:not(.go) .doodle * { animation-play-state: paused; }
 }
 ```
 

@@ -1,6 +1,6 @@
 // Bits: a faint field of 0s and 1s gathers, hexagon by hexagon, into the mark. Read row by row, the landed digits are
 // the ASCII bits of "rajiv.me". Then the mark compiles: bits, pixels, vector.
-import { LOGO, APO, MONO, X as LX, Y as LY, lerp, smooth, hash, hexSD, solid, type Env, type Intro } from './kit';
+import { LOGO, APO, MONO, X as LX, Y as LY, lerp, smooth, hash, hexSD, solid, type Env, type Splash } from './kit';
 
 const BITS = [...'rajiv.me'].flatMap((ch) => [...ch.charCodeAt(0).toString(2).padStart(8, '0')].map(Number));
 
@@ -211,5 +211,5 @@ function draw(c: CanvasRenderingContext2D, t: number, cam: { x: number; y: numbe
   c.globalAlpha = 1;
 }
 
-const bits: Intro = { dock: 2900, init, draw };
+const bits: Splash = { dock: 2900, init, draw };
 export default bits;
