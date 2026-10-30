@@ -91,8 +91,9 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
   of the focus ring and the "you are here" dots: nav links, the theme switch, text links, the post page's Back,
   contents, Copy and Markdown links, and the title of every clickable item (post rows, project rows, the /writing
   list, "Read all 12 posts"). Nothing fades. Hover rules sit under `@media (hover: hover)`, so a tap on a touch
-  screen never leaves anything orange; `:focus-visible` gets the same colour. The two hover moments that are not
-  links, the landing phrase (§5) and the footer name's blob (§4), are slow and large, so they do not read as links.
+  screen never leaves anything orange; `:focus-visible` gets the same colour. The hover moments that are not links,
+  the landing phrase (§5), the footer name's blob and the section doodles' reveal (§4), are slow and large, so they do
+  not read as links.
 - **Browser surfaces**: `::selection` turns the site inside out, `--sel-ink` on `--sel-bg` (the other theme's text
   orange on its page: burnt orange on paper in dark, brand orange on black in light), the caret is `--accent`, the scrollbar is
   thin in half-`--muted` on transparent, and every `time` uses tabular numbers.
@@ -104,8 +105,8 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
 
 One easing, `--ease` = `cubic-bezier(.2, .7, .2, 1)`. Every motion has a reduced-motion path, and idle means zero work:
 CSS animations and transitions only, state from IntersectionObserver, no scroll listeners. rAF runs only in the splash
-screen and for the planet's bands, and only while they are on screen, and for the footer name's blob while a mouse is
-on it.
+screen and for the planet's bands, and only while they are on screen, and for the blobs of the footer name and the
+section doodles while a mouse is on them.
 
 - **Content rise**: `.rise` elements carry `--d` (unitless ms): header 0 / 60 / 100 / 140 / 180; the name 120, the
   headline 190, the six fact rows 300 to 500. Only the splash animates them (800 ms, 20 px rise + opacity).
@@ -119,6 +120,20 @@ on it.
   `pathLength="1"` and `stroke-dashoffset`; each carries its delay `--d` and duration `--t` in ms. Fill mode
   `backwards`, so once done every element is back to its plain state. While the splash plays the animations are held
   (`animation-play-state: paused`) at their hidden start. Under reduced motion the finished drawing shows at once.
+- **Section doodles** (`Doodle.astro` with `art`): hidden in plain sight, and no draw-on. The drawing sits in a clip
+  path that is empty until a mouse comes over its box; then the footer name's blob (`trail` in `scripts/blob.ts`, the
+  same springs, stretch and wobble, radius 270 units, about 82px at 1440) trails the cursor as the clip, and only the
+  lines under it show, cut at its rim, as the footer name's fill is. A second path sharing the outline lies under the
+  lines as a faint jelly (`--line`). On leaving it shrinks away and rAF stops. Never on touch; under reduced motion a
+  plain circle on the cursor.
+  - **Alive under the blob**: while the svg is hovered, its parts loop on their own clocks (CSS only, rigged by
+    `sections.mjs`); off hover every loop pauses where it is, so idle is zero work. Writing: the pen writes the four
+    rows in turn (each draws on as the nib follows it), lifts off, the full page tears away up and to the left and a
+    blank one settles (12 s); the post scrolls up the laptop screen, clipped to it (16 s); the bulb's rays glow, the
+    thought trail bobs, the sparkles twinkle. Projects: the gears turn, the small one the other way and faster by its
+    size (24 s a turn for the big one); the flask's surface sloshes, two bubbles rise through the liquid and pop, three
+    stream out of the neck; the parcel's tag sways from its knot and its motion strokes whoosh away in turn. All slow
+    and small. Under reduced motion they hold still, the page fully written.
 - **Doodle, alive**: two things keep moving after the draw, and both hold still while the doodle is off screen (the
   svg's `.idle`, set by its IntersectionObserver) and under reduced motion.
   The pendulum swings between its drawn extreme and its far ghost (rotate 0 to -55° about the pivot, 1.1 s each way,
@@ -234,6 +249,16 @@ Sections, in order:
 3. **Writing** (`#writing`) and 4. **Projects** (`#projects`) share one grid on `--cols`: the h2 and its note (muted,
    max 22em, under it) in the first column, sticky at `--head-h` + 40px, the rows from the axis. Under 1000px the head
    is static and the rows follow it.
+   - Under each note, 56px down, the section's doodle (`.sk`, at most 300px wide and
+     `clamp(180px, 100svh - --head-h - 420px, 270px)` tall, about the note's width, held to the left edge, sticky with
+     the head): a story in three objects on one dashed route that zigzags down the column, traced from Codex line art
+     like the landing doodle (`src/assets/doodle-<section>.svg`, made by `sections.mjs` in the local
+     `docs/v4-research/art/vector/`). It is hidden until a mouse uncovers it with the blob (§4), so the
+     page still shows one drawing and the column reads empty. Its strokes are `--muted`, one small spark is `--logo`,
+     and any other filled area is the stroke colour at 22%. Writing: a thought cloud with a
+     lightbulb (the orange spark), a pen writing a page, a laptop showing it as a post (faint title bar). Projects: a
+     lab flask (faint liquid), two gears, a parcel with a tag going out (orange tape). The traced wrench tangled with the
+     small gear, so both were dropped and the small gear redrawn as a scaled copy of the big one. Gone under 1000px.
    - Writing: the note "Notes on putting models to work and building for the web.", the four newest posts as
      `PostCard` rows, then a row of its own between hairlines: "Read all 12 posts" (`--t-sm`, 500, the live count)
      with a `--accent` arrow at the far end that slides 6px on hover (reduced motion: it stays); the label turns

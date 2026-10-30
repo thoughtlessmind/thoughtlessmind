@@ -112,6 +112,7 @@ const mark =
     <div class="head">
       <h2 class="h2" id="writing-h">Writing</h2>
       <p class="note">Notes on putting models to work and building for the web.</p>
+      <div class="sk" aria-hidden="true"><Doodle art="writing" /></div>
     </div>
     <div class="list">
       <ul>
@@ -131,6 +132,7 @@ const mark =
     <div class="head">
       <h2 class="h2" id="projects-h">Projects</h2>
       <p class="note">Tools I built for my own problems, then released.</p>
+      <div class="sk" aria-hidden="true"><Doodle art="projects" /></div>
     </div>
     <ul class="list">
       {
@@ -395,6 +397,21 @@ const mark =
     margin-top: 12px;
     color: var(--muted);
     text-wrap: pretty;
+  }
+  /* Under the note, the section's doodle: its story in three objects on a dashed route, in --muted, hidden until a
+     mouse over this box carries the blob that shows it. Phones skip it: there the rows follow the head. */
+  .sk {
+    width: min(100%, 300px);
+    height: clamp(180px, 100svh - var(--head-h) - 420px, 270px);
+    margin-top: 56px;
+  }
+  .sk :global(.doodle) {
+    color: var(--muted);
+  }
+  @media (max-width: 999px) {
+    .sk {
+      display: none;
+    }
   }
   /* After the post rows, the way to the rest: a row of its own, the arrow in orange. */
   .all {

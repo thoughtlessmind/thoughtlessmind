@@ -35,17 +35,19 @@ after a build.
 ## Layout of src
 
 ```
-assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG;
+assets/          doodle.svg (the landing drawing), doodle-writing.svg and doodle-projects.svg (the section doodles),
+                 covers/<slug>.svg (post covers): line art traced to SVG;
                  name.svg (the footer's hand-drawn "rajiv")
 components/      Header (fixed, lifts on scroll), Footer (the name draws, a blob reveals it), ThemeToggle, PostCard,
-                 Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet, the loops)
+                 Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet, the loops; `art` for a
+                 section doodle)
 content/writing/ the posts, <slug>.md (frontmatter in content.config.ts)
 layouts/         BaseLayout (head, pre-paint script, header, main, footer, splash)
 lib/writing.ts   getPosts, cover, reading time, date formats
 pages/           index, writing/index, writing/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, 404
 scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
-                 planet.ts (the doodle's turning planet), blob.ts (the liquid blob outline the footer and the theme
-                 pour share) (DESIGN.md §4)
+                 planet.ts (the doodle's turning planet), blob.ts (the liquid blob: its outline, shared with the theme
+                 pour, and the cursor trail that reveals the footer name and the section doodles) (DESIGN.md §4)
 styles/          global.css (tokens, @theme, base, header, theme switch, links, view transitions), prose.css (posts)
 consts.ts        facts: name, brand, title, description, email, socials, location, role, since, nav
 ```
