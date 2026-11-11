@@ -2,7 +2,29 @@
 // One sun that morphs into a moon (DESIGN.md §3, §4), drawn in Phosphor's regular weight. The moon is the orb grown,
 // with a shade circle slid in from the top right: the mask cuts the orb's outline where the shade covers it and the
 // shade's own outline, clipped to the orb, closes the crescent. The rays spin away into the middle.
+// Before it, the palette dot (DESIGN.md §2): it opens a toggle group of the palettes on trial, which pour in the same
+// way.
+const palettes = [
+  { id: 'orange', name: 'Orange' },
+  { id: 'jade', name: 'Jade' },
+  { id: 'blue', name: 'Blue' },
+];
 ---
+<button class="pal hit rise" style="--d:160" type="button" popovertarget="palettes" aria-label="Colours" title="Colours"></button>
+<div class="pick" id="palettes" popover>
+  <fieldset>
+    <legend class="sr-only">Colours</legend>
+    {
+      palettes.map((p) => (
+        <label>
+          <input type="radio" name="palette" value={p.id} />
+          <i data-p={p.id} aria-hidden="true"></i>
+          {p.name}
+        </label>
+      ))
+    }
+  </fieldset>
+</div>
 <button class="theme rise" style="--d:180" type="button" aria-label="Switch to light theme" data-theme-toggle>
   <svg viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" aria-hidden="true" focusable="false">
     <mask id="sm-cut" maskUnits="userSpaceOnUse">
@@ -86,10 +108,10 @@
 
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   let pouring: ViewTransition | undefined;
-  const flip = (e: MouseEvent) => {
+  const pour = (from: Element, apply: () => void) => {
     if (still.matches || !document.startViewTransition) return apply();
     const knobs = roll();
-    const b = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const b = from.getBoundingClientRect();
     const x = b.left + b.width / 2, y = b.top + b.height / 2;
     root.classList.add('pour');
     const vt = (pouring = document.startViewTransition(apply));
@@ -99,11 +121,27 @@
     // A second click mid-pour skips this one; only the latest takes the class off.
     vt.finished.finally(() => pouring === vt && root.classList.remove('pour'));
   };
-  btns.forEach((b) => b.addEventListener('click', flip));
+  btns.forEach((b) => b.addEventListener('click', () => pour(b, apply)));
   light.addEventListener('change', () => {
     if (root.dataset.theme) return; // a picked theme ignores the system
     sync();
     changed();
   });
   sync();
+
+  // The palettes on trial: orange (no attribute), jade, blue, picked in the dot's toggle group. A pick pours in from
+  // its swatch, is kept in localStorage 'palette' and fires `theme:change` like a theme does.
+  document.querySelectorAll<HTMLInputElement>('input[name="palette"]').forEach((r) => {
+    r.checked = r.value === (root.dataset.palette ?? 'orange');
+    r.addEventListener('change', () =>
+      pour(r.nextElementSibling ?? r, () => {
+        if (r.value === 'orange') delete root.dataset.palette;
+        else root.dataset.palette = r.value;
+        try {
+          localStorage.setItem('palette', r.value);
+        } catch {}
+        changed();
+      }),
+    );
+  });
 </script>

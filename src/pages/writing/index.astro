@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Doodle from '../../components/Doodle.astro';
 import { day, getPosts, iso, minutes } from '../../lib/writing';
 
 // Every post, grouped by year, newest first. The title carries a view-transition-name, so it morphs into the
@@ -10,12 +11,13 @@ const first = posts.at(-1)?.data.date.getUTCFullYear();
 const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ? ` since ${first}` : ''}`;
 ---
 
-<BaseLayout title="Writing, Rajiv Kumar" description="Notes on putting models to work, building for the web, and the problems I would rather solve once." current="writing">
+<BaseLayout title="Writing, Rajiv Kumar" description="Notes on building for the web, and the problems I would rather solve once." current="writing">
   <div class="list">
     <header class="head">
       <h1>Writing</h1>
-      <p class="dek">Notes on putting models to work, building for the web, and the problems I would rather solve once.</p>
+      <p class="dek">Notes on building for the web, and the problems I would rather solve once.</p>
       <p class="count">{count}</p>
+      <div class="sk" aria-hidden="true"><Doodle art="writing" /></div>
     </header>
     <div class="years">
       {
@@ -75,6 +77,12 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     font-size: var(--t-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+  }
+  /* The home page's Writing doodle, here too: the pencil sketch under the head, inked by a mouse (Doodle.astro). */
+  .sk {
+    width: min(100%, 300px);
+    height: clamp(180px, 100svh - var(--head-h) - 480px, 270px);
+    margin-top: 56px;
   }
 
   .year + .year {
@@ -169,6 +177,9 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     .head {
       position: static;
       padding-right: 0;
+    }
+    .sk {
+      display: none;
     }
     .years {
       margin-top: 56px;

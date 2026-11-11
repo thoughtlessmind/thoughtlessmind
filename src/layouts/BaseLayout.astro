@@ -14,12 +14,18 @@ export interface Props {
   current?: 'writing';
   /** The header's reading-progress line (post pages). */
   progress?: boolean;
+  /** Open Graph type: a post is an article. */
+  type?: 'website' | 'article';
+  /** Structured data for the page (schema.org), as one object. */
+  jsonLd?: Record<string, unknown>;
 }
 
-const { title = SITE.title, description = SITE.description, splash = false, current, progress = false } = Astro.props;
+const { title = SITE.title, description = SITE.description, splash = false, current, progress = false, type = 'website', jsonLd } = Astro.props;
 // No trailing slash (trailingSlash: 'never'); the root stays `/`.
 const path = Astro.url.pathname;
 const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Astro.site);
+// One link-preview card for every page: the landing drawing with the name and the headline (public/og.png).
+const card = new URL('/og.png', Astro.site).href;
 // ponytail: theme-color follows the system only; a theme picked with the switch keeps the system's bar colour.
 ---
 
@@ -30,13 +36,22 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.brand} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical.href} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={card} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${SITE.name}. Software you don’t have to think about. A line drawing of a telescope, a ringed planet and a rocket.`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={card} />
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml" title={`${SITE.name}, writing`} />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
-    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
+    {jsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />}
+    <slot name="head" />
+    <meta name="theme-color" content="#02070a" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -45,13 +60,16 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <script is:inline>
-      // Before paint: `js` on <html>, and the theme picked with the switch (it follows the system until then).
+      // Before paint: `js` on <html>, the theme picked with the switch (it follows the system until then) and the
+      // palette picked with the dot (orange until then).
       (() => {
         const root = document.documentElement;
         root.classList.add('js');
         try {
           const t = localStorage.getItem('theme');
           if (t === 'dark' || t === 'light') root.dataset.theme = t;
+          const p = localStorage.getItem('palette');
+          if (p === 'jade' || p === 'blue') root.dataset.palette = p;
         } catch {}
       })();
     </script>
@@ -78,8 +96,9 @@ const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Ast
     }
   </head>
   <body>
+    <a class="skip" href="#main">Skip to content</a>
     <Header current={current} progress={progress} />
-    <main class="wrap"><slot /></main>
+    <main class="wrap" id="main" tabindex="-1"><slot /></main>
     <Footer />
     {splash && <Splash />}
   </body>

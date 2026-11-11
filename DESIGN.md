@@ -33,26 +33,47 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 
 | Token      | Dark                    | Light                 | Use                       |
 | ---------- | ----------------------- | --------------------- | ------------------------- |
-| `--bg`     | `#141414`               | `#f3f2ee`             | page                      |
-| `--panel`  | `#1c1c1c`               | `#e8e7e1`             | raised surfaces           |
+| `--bg`     | `#02070a`               | `#f3f2ee`             | page (midnight black)     |
+| `--panel`  | `#0c1419`               | `#e8e7e1`             | raised surfaces           |
 | `--line`   | `rgba(237,237,234,.1)`  | `rgba(21,21,21,.12)`  | hairlines                 |
 | `--ink`    | `#ededea`               | `#151515`             | text                      |
 | `--muted`  | `#8f8f8a`               | `#63635e`             | secondary text            |
 | `--hi`     | `#ffffff`               | `#000000`             | emphasis                  |
-| `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark, the doodles' orange, the footer name's revealed fill (decorative) |
+| `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark and the rocket's flame (decorative) |
+| `--spot`   | `--logo`                | `--logo`              | the drawings' filled bits: the doodles' hexagon and spark, cover accents, the footer name's revealed fill (decorative) |
 | `--accent` | `#ff5f1f`               | `#c2410c`             | text orange, focus ring, active dots, reading line |
 | `--shadow` | `rgba(0,0,0,.55)`       | `rgba(38,34,26,.14)`  | the lifted header's drop shadow, nothing else |
-| `--sel-bg` | `#f3f2ee`               | `#141414`             | selected text's ground: the other theme's page |
-| `--sel-ink`| `#c2410c`               | `#ff5f1f`             | selected text: the other theme's text orange (4.6:1 / 6.1:1) |
+| `--sel-bg` | `#f3f2ee`               | `#02070a`             | selected text's ground: the other theme's page |
+| `--sel-ink`| `#c2410c`               | `#ff5f1f`             | selected text: the other theme's text orange (4.6:1 / 6.7:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
-`data-theme="light"`. Both pass WCAG AA for text; `--logo` is only ever the mark, drawings and the decorative
-footer name, never running text.
+`data-theme="light"`. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
+decorative footer name, never running text.
+
+**Palettes on trial.** The dot beside the theme switch picks orange (the tokens above, no attribute), jade or blue
+(`data-palette` on `<html>`, stored in `localStorage['palette']`, set before paint). Each palette restates the tokens
+above except `--hi` with the same three rules, dark, light by the system and light picked; its light rules set every
+token its dark rule does, so they win over it. Jade's `--logo` (and so `--spot`) takes its first colour, `--accent` its
+second, a darker step on light. Blue puts its blue in `--spot` and keeps the logo and the rocket's flame in its orange,
+the same on light. Selection keeps the rule: the other theme's page and text accent.
+
+| Token      | Jade dark | Jade light | Blue dark | Blue light |
+| ---------- | --------- | ---------- | --------- | ---------- |
+| `--bg`     | `#171f44` | `#eef0f7`  | `#02070a` | `#f0f3f5`  |
+| `--panel`  | `#1f2854` | `#e1e5f0`  | `#0c1419` | `#e2e8eb`  |
+| `--ink`    | `#e9ecf5` | `#171f44`  | `#e8eef1` | `#02070a`  |
+| `--muted`  | `#9ba2c2` | `#575e80`  | `#88949b` | `#56616a`  |
+| `--logo`   | `#74ffed` | `#0c9484`  | `#fc734d` | `#fc734d`  |
+| `--spot`   | `--logo`  | `--logo`   | `#0297de` | `#0284c7`  |
+| `--accent` | `#fe81d1` | `#b8187a`  | `#fc734d` | `#ad3b19`  |
+
+Text on `--bg`: accent 7.1 / 5.4 / 7.4 / 5.5:1, muted 6.3 / 5.6 / 6.5 / 5.7:1, so all four pass AA. `--line` is the
+palette's ink at 10% (12% on light), `--shadow` its ink or black. The splash reads `--logo` for its tint.
 
 Code in posts uses Shiki's `github-dark-default` and `github-light-default` on `--panel`, both themes emitted as
 `--shiki-dark` / `--shiki-light` and picked by the token rules in `prose.css`. The light theme is drawn for white, so a
 transformer in `astro.config.mjs` swaps its comment, keyword and function colours for Primer's next darker step: the
-worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
+worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
 
 ## §3 Chrome
 
@@ -77,16 +98,28 @@ worst token is 5.2:1 on the light panel and 5.5:1 on the dark one.
   showing the theme it switches to: a sun on dark, a moon on light, one drawing that morphs between them (§4). CSS
   sets its state, `--m` 0 or 1, with the same rules as the tokens, so it is right before any script runs; the name says the action ("Switch to light theme"). It follows the system until clicked,
   then stores `localStorage['theme']` and fires `theme:change` on window. One script drives every switch on a page.
-  A click pours the new theme out of the switch (§4).
+  A click pours the new theme out of the switch (§4). Before it, the palette dot (`.pal`, "Colours"): a 10px dot
+  split diagonally into the current `--spot` and `--accent`, in a 24px hit area. It opens the palette picker
+  (`.pick`), a native popover hung 10px under the dot by anchor positioning, flush with the right margin: a toggle
+  group on `--panel` (1px `--line`, radius 8px) with one segment per palette, each its swatch (that palette's own two
+  colours, whatever the page wears) and name: Orange, Jade, Blue. The pick is `--ink` on `--bg`, the others `--muted`.
+  Radios underneath: arrows move the pick, Esc or a click outside closes it, focus rings sit inside the segment. A
+  pick pours its palette out of its swatch (§2, §4); the picker stays open to compare.
+- **Skip link** (`BaseLayout.astro`, `.skip`): the first focusable thing on every page, "Skip to content". Off screen
+  until the keyboard reaches it, then an `--ink` chip over the header's left corner; it jumps to `main#main`.
 - **Footer** (`Footer.astro`, every page): one row of "Write to me at <email>", the socials (GitHub, LinkedIn, X,
-  dev.to, Stack Overflow) and `llms.txt`, then "© 2026 Rajiv Kumar" (a column on a phone). Under it a giant lowercase
+  dev.to, Stack Overflow), `RSS` and `llms.txt`, then "© 2026 Rajiv Kumar" (a column on a phone). Under it a giant lowercase
   "rajiv" as wide as the content, drawn like the doodle: Geist 500's outlines redrawn by hand (anchors nudged,
   straight runs bowed, each line running a little past its start), traced to `src/assets/name.svg` (generator in the
   local `docs/v4-research/art/vector/name.mjs`). Outline only, round-capped, in `--muted` at 70% (3.5 units, 7 at
   720px and under, so about 2.5px at 1440 and 1.3px at 375). The viewBox crops it to its top half at the bottom of
-  the page. The `--logo` fill shows only where the cursor's blob is (§4).
+  the page. The `--spot` fill shows only where the cursor's blob is (§4).
 - **Text links** (`.ul`, and links in posts): 1px underline at 0.22em offset; on hover or keyboard focus the text and
   its underline turn `--accent` and the underline goes to 2px. Focus ring: 2px `--accent`, offset 2px.
+- **Hit areas**: small links and controls take a finger without growing. The logo and the theme switch pad out to
+  44px against a negative margin; the nav links and anything with `.hit` (footer links, the palette dot, a post's
+  back link and Markdown controls on a phone, "All writing", the 404's links) carry a pseudo-element about 44px tall
+  over the label. Rows of them sit far enough apart that the areas meet and never overlap.
 - **Hover**: one answer everywhere. Whatever you point at or tab to turns `--accent` over 200ms `--ease`, the colour
   of the focus ring and the "you are here" dots: nav links, the theme switch, text links, the post page's Back,
   contents, Copy and Markdown links, and the title of every clickable item (post rows, project rows, the /writing
@@ -120,14 +153,17 @@ section doodles while a mouse is on them.
   `pathLength="1"` and `stroke-dashoffset`; each carries its delay `--d` and duration `--t` in ms. Fill mode
   `backwards`, so once done every element is back to its plain state. While the splash plays the animations are held
   (`animation-play-state: paused`) at their hidden start. Under reduced motion the finished drawing shows at once.
-- **Section doodles** (`Doodle.astro` with `art`): hidden in plain sight, and no draw-on. The drawing sits in a clip
-  path that is empty until a mouse comes over its box; then the footer name's blob (`trail` in `scripts/blob.ts`, the
-  same springs, stretch and wobble, radius 270 units, about 82px at 1440) trails the cursor as the clip, and only the
-  lines under it show, cut at its rim, as the footer name's fill is. A second path sharing the outline lies under the
-  lines as a faint jelly (`--line`). On leaving it shrinks away and rAF stops. Never on touch; under reduced motion a
-  plain circle on the cursor.
-  - **Alive under the blob**: while the svg is hovered, its parts loop on their own clocks (CSS only, rigged by
-    `sections.mjs`); off hover every loop pauses where it is, so idle is zero work. Writing: the pen writes the four
+- **Section doodles** (`Doodle.astro` with `art`): a pencil sketch that the cursor inks, and no draw-on. The drawing
+  is in the page twice: `.rest`, always on show in `--muted`, and over it `.ink`, the same lines in `--ink` inside a
+  clip path that is empty until a mouse comes over its box. Then the footer name's blob (`trail` in `scripts/blob.ts`,
+  the same springs, stretch and wobble, radius 270 units, about 82px at 1440) trails the cursor as the clip, so the
+  sketch turns to ink under it, cut at its rim, as the footer name's fill is. A third path sharing the outline lies
+  under the lines as a faint jelly (`--line`). On leaving it shrinks away and rAF stops. On touch the sketch stays a
+  sketch; under reduced motion the blob is a plain circle on the cursor. (Until 11 Nov the drawing was hidden outside
+  the blob: nobody on touch and few with a mouse ever saw it.)
+  - **Alive on hover**: while the svg is hovered, its parts loop on their own clocks (CSS only, rigged by
+    `sections.mjs`), the sketch and its ink copy on one clock, so they stay in register; off hover every loop pauses
+    where it is, so idle is zero work. Writing: the pen writes the four
     rows in turn (each draws on as the nib follows it), lifts off, the full page tears away up and to the left and a
     blank one settles (12 s); the post scrolls up the laptop screen, clipped to it (16 s); the bulb's rays glow, the
     thought trail bobs, the sparkles twinkle. Projects: the gears turn, the small one the other way and faster by its
@@ -154,7 +190,8 @@ section doodles while a mouse is on them.
   `html.lifted` and `--lift` transitions over 300 ms. Under reduced motion the surface still forms but the bar keeps
   its resting height. The reading line on post pages runs on the same timeline (`progress`, scale 0 to 1).
 - **Scroll spy**: on the home page the section crossing the middle of the screen (`rootMargin: -45% 0px -54% 0px`)
-  lights its header link: the landing and Lately are About, Writing is Writing, Projects and the footer are Projects.
+  lights its header link: the landing, Now and Experience are About, Writing is Writing, Projects and the footer are
+  Projects.
   On a post, the contents' active heading is the last one above 30% of the viewport (root margin
   `100000px 0px -70% 0px`, so a jump of any length still flips it). In-page links scroll smoothly
   (`html { scroll-behavior: smooth }`, instant under reduced motion).
@@ -183,7 +220,7 @@ section doodles while a mouse is on them.
   outline from its start, left to right, 130 ms apart, each taking 350 ms plus its length (up to 1.1 s), about 2 s in
   all. Without JS or under reduced motion it is drawn from the start.
   - **Reveal**: a mouse over the name (`hover: hover` and `pointer: fine`, never touch) carries a liquid blob, the
-    clip path of a `--logo` copy of the same outlines under the pen, so the letters fill orange inside it and the
+    clip path of a `--spot` copy of the same outlines under the pen, so the letters fill orange inside it and the
     outline stays as it is. The blob (radius 140 units, about 100px at 1440) swells in on a bouncy spring, its centre
     trails the cursor on a looser one, it stretches along its speed (up to 1.5x, thinner across) and its rim wobbles
     (three sines turning at different rates). On leaving it shrinks away and rAF stops. Under reduced motion it is a
@@ -215,8 +252,8 @@ the landing.
 
 ## §5 Home page (`pages/index.astro`)
 
-Quiet: about him in one paragraph, what he works on now, what he wrote, the things he made. One drawing, one
-moving moment (the doodle drawing itself), the header for getting around. The AI depth is shown, never titled: no
+Quiet: about him in one paragraph, what he works on now, where he has worked, what he wrote, the things he made. One
+drawing that draws itself, two pencil sketches beside the lists, the header for getting around. The AI depth is shown, never titled: no
 "AI engineer" anywhere. Copy is written the way the best engineers' own sites are (Lee Robinson, Mitchell Hashimoto,
 Hamel Husain): who and where, what now, one line of values, one human line. No labels, no adjectives about himself.
 Sections, in order:
@@ -224,49 +261,62 @@ Sections, in order:
 1. **Landing** (`#about`): `min-height: clamp(640px, 100vh, 960px)`, the text vertically centred. Left column
    `min(760px, 52vw)`: the name (`--t-m`, `--accent`), then the h1 "Software you don’t / have to think about."
    (`--t-xl`, two authored lines). Under it two short paragraphs (`--t-sm`, `--ink`, max 31em, 16px apart): "I’m a
-   software engineer. I’ve been building web and native apps since 2019, along with the backends behind them and the
-   infrastructure they run on." / "These days most of my time goes to putting language models to work inside real
+   software engineer in New Delhi. I’ve been building web and native apps since 2019, along with the backends behind
+   them and the infrastructure they run on." / "These days most of my time goes to putting language models to work inside real
    products. The goal hasn’t changed: software that’s fast to load, clear to use and boring to run." The values phrase
    (`.hl`) looks like the rest until the pointer is anywhere on the two paragraphs; then `--accent` flows through it
    left to right, line after line, and ebbs back on leave. It is text clipped to a `--accent` to `--ink` gradient
    (soft 40% to 60% edge, 250% wide, one strip across the line break) whose position slides 100% to 0 over 1100ms
-   `--ease`. Reduced motion: the colour switches at once. Touch shows plain text. Then one muted line, its links in
-   `--ink`: "Off screen: astronomy, rockets, physics and sport. Say hello by email, or find me on GitHub, LinkedIn and
-   X." The right
+   `--ease`. Reduced motion: the colour switches at once. Touch shows plain text. Then two lines at `--t-s` (max
+   42em). The person, muted and balanced: "Off screen: astronomy, rockets, physics and sport. The drawing covers three
+   of the four." And 12px under it, in `--ink`, how to reach him, the address spelled out so it can be read and
+   copied: "Write to me at hello@rajiv.me, or find me on GitHub, LinkedIn and X." The right
    48% (to the screen edge) holds the doodle, centred with 96 / 56 / 40 px of air: a sketchbook line drawing of a
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local
-   `docs/v4-research/art/vector/`; the planet is generated, see §4): strokes on `currentColor` (`--ink`), the flame and
-   one hexagon in `--logo`, so it follows the theme. At 720px and under: the doodle in a 208px band under the header
-   (strokes 1.8x thicker), the text below, the headline balanced over three lines (no forced break).
-2. **Now** (`#now`, counted as About by the scroll spy): a grid on `--cols`. The h2 "Now" in the first column; from
-   the axis, on its baseline, the thesis (`--t-l`, 500, max 18em, balanced): "The model is rarely the hard part.
-   Everything around it is." Under it its four parts in two columns (one on a phone), each a 500 title and a muted
-   sentence on a `--line` hairline. The titles echo the posts: Tools, not paragraphs (MCP servers); A budget for every
-   call (features in production, time and cost limits, a fallback); Evals before vibes; Agents on the team. Last, a
-   muted line led by "Coming soon" in `--accent`: Orca, a macOS menu bar timer that you and an agent drive together
-   over MCP (no link until it ships). Under 1000px everything stacks under the h2.
-3. **Writing** (`#writing`) and 4. **Projects** (`#projects`) share one grid on `--cols`: the h2 and its note (muted,
+   `docs/v4-research/art/vector/`; the planet is generated, see §4): strokes on `currentColor` (`--ink`), the flame in
+   `--logo` and one hexagon in `--spot`, so it follows the theme. At 720px and under: the doodle in a 208px band under
+   the header (strokes 1.8x thicker), the text below, the headline balanced over three lines (no forced break).
+2. **Now** (`#now`, counted as About by the scroll spy): a grid on `--cols`. The h2 "Now" in the first column with
+   its note under it ("Where most of my week goes."); from the axis, on the h2's baseline, the thesis (`--t-l`, 500,
+   max 18em, balanced): "The model is rarely the hard part. Everything around it is." Under it its four parts in two
+   columns (one on a phone), each a 500 title and a muted sentence on a `--line` hairline. Each sentence is in the
+   first person and in words a founder or recruiter can follow, the outcome last; the posts on these
+   topics, once written, carry the technical terms (no MCP, evals, hooks or diffs here). Tools, not paragraphs (a few narrow tools over a product's
+   real data and actions); A budget for every call (a time limit, a cost limit and a fallback on every feature);
+   Tested before trusted (every prompt or model change runs against past failures); Agents on the team (coding agents
+   under written rules). Last, a muted line led by "Coming soon" in `--accent`: Orca, a timer for the macOS menu bar
+   that you and an AI agent can both run (no link until it ships). Under 1000px everything stacks under the h2.
+3. **Experience** (`#experience`, counted as About by the scroll spy): the grid of Writing and Projects, the h2 alone
+   in the first column. From the axis, one row per job on a `--line` hairline (24px padding), newest first, read in
+   the post rows' order: when (`--t-xs`, `--muted`: "Now", "2020"), the role and employer (`--t-sm`, 500), then one
+   muted line on the product and his part in it, in plain words (max 38em). The one place an employer is named:
+   "Senior Frontend Engineer, swipejobs", then "Frontend Engineer, Influence". Real titles only, no stats.
+4. **Writing** (`#writing`) and 5. **Projects** (`#projects`) share one grid on `--cols`: the h2 and its note (muted,
    max 22em, under it) in the first column, sticky at `--head-h` + 40px, the rows from the axis. Under 1000px the head
    is static and the rows follow it.
    - Under each note, 56px down, the section's doodle (`.sk`, at most 300px wide and
      `clamp(180px, 100svh - --head-h - 420px, 270px)` tall, about the note's width, held to the left edge, sticky with
      the head): a story in three objects on one dashed route that zigzags down the column, traced from Codex line art
      like the landing doodle (`src/assets/doodle-<section>.svg`, made by `sections.mjs` in the local
-     `docs/v4-research/art/vector/`). It is hidden until a mouse uncovers it with the blob (§4), so the
-     page still shows one drawing and the column reads empty. Its strokes are `--muted`, one small spark is `--logo`,
-     and any other filled area is the stroke colour at 22%. Writing: a thought cloud with a
+     `docs/v4-research/art/vector/`). It rests as a pencil sketch and a mouse inks it with the blob (§4),
+     so every section's first column carries the site's drawing hand. Its strokes are `--muted`, one small spark is
+     `--spot`, and any other filled area is the stroke colour at 22%. Writing: a thought cloud with a
      lightbulb (the orange spark), a pen writing a page, a laptop showing it as a post (faint title bar). Projects: a
      lab flask (faint liquid), two gears, a parcel with a tag going out (orange tape). The traced wrench tangled with the
      small gear, so both were dropped and the small gear redrawn as a scaled copy of the big one. Gone under 1000px.
-   - Writing: the note "Notes on putting models to work and building for the web.", the four newest posts as
-     `PostCard` rows, then a row of its own between hairlines: "Read all 12 posts" (`--t-sm`, 500, the live count)
+   - Writing: the note "Notes on building for the web, and the problems I would rather solve once." (the same
+     line as the /writing dek; "putting models to work" comes back into both when those posts are published), the
+     four newest posts that have a cover drawing as `PostCard` rows (so the list is a mix and every row carries a
+     doodle; a new post joins it once its cover is drawn), then a row of its own between hairlines: "Read all 6
+     posts" (`--t-sm`, 500, the live count)
      with a `--accent` arrow at the far end that slides 6px on hover (reduced motion: it stays); the label turns
      `--accent` too.
    - Every clickable item (post rows, project rows, the /writing list) turns its title `--accent` while the pointer
      is anywhere on the item, cover and still included, or the item has keyboard focus (§3 Hover). Nothing else in
      the row changes colour.
-   - Projects: the note "Tools I built for my own problems, then released." One row per project on a `--line`
+   - Projects: the note "Tools I built for my own problems, then released." The tools newest first (Diver,
+     css-only-tooltip, YouTube Playlist Info), then this site as the colophon. One row per project on a `--line`
      hairline (28px padding, about 340px tall at 1440, so two fit on a screen), each a link to the real thing, split
      2fr / 3fr with a 32px gap: the text ("Kind, year" in `--muted`, the name in `--t-sm`, a muted two-sentence
      summary, then where the link goes, underlined: View on npm, Chrome Web Store, Open the app, Read the source) and
@@ -280,18 +330,19 @@ Sections sit 136px apart (104px on a phone). The footer is the layout's (§3).
 1000px): on a `--line` hairline with 24px padding, the text on the left ("Oct 2026 · 4 min read" in `--muted`, the
 title in `--t-sm`, the muted summary, max 38em) and, 32px away, a 16:10 `--panel` cover `clamp(152px, 14vw, 208px)`
 wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in
-`--logo`, scaled 1.25 so the drawing (at most 70% of its frame) keeps only a thin margin; a post with no cover yet
+`--spot`, scaled 1.25 so the drawing (at most 70% of its frame) keeps only a thin margin; a post with no cover yet
 shows its line of code there, in mono at `--t-code`. On a phone the cover sits above the text.
 
 ## §6 Writing list (`pages/writing/index.astro`)
 
 A grid on `--cols` from 1000px up. The first column is a sticky head (top `--head-h` + 40px): the h1 "Writing"
-(`--t-xl`), the dek "Notes on putting models to work, building for the web, and the problems I would rather solve
-once." (`--t-sm`, `--muted`) and a count ("12 posts since 2021"). From the axis, the posts by year, newest first: the
+(`--t-xl`), the dek "Notes on building for the web, and the problems I would rather solve once." (`--t-sm`,
+`--muted`) and a count ("6 posts since 2021"). From the axis, the posts by year, newest first: the
 year (`--t-xs`, `--muted`) on a hairline, then one link per post with hairlines between: title (`--t-sm`, 500),
 description (`--muted`, max 40em) and a meta line of date, "N min read" and the post's code in mono. No thumbnails: the
 list is for scanning. Rows are a `minmax(0, 1fr)` grid, so the mono line ellipsises instead of widening the page.
-Under 1000px one column with the head on top.
+Under the count, 56px down, the home page's Writing doodle (§5), the same sketch and blob, so the list has the
+site's drawing too. Under 1000px one column with the head on top and no doodle.
 
 ## §7 Post (`pages/writing/[slug].astro`, `styles/prose.css`)
 
@@ -304,17 +355,35 @@ code, canonical, draft; helpers in `lib/writing.ts`). From 1000px a grid on `--c
   post's `.md` into the clipboard; the icon becomes an `--accent` tick and the label "Copied" for 2 s, announced by an
   `aria-live` region) and "View as Markdown".
 - **Article**, from the axis: the title (§1), the description as a dek (`--t-sm`, `--muted`), the cover (16:10
-  `--panel`, posts without one have none), then the prose: max 68ch, 17px/1.7, h2 at `--t-sm`, inline code on
+  `--panel`, posts without one have none), then the prose: a column of max 68ch, 17px/1.7, whose text blocks
+  (paragraphs, lists, quotes) keep to 37em, about 75 characters a line (the full column measured 92 in Geist); code,
+  tables and images use all of it. h2 at `--t-sm`, inline code on
   `--panel`, code blocks on `--panel` with no radius, blockquotes with a 1px `--line` rule, tables and rules in
-  hairlines. A post first published elsewhere ends with "First published on <host>."
+  hairlines. A post first published elsewhere ends with "First published on <host>." Every post then signs off
+  (`.by`, muted, max 37em, links in `--ink`), for the reader who came from a search and has not seen the home page:
+  "Written by Rajiv Kumar, a software engineer in New Delhi. If something here is wrong or unclear, write to me at
+  hello@rajiv.me."
 - **More writing**, full width under a hairline: the h2 with "All writing" on the right and the three newest other
   posts as `PostCard`s (three columns, two from 721px, one on a phone).
 
 Under 1000px one column: back link, title, dek, a meta line, cover, prose, then the contents and the Markdown
 controls. The header's reading line (§3) runs on every post.
 
-## §8 For agents
+**Page not found** (`pages/404.astro`): the landing's frame (`.hero`, `.hero-text` and `.art` in `global.css`, shared
+with the home page) and the landing doodle, which draws itself here too. "Page not found." (`--t-xl`), a muted line
+(`--t-sm`, max 30em) that ends "The telescope has not found it either.", then two links: home and all writing.
+
+## §8 For agents, feeds and link previews
 
 Every post is also served as Markdown at `/writing/<slug>.md` (`[slug].md.ts`: title, description, body), and
 `/llms.txt` (llmstxt.org format) lists the posts' Markdown, the projects and where to find him. The footer links
 `llms.txt` and the head carries `<link rel="alternate" type="text/plain" href="/llms.txt">`.
+
+- **Link preview**: one card for every page, `public/og.png` (1200x630): the mark, the name in orange, the headline,
+  "rajiv.me" and the landing doodle on the dark page, with `twitter:card` `summary_large_image`. It is a screenshot
+  of the landing at 1200x630 with the paragraphs and the nav hidden; retake it when the headline or the doodle
+  changes. A link shared anywhere carries the drawing, which is where most people meet the site first.
+- **Structured data** (`jsonLd` on `BaseLayout`): the home page is a schema.org `Person` (the real job title, New
+  Delhi, the socials, no employer); a post is a `BlogPosting` with its dates and author, and `og:type` `article`.
+- **Feed**: `/rss.xml` (`rss.xml.ts`, written by hand: titles, summaries, dates), linked from the head and the footer.
+  `public/robots.txt` allows everything and points at the sitemap.

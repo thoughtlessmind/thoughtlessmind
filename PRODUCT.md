@@ -28,7 +28,8 @@ production, evals and guardrails, coding agents as daily tools), the writing, an
 ## Capabilities and Constraints
 
 - Static Astro site, no backend, no login, no comments, no newsletter form.
-- Routes: home, /writing, /writing/<slug>, /writing/<slug>.md, /llms.txt, 404. No about or work page yet.
+- Routes: home, /writing, /writing/<slug>, /writing/<slug>.md, /llms.txt, /rss.xml, 404. No about or work page: the
+  home page is the about page, with Now and Experience under the landing.
 - Both themes (dark default), WCAG AA, reduced-motion paths, idle means zero work, no scroll listeners.
 
 ## Brand Commitments
@@ -36,14 +37,15 @@ production, evals and guardrails, coding agents as daily tools), the writing, an
 - Voice: first person, plain, exact, short declaratives, no hype. Sentence case, no emoji, no em or en dashes.
 - The hexagon mark in orange #ff5f1f; the Bits intro and the landing doodle are final (2026-10-30).
 - The headline "Software you don't have to think about." with his name above it in orange.
-- Name the employer only in an about page Experience entry (Senior Frontend Engineer, swipejobs). Never "freelancer".
+- Name the employer only in the home page's Experience rows (Senior Frontend Engineer, swipejobs). Never "freelancer".
   Client work is never named or hinted at.
 
 ## Evidence on Hand
 
 - Projects: css-only-tooltip (npm), Diver (Chrome Web Store), YouTube Playlist Info (web app), this site.
 - Writing: six real posts (two from 2021 and 2023, four Material UI answers rewritten in 2026) and six placeholder
-  posts on his AI and web topics, marked with a YAML comment, to be replaced.
+  posts on his AI and web topics, marked with a YAML comment and `draft: true`, so they are not built or listed
+  until he has rewritten or confirmed each one (hidden 11 Nov, his call).
 - Orca (a macOS menu bar timer that people and agents drive over MCP) is unreleased: mention only, no link, until it
   ships. Then it becomes a project with a screenshot.
 - No testimonials, client logos, metrics or user counts exist. Never fabricate them.

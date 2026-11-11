@@ -40,26 +40,30 @@ assets/          doodle.svg (the landing drawing), doodle-writing.svg and doodle
                  name.svg (the footer's hand-drawn "rajiv")
 components/      Header (fixed, lifts on scroll), Footer (the name draws, a blob reveals it), ThemeToggle, PostCard,
                  Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet, the loops; `art` for a
-                 section doodle)
+                 section doodle: a pencil sketch the cursor inks)
 content/writing/ the posts, <slug>.md (frontmatter in content.config.ts)
-layouts/         BaseLayout (head, pre-paint script, header, main, footer, splash)
+layouts/         BaseLayout (head with the link-preview card and JSON-LD, pre-paint script, skip link, header, main,
+                 footer, splash)
 lib/writing.ts   getPosts, cover, reading time, date formats
-pages/           index, writing/index, writing/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, 404
+pages/           index, writing/index, writing/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, rss.xml.ts,
+                 404 (the landing doodle again)
 scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
                  planet.ts (the doodle's turning planet), blob.ts (the liquid blob: its outline, shared with the theme
-                 pour, and the cursor trail that reveals the footer name and the section doodles) (DESIGN.md §4)
-styles/          global.css (tokens, @theme, base, header, theme switch, links, view transitions), prose.css (posts)
+                 pour, and the cursor trail that fills the footer name and inks the section doodles) (DESIGN.md §4)
+styles/          global.css (tokens, @theme, base, header, landing frame, theme switch, links, view transitions),
+                 prose.css (posts)
 consts.ts        facts: name, brand, title, description, email, socials, location, role, since, nav
 ```
 
-Posts marked `# Placeholder: replace with a real post.` in their frontmatter are stand-ins until he writes real ones.
+Posts marked `# Placeholder: replace with a real post.` in their frontmatter are stand-ins until he writes real ones;
+they carry `draft: true`, so they are not built, listed or in the feed. Remove `draft` only for a post he has written.
 New posts get a cover drawn the same way as the others (Codex line art, traced; see `docs/v4-research/art/`) or show
 their line of code until they have one.
 
 ## Facts
 
 `src/consts.ts` holds the facts. Use real facts only; never invent numbers or titles. Name the current employer only in
-an about page Experience entry, as "Senior Frontend Engineer, swipejobs" (`SITE.role`). Everywhere else he is a
+the home page's Experience rows, as "Senior Frontend Engineer, swipejobs" (`SITE.role`). Everywhere else he is a
 "software engineer" who builds web and native apps, backends and infrastructure: no library names in the positioning,
 and never "freelancer". Client work is never named.
 

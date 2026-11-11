@@ -8,7 +8,7 @@ const projects = [
   ['css-only-tooltip', 'https://www.npmjs.com/package/css-only-tooltip', 'A tooltip library with no JavaScript. Data attributes in, tooltip out.'],
   ['Diver', 'https://chrome.google.com/webstore/detail/diver/onfnfdmnccoaknhjinebmlncejnofhoc', 'Outlines every element on a page, so you can see the layout you are debugging.'],
   ['YouTube Playlist Info', 'https://youtube-playlist-info.netlify.app', 'Paste a playlist link and see how long it really takes to watch.'],
-  ['rajiv.me', `${SITE.socials.github}/thoughtlessmind`, 'Static pages, one hand-built intro, and no work at all once it lands.'],
+  ['rajiv.me', `${SITE.socials.github}/thoughtlessmind`, 'Static pages, a drawing that draws itself, and nothing running in the background once it has loaded.'],
 ];
 
 export const GET: APIRoute = async () => {

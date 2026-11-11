@@ -1,5 +1,6 @@
 ---
-# Placeholder: replace with a real post.
+# Placeholder: replace with a real post. Hidden until then: remove `draft` to publish.
+draft: true
 title: How I work with coding agents
 description: The setup I use with coding agents every day. House rules in the repo, small diffs, one owner per file, proof in a real browser, and nothing called done until I have seen it.
 date: 2026-10-09

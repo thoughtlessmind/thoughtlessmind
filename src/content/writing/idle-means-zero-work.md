@@ -1,5 +1,6 @@
 ---
-# Placeholder: replace with a real post.
+# Placeholder: replace with a real post. Hidden until then: remove `draft` to publish.
+draft: true
 title: Idle means zero work
 description: The rule behind the drawing on this site's home page. Animation loops run only while you can see them, keep their own clock, and reduced motion gets the finished drawing.
 date: 2026-09-10

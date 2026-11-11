@@ -19,13 +19,14 @@ const socials = [
       {
         socials.map(([label, href]) => (
           <li>
-            <a class="ul" href={href} rel="noopener me" target="_blank">
+            <a class="ul hit" href={href} rel="noopener me" target="_blank">
               {label}
             </a>
           </li>
         ))
       }
-      <li><a class="ul" href="/llms.txt">llms.txt</a></li>
+      <li><a class="ul hit" href="/rss.xml">RSS</a></li>
+      <li><a class="ul hit" href="/llms.txt">llms.txt</a></li>
     </ul>
     <p>© {new Date().getFullYear()} {SITE.name}</p>
   </div>
@@ -78,6 +79,7 @@ const socials = [
     flex-wrap: wrap;
     gap: 8px 24px;
   }
+  /* Each link takes a finger (`.hit` in global.css), the one-letter X included. */
   /* The name: hand-drawn outlines of Geist 500 (src/assets/name.svg), as wide as the content and cropped to the top
      of its letters by the viewBox. The pen is faint; the orange fill shows only inside the cursor's blob. */
   .word {
@@ -98,7 +100,7 @@ const socials = [
     stroke-linejoin: round;
   }
   .word :global(.ink) {
-    fill: var(--logo);
+    fill: var(--spot);
   }
   @media (prefers-reduced-motion: no-preference) {
     :global(html.js) .word :global(.pen path) {
@@ -119,6 +121,10 @@ const socials = [
     .foot-row {
       flex-direction: column;
       align-items: flex-start;
+      gap: 20px;
+    }
+    .soc {
+      row-gap: 24px;
     }
     .word {
       margin-top: 48px;

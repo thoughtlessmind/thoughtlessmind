@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thoughtlessmind.dev/sitemap-index.xml

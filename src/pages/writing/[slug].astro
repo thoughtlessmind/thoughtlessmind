@@ -7,6 +7,7 @@ import checkIcon from '@phosphor-icons/core/assets/regular/check.svg?raw';
 import mdIcon from '@phosphor-icons/core/assets/regular/markdown-logo.svg?raw';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostCard from '../../components/PostCard.astro';
+import { SITE } from '../../consts';
 import { cover, day, getPosts, iso, minutes, type Post } from '../../lib/writing';
 import '../../styles/prose.css';
 
@@ -31,9 +32,24 @@ const read = `${minutes(post.body)} min read`;
 const md = `/writing/${post.id}.md`;
 const inner = (svg: string) => svg.replace(/^<svg[^>]*>|<\/svg>$/g, '');
 const arrow = inner(arrowLeft);
+// The post, for search engines and agents (schema.org).
+const url = `${SITE.url}/writing/${post.id}`;
+const article = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: iso(date),
+  dateModified: iso(updated ?? date),
+  author: { '@type': 'Person', name: SITE.name, url: SITE.url },
+  image: `${SITE.url}/og.png`,
+  mainEntityOfPage: url,
+};
 ---
 
-<BaseLayout title={`${title}, Rajiv Kumar`} description={description} current="writing" progress>
+<BaseLayout title={`${title}, Rajiv Kumar`} description={description} current="writing" progress type="article" jsonLd={article}>
+  <meta slot="head" property="article:published_time" content={date.toISOString()} />
+  {updated && <meta slot="head" property="article:modified_time" content={updated.toISOString()} />}
   {/* Desktop: the aside (back, meta, contents, Markdown) sticks in the first column and the article runs from the
       axis. Under 1000px the article's own back link and meta line show instead, and the contents and Markdown
       controls follow the article, so the reading order is the visual order in both. */}
@@ -75,7 +91,7 @@ const arrow = inner(arrowLeft);
     </aside>
 
     <article class="body">
-      <a class="back m" href="/writing">
+      <a class="back m hit" href="/writing">
         <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={arrow} />Writing
       </a>
       <h1 style={`view-transition-name: title-${post.id}`}>{title}</h1>
@@ -92,6 +108,11 @@ const arrow = inner(arrowLeft);
           </p>
         )
       }
+      {/* Who wrote it, for a reader who landed here from a search and has not seen the home page. */}
+      <p class="by">
+        Written by <a class="ul" href="/">{SITE.name}</a>, a software engineer in New Delhi. If something here is wrong
+        or unclear, write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+      </p>
       <div class="end">
         {
           toc.length > 1 && (
@@ -108,12 +129,12 @@ const arrow = inner(arrowLeft);
           )
         }
         <div class="tools">
-          <button class="copy" type="button" data-copy={md}>
+          <button class="copy hit" type="button" data-copy={md}>
             <svg class="i i-copy" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(copyIcon)} />
             <svg class="i i-done" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(checkIcon)} />
             <span aria-live="polite">Copy as Markdown</span>
           </button>
-          <a class="md" href={md}>
+          <a class="md hit" href={md}>
             <svg class="i" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(mdIcon)} />
             <span class="ul">View as Markdown</span>
           </a>
@@ -127,7 +148,7 @@ const arrow = inner(arrowLeft);
       <section class="more" aria-labelledby="more-h">
         <div class="more-head">
           <h2 id="more-h">More writing</h2>
-          <a class="ul" href="/writing">All writing</a>
+          <a class="ul hit" href="/writing">All writing</a>
         </div>
         <div class="rows">
           {more.map((p) => (
@@ -343,7 +364,7 @@ const arrow = inner(arrowLeft);
     color: var(--ink);
   }
   .cover :global(.o) {
-    fill: var(--logo);
+    fill: var(--spot);
   }
   .prose {
     margin-top: 56px;
@@ -353,6 +374,27 @@ const arrow = inner(arrowLeft);
     margin-top: 56px;
     font-size: var(--t-xs);
     color: var(--muted);
+  }
+  /* The sign-off: who wrote it and where to send corrections, muted under the prose and on its measure. */
+  .by {
+    max-width: 37em;
+    margin-top: 40px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .canon + .by {
+    margin-top: 12px;
+  }
+  .by a {
+    color: var(--ink);
+  }
+  @media (hover: hover) {
+    .by a:hover {
+      color: var(--accent);
+    }
+  }
+  .by a:focus-visible {
+    color: var(--accent);
   }
   .m,
   .end {
@@ -423,7 +465,9 @@ const arrow = inner(arrowLeft);
     .end .toc {
       margin-top: 24px;
     }
+    /* On touch the two controls sit a finger apart (their `.hit` areas meet, never overlap). */
     .end .tools {
+      gap: 22px;
       margin-top: 32px;
     }
   }

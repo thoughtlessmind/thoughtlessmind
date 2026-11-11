@@ -13,16 +13,19 @@
 /* Tokens. Dark is the default; light follows the system until the switch picks one (data-theme on <html>).
    The logo is #ff5f1f in both themes; text orange darkens to #c2410c on light for AA. */
 :root {
-  --bg: #141414;
-  --panel: #1c1c1c;
+  --bg: #02070a;
+  --panel: #0c1419;
   --line: rgba(237, 237, 234, 0.1);
   --ink: #ededea;
   --muted: #8f8f8a;
   --hi: #ffffff;
   --logo: #ff5f1f;
   --accent: #ff5f1f;
+  /* The drawings' filled bits (the doodles' star, the footer name, cover accents) and the palette dot's first half: the
+     logo colour unless a palette parts them. */
+  --spot: var(--logo);
   /* Selected text shows the other theme: its page as the ground, its text orange as the letters (4.6:1 here,
-     6.1:1 on light), so a selection reads as the site turned inside out and both pass AA. */
+     6.7:1 on light), so a selection reads as the site turned inside out and both pass AA. */
   --sel-bg: #f3f2ee;
   --sel-ink: #c2410c;
   /* The lifted header's drop shadow. */
@@ -55,7 +58,7 @@
     --muted: #63635e;
     --hi: #000000;
     --accent: #c2410c;
-    --sel-bg: #141414;
+    --sel-bg: #02070a;
     --sel-ink: #ff5f1f;
     --shadow: rgba(38, 34, 26, 0.14);
     color-scheme: light;
@@ -69,10 +72,95 @@
   --muted: #63635e;
   --hi: #000000;
   --accent: #c2410c;
-  --sel-bg: #141414;
+  --sel-bg: #02070a;
   --sel-ink: #ff5f1f;
   --shadow: rgba(38, 34, 26, 0.14);
   color-scheme: light;
+}
+
+/* Palettes on trial (DESIGN.md §2), picked from the dot beside the theme switch: orange (the tokens above, no
+   attribute), jade and blue (data-palette on <html>). Each takes the base's three rules, and its light rules set every
+   token its dark rule does, so they always win over it. Jade's logo wears its first colour and text accent its second,
+   both a darker step on light. Blue gives its blue to --spot and keeps the logo (and the rocket's
+   flame) in its orange, unchanged on light. */
+:root[data-palette="jade"] {
+  --bg: #171f44;
+  --panel: #1f2854;
+  --line: rgba(233, 236, 245, 0.1);
+  --ink: #e9ecf5;
+  --muted: #9ba2c2;
+  --logo: #74ffed;
+  --accent: #fe81d1;
+  --sel-bg: #eef0f7;
+  --sel-ink: #b8187a;
+  --shadow: rgba(4, 7, 24, 0.6);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-palette="jade"]:not([data-theme="dark"]) {
+    --bg: #eef0f7;
+    --panel: #e1e5f0;
+    --line: rgba(23, 31, 68, 0.12);
+    --ink: #171f44;
+    --muted: #575e80;
+    --logo: #0c9484;
+    --accent: #b8187a;
+    --sel-bg: #171f44;
+    --sel-ink: #fe81d1;
+    --shadow: rgba(23, 31, 68, 0.16);
+  }
+}
+:root[data-palette="jade"][data-theme="light"] {
+  --bg: #eef0f7;
+  --panel: #e1e5f0;
+  --line: rgba(23, 31, 68, 0.12);
+  --ink: #171f44;
+  --muted: #575e80;
+  --logo: #0c9484;
+  --accent: #b8187a;
+  --sel-bg: #171f44;
+  --sel-ink: #fe81d1;
+  --shadow: rgba(23, 31, 68, 0.16);
+}
+:root[data-palette="blue"] {
+  --bg: #02070a;
+  --panel: #0c1419;
+  --line: rgba(232, 238, 241, 0.1);
+  --ink: #e8eef1;
+  --muted: #88949b;
+  --logo: #fc734d;
+  --spot: #0297de;
+  --accent: #fc734d;
+  --sel-bg: #f0f3f5;
+  --sel-ink: #ad3b19;
+  --shadow: rgba(0, 0, 0, 0.7);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-palette="blue"]:not([data-theme="dark"]) {
+    --bg: #f0f3f5;
+    --panel: #e2e8eb;
+    --line: rgba(2, 7, 10, 0.12);
+    --ink: #02070a;
+    --muted: #56616a;
+    --logo: #fc734d;
+    --spot: #0284c7;
+    --accent: #ad3b19;
+    --sel-bg: #02070a;
+    --sel-ink: #fc734d;
+    --shadow: rgba(2, 7, 10, 0.14);
+  }
+}
+:root[data-palette="blue"][data-theme="light"] {
+  --bg: #f0f3f5;
+  --panel: #e2e8eb;
+  --line: rgba(2, 7, 10, 0.12);
+  --ink: #02070a;
+  --muted: #56616a;
+  --logo: #fc734d;
+  --spot: #0284c7;
+  --accent: #ad3b19;
+  --sel-bg: #02070a;
+  --sel-ink: #fc734d;
+  --shadow: rgba(2, 7, 10, 0.14);
 }
 
 /* Tailwind utilities read the tokens (bg-bg, text-ink, border-line…). The default palette is cleared so
@@ -130,6 +218,10 @@
   input:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+  }
+  /* The skip link's target takes focus without a ring of its own. */
+  main:focus {
+    outline: none;
   }
 }
 
@@ -223,8 +315,17 @@
     }
   }
 
+  /* The logo, the nav links and the theme switch each take a finger: about 44px of hit area around the small
+     drawing, with nothing moved (padding against a negative margin, or a pseudo-element over the link). */
   .top .name {
     justify-self: start;
+    margin: -8px;
+    padding: 8px;
+  }
+  .top nav a::after {
+    content: "";
+    position: absolute;
+    inset: -12px -10px;
   }
   .mark {
     display: block;
@@ -282,6 +383,122 @@
     color: var(--accent);
   }
 
+  /* Palette dot (DESIGN.md §2): the current palette's logo and accent as the two halves of a 10px dot, in a 24px hit
+     area. It opens the palette picker below. It holds the right margin's auto space; the theme switch follows it. */
+  .pal {
+    appearance: none;
+    background: none;
+    border: 0;
+    margin: -7px 2px -7px auto;
+    padding: 7px;
+    cursor: pointer;
+    display: inline-flex;
+    anchor-name: --pal;
+  }
+  .pal::before,
+  .pick i {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--spot) 50%, var(--accent) 50%);
+  }
+  /* Its hit area grows up and down only: the nav and the theme switch are its neighbours. */
+  .pal.hit::after {
+    inset: -11px 0;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .pal::before {
+      transition: scale 200ms var(--ease);
+    }
+    .pal:hover::before {
+      scale: 1.3;
+    }
+  }
+
+  /* Palette picker: a native popover hung under the dot, flush with the right margin, holding a toggle group of one
+     segment per palette: its swatch and name. Radios underneath, so arrows move the pick, and Esc or a click outside
+     closes it. Each swatch shows its palette's own two colours whatever the page wears; the name carries the meaning.
+     Without anchor positioning it hangs just under the header at rest. */
+  .pick {
+    inset: auto var(--gut-r) auto auto;
+    top: calc(env(safe-area-inset-top, 0px) + var(--head-h) - 6px);
+    margin: 0;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: var(--t-xs);
+    box-shadow: 0 14px 32px -16px var(--shadow);
+  }
+  @supports (anchor-name: --pal) {
+    .pick {
+      position-anchor: --pal;
+      top: calc(anchor(bottom) + 10px);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pick {
+      transition: opacity 200ms var(--ease), translate 200ms var(--ease);
+    }
+    @starting-style {
+      .pick:popover-open {
+        opacity: 0;
+        translate: 0 -4px;
+      }
+    }
+  }
+  .pick fieldset {
+    display: flex;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .pick label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: color 200ms var(--ease);
+  }
+  .pick input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .pick label:has(:checked) {
+    background: var(--bg);
+    color: var(--ink);
+  }
+  @media (hover: hover) {
+    .pick label:hover {
+      color: var(--ink);
+    }
+  }
+  .pick label:has(:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  .pick [data-p="orange"] {
+    --spot: #ff5f1f;
+    --accent: #ff5f1f;
+  }
+  .pick [data-p="jade"] {
+    --spot: #74ffed;
+    --accent: #fe81d1;
+  }
+  .pick [data-p="blue"] {
+    --spot: #0297de;
+    --accent: #fc734d;
+  }
+
   /* Theme switch: an icon button showing the theme it switches to (sun on dark, moon on light), one drawing that
      morphs between the two (ThemeToggle.astro). --m is 0 for the sun and 1 for the moon, set by the same rules as
      the tokens, so it is right before any script runs; every part follows it. */
@@ -289,8 +506,8 @@
     appearance: none;
     background: none;
     border: 0;
-    margin: -6px -6px -6px auto;
-    padding: 6px;
+    margin: -12px -12px -12px -6px;
+    padding: 12px;
     cursor: pointer;
     color: var(--ink);
     display: inline-flex;
@@ -356,6 +573,77 @@
     text-decoration-thickness: 2px;
   }
 
+  /* Landing frame (the home page and the 404): the text on the left, the doodle on the right 48%. It runs to the
+     right edge of the screen and clips the doodle there. On a phone the doodle is a band under the header (strokes
+     1.8x thicker), the text under it. */
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: clamp(640px, 100vh, 960px);
+    margin-right: calc(-1 * var(--gut-r));
+    padding-block: 112px 56px;
+    overflow-x: clip;
+  }
+  .hero-text {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 52vw);
+  }
+  .hero .art {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 48vw;
+    padding: 96px 56px 40px 0;
+    pointer-events: none;
+  }
+  @media (max-width: 720px) {
+    .hero {
+      display: block;
+      min-height: 0;
+      margin-right: 0;
+      padding-block: 300px 48px;
+    }
+    .hero-text {
+      width: auto;
+    }
+    .hero .art {
+      inset: 76px 0 auto;
+      width: auto;
+      height: 208px;
+      padding: 0;
+    }
+    .hero .art .doodle {
+      --k: 1.8;
+    }
+  }
+
+  /* A finger-sized hit area for a small link or control: about 44px tall around a one-line label, nothing moved. */
+  .hit {
+    position: relative;
+  }
+  .hit::after {
+    content: "";
+    position: absolute;
+    inset: -11px -8px;
+  }
+
+  /* Skip link: off screen until the keyboard reaches it, then a chip over the header's corner. */
+  .skip {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    left: var(--gut);
+    z-index: 30;
+    padding: 8px 12px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: var(--t-xs);
+    translate: 0 -300%;
+  }
+  .skip:focus-visible {
+    translate: 0;
+  }
+
   /* Phone: the same bar as a flex row, the mark left, the nav and the switch right. */
   @media (max-width: 720px) {
     .top {
@@ -370,8 +658,11 @@
     .top nav {
       gap: 20px;
     }
-    .theme {
+    /* The row packs right, so the dot gives up the auto space, and sits as close to the switch as on wide screens:
+       its right margin takes back the row's gap. */
+    .pal {
       margin-left: 0;
+      margin-right: -14px;
     }
   }
 }

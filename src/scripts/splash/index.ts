@@ -1,12 +1,12 @@
 // The splash screen, on a fresh load or reload of the home page: the mark gathers out of 0s and 1s in the middle of
-// the screen (bits.ts), moves into the header logo, turns orange, and the content rises. The gate in BaseLayout's head
-// decides before paint and sets html.splash; this file plays it. It always plays to the end: clicks, keys and scrolling
-// don't cut it short.
-import { ORANGE, MONO, clamp, io3, mix, solid, type Env, type Splash } from './kit';
+// the screen (bits.ts), moves into the header logo, turns the logo colour, and the content rises. The gate in
+// BaseLayout's head decides before paint and sets html.splash; this file plays it. It always plays to the end: clicks,
+// keys and scrolling don't cut it short.
+import { MONO, clamp, io3, mix, solid, type Env, type Splash } from './kit';
 import bits from './bits';
 
-// ms: the move to the header, the tint to orange, how long after the move starts the content rises, and how long the
-// rises take (the longest rise plus its delay: the last fact row, 800 ms at 500).
+// ms: the move to the header, the tint to the logo colour, how long after the move starts the content rises, and how
+// long the rises take (the longest rise plus its delay: the last fact row, 800 ms at 500).
 const DOCK = 800, TINT = 350, CONTENT = 200, RISE = 1340;
 
 const root = document.documentElement;
@@ -25,7 +25,7 @@ if (root.classList.contains('splash')) {
 }
 
 function play(splash: Splash, cv: HTMLCanvasElement, c: CanvasRenderingContext2D, mark: SVGSVGElement) {
-  const env: Env = { W: 0, H: 0, dpr: 1, mobile: false, S0: 1, C0: [0, 0], S1: 1, C1: [0, 0], ink: '#ededea' };
+  const env: Env = { W: 0, H: 0, dpr: 1, mobile: false, S0: 1, C0: [0, 0], S1: 1, C1: [0, 0], ink: '#ededea', logo: '#ff5f1f' };
   const END = splash.dock + DOCK + TINT;
   let t0 = 0, rose = false;
   try { history.scrollRestoration = 'manual'; } catch {}
@@ -35,7 +35,9 @@ function play(splash: Splash, cv: HTMLCanvasElement, c: CanvasRenderingContext2D
     env.W = root.clientWidth; env.H = root.clientHeight;
     env.dpr = Math.min(2, devicePixelRatio || 1);
     env.mobile = env.W < 600;
-    env.ink = getComputedStyle(root).getPropertyValue('--ink').trim() || env.ink;
+    const css = getComputedStyle(root);
+    env.ink = css.getPropertyValue('--ink').trim() || env.ink;
+    env.logo = css.getPropertyValue('--logo').trim() || env.logo;
     cv.width = Math.round(env.W * env.dpr); cv.height = Math.round(env.H * env.dpr);
     // The mark in the middle: about 46% of the height, never wider than 62% of the width.
     env.S0 = Math.min(env.W * 0.62, env.H * 0.46) / 30;
@@ -52,10 +54,10 @@ function play(splash: Splash, cv: HTMLCanvasElement, c: CanvasRenderingContext2D
     c.clearRect(0, 0, env.W, env.H);
     if (t < splash.dock) splash.draw(c, t, { x: env.C0[0], y: env.C0[1], s: env.S0 }, env);
     else {
-      // The ink mark moves to the header (centre linear in eased time, scale geometric), then turns orange.
+      // The ink mark moves to the header (centre linear in eased time, scale geometric), then turns --logo.
       const p = io3(clamp((t - splash.dock) / DOCK)), k = Math.pow(env.S1 / env.S0, p);
       const cam = { x: env.C0[0] + (env.C1[0] - env.C0[0]) * p, y: env.C0[1] + (env.C1[1] - env.C0[1]) * p, s: env.S0 * k };
-      solid(c, cam, mix(env.ink, ORANGE, clamp((t - splash.dock - DOCK) / TINT)));
+      solid(c, cam, mix(env.ink, env.logo, clamp((t - splash.dock - DOCK) / TINT)));
     }
   }
 
@@ -73,7 +75,7 @@ function play(splash: Splash, cv: HTMLCanvasElement, c: CanvasRenderingContext2D
     render(t);
     requestAnimationFrame(tick);
   }
-  // The canvas mark sits exactly on the orange header logo: swap them in the same frame.
+  // The canvas mark sits exactly on the header logo: swap them in the same frame.
   function land() {
     removeEventListener('resize', measure);
     removeEventListener('theme:change', measure);

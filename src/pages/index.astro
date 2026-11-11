@@ -3,19 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Doodle from '../components/Doodle.astro';
 import PostCard from '../components/PostCard.astro';
 import { SITE } from '../consts';
-import { getPosts } from '../lib/writing';
+import { cover, getPosts } from '../lib/writing';
 
 // Each project links to the real thing; `go` says where. The stills are drawn in HTML below (DESIGN.md §5).
+// The tools newest first, then this site as the colophon.
 const work = [
-  {
-    id: 'tooltip',
-    name: 'css-only-tooltip',
-    kind: 'Library',
-    year: 2021,
-    summary: 'A tooltip library with no JavaScript. Data attributes in, tooltip out, with light and dark themes and nothing to bundle.',
-    go: 'View on npm',
-    href: 'https://www.npmjs.com/package/css-only-tooltip',
-  },
   {
     id: 'diver',
     name: 'Diver',
@@ -24,6 +16,15 @@ const work = [
     summary: 'Outlines every element on a page in one click, so you can see the boxes, nesting and spacing of a layout you didn’t write.',
     go: 'Chrome Web Store',
     href: 'https://chrome.google.com/webstore/detail/diver/onfnfdmnccoaknhjinebmlncejnofhoc',
+  },
+  {
+    id: 'tooltip',
+    name: 'css-only-tooltip',
+    kind: 'Library',
+    year: 2021,
+    summary: 'A tooltip library with no JavaScript. Data attributes in, tooltip out, with light and dark themes and nothing to bundle.',
+    go: 'View on npm',
+    href: 'https://www.npmjs.com/package/css-only-tooltip',
   },
   {
     id: 'yt',
@@ -39,26 +40,49 @@ const work = [
     name: 'rajiv.me',
     kind: 'This site',
     year: 2026,
-    summary: 'Static pages, one hand-built intro and zero work once it has loaded. Every post is also served as Markdown, so agents can read it too.',
+    summary: 'Static pages, a drawing that draws itself and nothing running in the background once it has loaded. Every post is also served as Markdown, so AI tools can read it too.',
     go: 'Read the source',
     href: `${SITE.socials.github}/thoughtlessmind`,
   },
 ];
-// The four newest posts; /writing has the rest.
+// The four newest posts that have a cover drawing; /writing has the rest. The four newest of all were four Material
+// UI answers, two of them without a drawing. A new post shows here once its cover is drawn.
 const all = await getPosts();
-const posts = all.slice(0, 4);
-// Now: one line on the problem, then the four parts of the answer (DESIGN.md §5).
+const posts = all.filter((p) => cover(p.id)).slice(0, 4);
+// Now: one line on the problem, then the four parts of the answer, each in words a non-engineer can follow. The
+// posts on these topics, once written, carry the technical detail (DESIGN.md §5).
 const now = [
-  ['Tools, not paragraphs', 'MCP servers that give a model typed access to a product’s real data and actions, with errors it can recover from.'],
-  ['A budget for every call', 'Chat, extraction and matching features real people use, each with a time and cost limit and a fallback that always answers.'],
-  ['Evals before vibes', 'Checks on every prompt and model change, so a regression fails a test before it reaches a user.'],
-  ['Agents on the team', 'Coding agents in my daily work, with skills, hooks and review loops that keep every diff small and verified.'],
+  ['Tools, not paragraphs', 'I connect a model to a product’s real data and actions through a few narrow tools, so it acts instead of guessing and can recover when a step fails.'],
+  ['A budget for every call', 'The chat, extraction and matching features I ship each have a time limit, a cost limit and a fallback, so a person always gets an answer.'],
+  ['Tested before trusted', 'Every change to a prompt or a model runs against past failures first, so a mistake is caught by a test and not by a user.'],
+  ['Agents on the team', 'I work with coding agents every day under written rules: small changes, each one checked in a real browser before I call it done.'],
+];
+// Experience: the day jobs, newest first. Real titles only, and the one place an employer is named (AGENTS.md).
+const jobs = [
+  { when: 'Now', role: `${SITE.role}, swipejobs`, text: 'A platform that matches workers with jobs. I build its web apps.' },
+  {
+    when: '2020',
+    role: `Frontend Engineer, ${SITE.previousCompany}`,
+    text: 'A product that helps websites turn more visitors into customers. I built and maintained its web app.',
+  },
 ];
 const mark =
   '<path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path>';
+// Who this is, for search engines and agents (schema.org). The job title is the real one; no employer here.
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.name,
+  url: SITE.url,
+  jobTitle: SITE.role,
+  description: SITE.description,
+  email: `mailto:${SITE.email}`,
+  address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
+  sameAs: Object.values(SITE.socials),
+};
 ---
 
-<BaseLayout splash>
+<BaseLayout splash jsonLd={person}>
   <section class="hero" id="about" aria-labelledby="h1">
     <div class="art" aria-hidden="true"><Doodle /></div>
     <div class="hero-text">
@@ -68,8 +92,8 @@ const mark =
       </h1>
       <div class="intro">
         <p class="rise" style="--d:300">
-          I’m a software engineer. I’ve been building web and native apps since {SITE.since}, along with the backends
-          behind them and the infrastructure they run on.
+          I’m a software engineer in New Delhi. I’ve been building web and native apps since {SITE.since}, along with
+          the backends behind them and the infrastructure they run on.
         </p>
         <p class="rise" style="--d:340">
           These days most of my time goes to putting language models to work inside real products. The goal hasn’t
@@ -77,19 +101,27 @@ const mark =
         </p>
       </div>
       <p class="aside rise" style="--d:380">
-        Off screen: astronomy, rockets, physics and sport. Say hello by <a class="ul" href={`mailto:${SITE.email}`}
-          >email</a
-        >, or find me on <a class="ul" href={SITE.socials.github} rel="me">GitHub</a>, <a
+        Off screen: astronomy, rockets, physics and sport. The drawing covers three of the four.
+      </p>
+      <p class="reach rise" style="--d:420">
+        Write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>, or find me on <a
           class="ul"
-          href={SITE.socials.linkedin}
-          rel="me">LinkedIn</a
-        > and <a class="ul" href={SITE.socials.x} rel="me">X</a>.
+          href={SITE.socials.github}
+          rel="me">GitHub</a
+        >, <a class="ul" href={SITE.socials.linkedin} rel="me">LinkedIn</a> and <a
+          class="ul"
+          href={SITE.socials.x}
+          rel="me">X</a
+        >.
       </p>
     </div>
   </section>
 
   <section class="sec now" id="now" aria-labelledby="now-h">
-    <h2 class="h2" id="now-h">Now</h2>
+    <div>
+      <h2 class="h2" id="now-h">Now</h2>
+      <p class="note">Where most of my week goes.</p>
+    </div>
     <div>
       <p class="thesis">The model is rarely the hard part. Everything around it is.</p>
       <ul class="parts">
@@ -103,15 +135,32 @@ const mark =
         }
       </ul>
       <p class="soon">
-        <span>Coming soon</span>Orca, a macOS menu bar timer that you and an agent drive together over MCP.
+        <span>Coming soon</span>Orca, a timer for the macOS menu bar that you and an AI agent can both run.
       </p>
     </div>
+  </section>
+
+  <section class="sec split" id="experience" aria-labelledby="xp-h">
+    <div class="head">
+      <h2 class="h2" id="xp-h">Experience</h2>
+    </div>
+    <ol class="list">
+      {
+        jobs.map((j) => (
+          <li class="job">
+            <span class="pm">{j.when}</span>
+            <h3 class="pn">{j.role}</h3>
+            <p class="cs">{j.text}</p>
+          </li>
+        ))
+      }
+    </ol>
   </section>
 
   <section class="sec split" id="writing" aria-labelledby="writing-h">
     <div class="head">
       <h2 class="h2" id="writing-h">Writing</h2>
-      <p class="note">Notes on putting models to work and building for the web.</p>
+      <p class="note">Notes on building for the web, and the problems I would rather solve once.</p>
       <div class="sk" aria-hidden="true"><Doodle art="writing" /></div>
     </div>
     <div class="list">
@@ -196,15 +245,15 @@ const mark =
 </BaseLayout>
 
 <script>
-  // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Now counts as
-  // About and the footer as Projects, so a jump to the end still lands there.
+  // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Now and
+  // Experience count as About and the footer as Projects, so a jump to the end still lands there.
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
   const foot = document.querySelector('footer');
   const spy = new IntersectionObserver(
     (entries) =>
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
-        const id = e.target === foot ? 'projects' : e.target.id === 'now' ? 'about' : e.target.id;
+        const id = e.target === foot ? 'projects' : ['now', 'experience'].includes(e.target.id) ? 'about' : e.target.id;
         links.forEach((a) => {
           const on = a.dataset.spy === id;
           a.classList.toggle('on', on);
@@ -214,7 +263,7 @@ const mark =
       }),
     { rootMargin: '-45% 0px -54% 0px' },
   );
-  ['about', 'now', 'writing', 'projects'].forEach((id) => {
+  ['about', 'now', 'experience', 'writing', 'projects'].forEach((id) => {
     const s = document.getElementById(id);
     if (s) spy.observe(s);
   });
@@ -222,22 +271,7 @@ const mark =
 </script>
 
 <style>
-  /* Landing: about me on the left, the doodle on the right 48%. It runs to the right edge of the screen and clips
-     the doodle there. */
-  .hero {
-    position: relative;
-    display: flex;
-    align-items: center;
-    min-height: clamp(640px, 100vh, 960px);
-    margin-right: calc(-1 * var(--gut-r));
-    padding-block: 112px 56px;
-    overflow-x: clip;
-  }
-  .hero-text {
-    position: relative;
-    z-index: 1;
-    width: min(760px, 52vw);
-  }
+  /* Landing: the frame (text left, doodle right) is global.css's `.hero`, shared with the 404. */
   h1 {
     font-weight: 500;
   }
@@ -285,32 +319,20 @@ const mark =
       background-position: 0 0;
     }
   }
-  .aside {
-    max-width: 36em;
-    margin-top: 20px;
-    color: var(--muted);
+  /* The person in one muted line, then how to reach him in --ink with the address spelled out. */
+  .aside,
+  .reach {
+    max-width: 42em;
     text-wrap: pretty;
   }
-  /* Its links sit in --ink on the muted line, which outranks the global link hover, so they repeat it here. */
-  .aside a {
-    color: var(--ink);
+  .aside {
+    margin-top: 20px;
+    color: var(--muted);
+    text-wrap: balance;
   }
-  @media (hover: hover) {
-    .aside a:hover {
-      color: var(--accent);
-    }
+  .reach {
+    margin-top: 12px;
   }
-  .aside a:focus-visible {
-    color: var(--accent);
-  }
-  .art {
-    position: absolute;
-    inset: 0 0 0 auto;
-    width: 48vw;
-    padding: 96px 56px 40px 0;
-    pointer-events: none;
-  }
-
   .sec {
     padding-top: 136px;
   }
@@ -398,15 +420,12 @@ const mark =
     color: var(--muted);
     text-wrap: pretty;
   }
-  /* Under the note, the section's doodle: its story in three objects on a dashed route, in --muted, hidden until a
-     mouse over this box carries the blob that shows it. Phones skip it: there the rows follow the head. */
+  /* Under the note, the section's doodle: its story in three objects on a dashed route, a pencil sketch in --muted
+     that a mouse over this box inks and sets moving (Doodle.astro). Phones skip it: there the rows follow the head. */
   .sk {
     width: min(100%, 300px);
     height: clamp(180px, 100svh - var(--head-h) - 420px, 270px);
     margin-top: 56px;
-  }
-  .sk :global(.doodle) {
-    color: var(--muted);
   }
   @media (max-width: 999px) {
     .sk {
@@ -443,6 +462,17 @@ const mark =
     .all:hover span {
       translate: 6px 0;
     }
+  }
+  /* An experience row, in the post rows' order: when, the role, one plain line about the work. */
+  .job {
+    padding-block: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .job .pn {
+    margin-top: 8px;
+  }
+  .job .cs {
+    max-width: 38em;
   }
   /* A project row: the text on the left, the still on the right with the larger share. */
   .proj {
@@ -615,26 +645,8 @@ const mark =
     fill: var(--logo);
   }
 
-  /* Phone: the doodle in a band under the header, the text under it; one column everywhere, stills above their text. */
+  /* Phone: one column everywhere, stills above their text. */
   @media (max-width: 720px) {
-    .hero {
-      display: block;
-      min-height: 0;
-      margin-right: 0;
-      padding-block: 300px 48px;
-    }
-    .hero-text {
-      width: auto;
-    }
-    .art {
-      inset: 76px 0 auto;
-      width: auto;
-      height: 208px;
-      padding: 0;
-    }
-    .art :global(.doodle) {
-      --k: 1.8;
-    }
     .st {
       margin-top: 12px;
       line-height: 1;

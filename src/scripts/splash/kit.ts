@@ -6,6 +6,7 @@ export interface Env {
   S0: number; C0: [number, number];   // the mark in the middle: px per logo unit, centre
   S1: number; C1: [number, number];   // the header logo
   ink: string;                        // the theme's --ink
+  logo: string;                       // the palette's --logo (hex)
 }
 /** The splash paints frame t (ms) as a pure function of t. By t = dock it shows the finished mark in ink at the centre. */
 export interface Splash {
@@ -23,7 +24,6 @@ export const LOGO = [
 ] as const;
 export const MID = [12.99, 15] as const;   // the centre of the viewBox (-2.01 0 30 30)
 export const APO = 8.660254;
-export const ORANGE = '#ff5f1f';
 export const MONO = '"Geist Mono Variable", "Geist Mono", ui-monospace, Menlo, monospace';
 
 export const clamp = (x: number, a = 0, b = 1) => Math.max(a, Math.min(b, x));

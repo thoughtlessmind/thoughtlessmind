@@ -1,5 +1,6 @@
 ---
-# Placeholder: replace with a real post.
+# Placeholder: replace with a real post. Hidden until then: remove `draft` to publish.
+draft: true
 title: Make extracted data check itself
 description: Most documents already carry a check on their own data, like running balances, totals and counts. Use it to prove an extraction lost nothing, and fail loudly when it doesn't add up.
 date: 2026-09-24

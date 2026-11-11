@@ -3,7 +3,7 @@ export const SITE = {
   brand: 'rajiv.me',
   title: 'Rajiv Kumar, software engineer in New Delhi',
   description:
-    'Software engineer in New Delhi. I build web and native apps, their backends and infrastructure, and the tools that let language models work inside them. Shipping since 2019.',
+    'Software engineer in New Delhi. I build web and native apps, their backends and infrastructure, and put language models to work inside them. Since 2019.',
   url: 'https://thoughtlessmind.dev',
   email: 'hello@rajiv.me',
   role: 'Senior Frontend Engineer',

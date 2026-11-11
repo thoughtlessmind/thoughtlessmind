@@ -1,5 +1,6 @@
 ---
-# Placeholder: replace with a real post.
+# Placeholder: replace with a real post. Hidden until then: remove `draft` to publish.
+draft: true
 title: A budget for every model call
 description: The wrapper I put around every language model call. A time limit, a token limit, retries only when they can help, a fallback that always answers, and a log line per call.
 date: 2026-10-13

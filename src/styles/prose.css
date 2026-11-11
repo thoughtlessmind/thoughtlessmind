@@ -12,6 +12,11 @@
 .prose > :first-child {
   margin-top: 0;
 }
+/* Text keeps to about 75 characters a line (the full 68ch column ran to 92 in Geist); code, tables and images use
+   all of it. */
+.prose > :is(p, ul, ol, blockquote) {
+  max-width: 37em;
+}
 
 .prose h2 {
   margin: 2.4em 0 0.6em;

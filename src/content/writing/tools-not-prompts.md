@@ -1,5 +1,6 @@
 ---
-# Placeholder: replace with a real post.
+# Placeholder: replace with a real post. Hidden until then: remove `draft` to publish.
+draft: true
 title: Give the model tools, not paragraphs
 description: How I design MCP tools for an agent. A few narrow, typed tools over the product's real actions, errors the model can recover from, and writes kept apart from reads.
 date: 2026-10-27

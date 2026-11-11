@@ -1,5 +1,6 @@
 ---
-# Placeholder: replace with a real post.
+# Placeholder: replace with a real post. Hidden until then: remove `draft` to publish.
+draft: true
 title: Evals before vibes
 description: How I test an LLM feature like any other code. A small golden set built from real failures, cheap checks first, a rubric where judgement is needed, and a pass count per case.
 date: 2026-10-20

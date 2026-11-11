@@ -4,9 +4,10 @@
 // itself once when the content rises (DESIGN.md §4): each stroke carries its delay (--d) and duration (--t) in ms.
 // The planet is generated (scripts/planet.ts) and keeps turning, with its rings; the pendulum keeps swinging. All of it
 // holds still while the doodle is off screen.
-// With `art`, a section doodle instead (DESIGN.md §5): traced the same way, hidden in plain sight. The drawing sits
-// inside a clip path that is empty until a mouse comes over it; then a jelly blob trails the cursor (scripts/blob.ts)
-// and the drawing shows only inside it.
+// With `art`, a section doodle instead (DESIGN.md §5): traced the same way and drawn twice. `.rest` is always on
+// show, a pencil sketch in --muted. Over it `.ink`, the same lines in --ink, sits inside a clip path that is empty
+// until a mouse comes over the box; then a jelly blob trails the cursor (scripts/blob.ts) and inks the sketch under
+// it. Both copies run the same loops on the same clock, so they stay in register; the ink copy's ids get a suffix.
 import doodle from '../assets/doodle.svg?raw';
 import writing from '../assets/doodle-writing.svg?raw';
 import projects from '../assets/doodle-projects.svg?raw';
@@ -17,14 +18,12 @@ interface Props {
 }
 const { art } = Astro.props;
 const id = `sk-${art}`;
-const svg = art
-  ? { writing, projects }[art]
-      .replace(
-        /(<svg[^>]*>)/,
-        `$1<clipPath id="${id}"><path class="blob"></path></clipPath><path class="blob jelly"></path><g clip-path="url(#${id})">`,
-      )
-      .replace('</svg>', '</g></svg>')
-  : withPlanet(doodle);
+function sketch(raw: string) {
+  const [, open, body] = raw.match(/^(<svg[^>]*>)([\s\S]*)<\/svg>\s*$/)!;
+  const ink = body.replace(/(id="|url\(#)([\w-]+)/g, '$1$2-ink');
+  return `${open}<clipPath id="${id}"><path class="blob"></path></clipPath><path class="blob jelly"></path><g class="rest">${body}</g><g class="ink" clip-path="url(#${id})">${ink}</g></svg>`;
+}
+const svg = art ? sketch({ writing, projects }[art]) : withPlanet(doodle);
 ---
 
 <Fragment set:html={svg} />
@@ -32,7 +31,7 @@ const svg = art
 <script>
   import { BANDS, bandPath } from '../scripts/planet';
   import { trail } from '../scripts/blob';
-  // A section doodle shows under the blob that trails a mouse over its box: the clip path and the faint jelly share it.
+  // A section doodle is inked under the blob that trails a mouse over its box: the clip path and the faint jelly share it.
   document
     .querySelectorAll<SVGSVGElement>('.sketch')
     .forEach((s) => trail(s.parentElement!, s, [...s.querySelectorAll('.blob')], 270));
@@ -82,7 +81,8 @@ const svg = art
     --k: 1;
   }
   .doodle circle { fill: currentColor; stroke: none; }
-  .doodle .fill { fill: var(--logo); stroke: none; }
+  .doodle .fill { fill: var(--spot); stroke: none; }
+  .doodle .flame { fill: var(--logo); }
   .doodle .tone { fill: currentColor; fill-opacity: 0.22; stroke: none; }
   .doodle .body { fill: var(--bg); }
   .doodle .w2 { stroke-width: calc(2px * var(--k)); }
@@ -112,8 +112,9 @@ const svg = art
     html.splash:not(.go) .doodle * { animation-play-state: paused; }
     .doodle.idle .ring,
     .doodle.idle .swing { animation-play-state: paused; }
-    /* The section doodles don't draw on: the blob is their moment. While it is out (the svg is hovered), their parts
-       loop on their own clocks (sections.mjs rigs them): slow and small. Off hover every loop holds where it is. */
+    /* The section doodles don't draw on: they rest as a pencil sketch and the blob is their moment. While the svg is
+       hovered, their parts loop on their own clocks (sections.mjs rigs them): slow and small. Off hover every loop
+       holds where it is. */
     .doodle.sketch circle,
     .doodle.sketch [pathLength] { animation: none; }
     .doodle.sketch .glow { animation: sk-glow 1.8s ease-in-out infinite alternate; }
@@ -139,6 +140,9 @@ const svg = art
     .doodle.sketch:not(:hover) * { animation-play-state: paused; }
   }
   .doodle .jelly { fill: var(--line); stroke: none; }
+  /* A section doodle: the sketch at rest in --muted, the blob's copy in --ink. */
+  .doodle.sketch { color: var(--muted); }
+  .doodle.sketch .ink { color: var(--ink); }
   @keyframes sk-glow { to { opacity: 0.3; } }
   @keyframes sk-bob { to { transform: translateY(-5px); } }
   @keyframes sk-twinkle { to { opacity: 0.35; transform: scale(0.55); } }

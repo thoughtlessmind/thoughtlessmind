@@ -1,24 +1,29 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Doodle from '../components/Doodle.astro';
 import { SITE } from '../consts';
 ---
 
 <BaseLayout title={`Page not found, ${SITE.name}`} description="There is nothing at this address.">
-  <section aria-labelledby="h1">
-    <h1 id="h1">Page not found.</h1>
-    <p>There is nothing at this address. The link may be old, or the address mistyped.</p>
-    <ul>
-      <li><a class="ul" href="/">Back to the home page</a></li>
-      <li><a class="ul" href="/writing">All writing</a></li>
-    </ul>
+  {/* The landing's frame and its drawing (global.css `.hero`): the telescope, still looking. */}
+  <section class="hero" aria-labelledby="h1">
+    <div class="art" aria-hidden="true"><Doodle /></div>
+    <div class="hero-text">
+      <h1 id="h1">Page not found.</h1>
+      <p>
+        There is nothing at this address. The link may be old, or the address mistyped. The telescope has not found it
+        either.
+      </p>
+      <ul>
+        <li><a class="ul hit" href="/">Back to the home page</a></li>
+        <li><a class="ul hit" href="/writing">All writing</a></li>
+      </ul>
+    </div>
   </section>
+  <meta slot="head" name="robots" content="noindex" />
 </BaseLayout>
 
 <style>
-  /* Clear of the fixed header; the footer follows. */
-  section {
-    padding-top: calc(var(--head-h) + clamp(64px, 14vh, 160px));
-  }
   h1 {
     font-size: var(--t-xl);
     font-weight: 500;
@@ -35,13 +40,10 @@ import { SITE } from '../consts';
   ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 28px;
+    gap: 24px 28px;
     margin-top: 32px;
   }
   @media (max-width: 720px) {
-    section {
-      padding-top: calc(var(--head-h) + 48px);
-    }
     h1 {
       line-height: 1;
       letter-spacing: -0.04em;
