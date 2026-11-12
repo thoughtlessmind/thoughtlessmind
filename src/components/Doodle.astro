@@ -143,6 +143,8 @@ const svg = art ? sketch({ writing, projects }[art]) : withPlanet(doodle);
   /* A section doodle: the sketch at rest in --muted, the blob's copy in --ink. */
   .doodle.sketch { color: var(--muted); }
   .doodle.sketch .ink { color: var(--ink); }
+  /* No pointer to ink it with on touch: the sketch shows inked. */
+  @media (hover: none) { .doodle.sketch .ink { clip-path: none; } }
   @keyframes sk-glow { to { opacity: 0.3; } }
   @keyframes sk-bob { to { transform: translateY(-5px); } }
   @keyframes sk-twinkle { to { opacity: 0.35; transform: scale(0.55); } }

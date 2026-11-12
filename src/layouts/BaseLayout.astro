@@ -60,34 +60,39 @@ const card = new URL('/og.png', Astro.site).href;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <script is:inline>
-      // Before paint: `js` on <html>, the theme picked with the switch (it follows the system until then) and the
-      // palette picked with the dot (orange until then).
+      // Before paint: `js` on <html> and the theme picked with the switch (it follows the system until then).
       (() => {
         const root = document.documentElement;
         root.classList.add('js');
         try {
           const t = localStorage.getItem('theme');
           if (t === 'dark' || t === 'light') root.dataset.theme = t;
-          const p = localStorage.getItem('palette');
-          if (p === 'jade' || p === 'blue') root.dataset.palette = p;
+          localStorage.removeItem('palette'); // the palette trial is over
         } catch {}
       })();
     </script>
     {
       splash && (
         <script is:inline>
-          // Splash gate: decided before paint, so the page starts hidden instead of flashing. It plays on a fresh load
-          // or a reload only: not after a click from this site (the header logo included), not on back or forward.
-          // Never under reduced motion; ?splash=off skips it. If the splash has not started within 2.5 s (its script
-          // failed or is slow), show the page anyway.
+          // Splash gate: decided before paint, so the page starts hidden instead of flashing. It plays once per tab
+          // session, on a fresh arrival only: not on a reload, not after a click from this site (the header logo
+          // included), not on back or forward. Never under reduced motion; ?splash=off skips it, ?splash=on forces it.
+          // If the splash has not started within 2.5 s (its script failed or is slow), show the page anyway.
           (() => {
             const root = document.documentElement;
-            if (new URLSearchParams(location.search).get('splash') === 'off') return;
+            const q = new URLSearchParams(location.search).get('splash');
+            if (q === 'off') return;
             if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-            const type = performance.getEntriesByType('navigation')[0]?.type;
-            let internal = false;
-            try { internal = new URL(document.referrer).origin === location.origin; } catch {}
-            if (type !== 'reload' && (type === 'back_forward' || internal)) return;
+            if (q !== 'on') {
+              const type = performance.getEntriesByType('navigation')[0]?.type;
+              let internal = false;
+              try { internal = new URL(document.referrer).origin === location.origin; } catch {}
+              if (type !== 'navigate' || internal) return;
+              try {
+                if (sessionStorage.getItem('splash')) return;
+                sessionStorage.setItem('splash', '1');
+              } catch {}
+            }
             root.classList.add('splash');
             setTimeout(() => { if (!('splashRun' in root.dataset)) root.classList.remove('splash'); }, 2500);
           })();

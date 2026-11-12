@@ -106,15 +106,14 @@ const art = cover(post.id);
       transform: scale(1.03);
     }
   }
-  /* Phone: the cover on top, the text under it. */
+  /* Phone: the cover shrinks to a thumbnail beside the title, so the titles lead and the list stays short. */
   @media (max-width: 720px) {
     .post {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 20px;
-      padding-block: 28px;
+      grid-template-columns: minmax(0, 1fr) 96px;
+      gap: 16px;
     }
-    .cover {
-      order: -1;
+    .cover-code code {
+      font-size: 9px;
     }
   }
 </style>

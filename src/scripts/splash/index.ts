@@ -1,13 +1,14 @@
 // The splash screen, on a fresh load or reload of the home page: the mark gathers out of 0s and 1s in the middle of
 // the screen (bits.ts), moves into the header logo, turns the logo colour, and the content rises. The gate in
-// BaseLayout's head decides before paint and sets html.splash; this file plays it. It always plays to the end: clicks,
-// keys and scrolling don't cut it short.
+// BaseLayout's head decides before paint and sets html.splash; this file plays it. A click, key, touch or wheel while
+// the bits are gathering jumps straight to the move into the header, so the hand-off still plays and the wait is short.
 import { MONO, clamp, io3, mix, solid, type Env, type Splash } from './kit';
 import bits from './bits';
 
 // ms: the move to the header, the tint to the logo colour, how long after the move starts the content rises, and how
 // long the rises take (the longest rise plus its delay: the last fact row, 800 ms at 500).
 const DOCK = 800, TINT = 350, CONTENT = 200, RISE = 1340;
+const SKIP = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
 
 const root = document.documentElement;
 const cv = document.querySelector<HTMLCanvasElement>('[data-splash-stage]');
@@ -79,13 +80,20 @@ function play(splash: Splash, cv: HTMLCanvasElement, c: CanvasRenderingContext2D
   function land() {
     removeEventListener('resize', measure);
     removeEventListener('theme:change', measure);
+    SKIP.forEach((e) => removeEventListener(e, skip));
     root.classList.add('docked');
     rise();
+  }
+  // Any input during the gathering moves the clock to the start of the move.
+  function skip() {
+    const t = performance.now() - t0;
+    if (t < splash.dock) t0 -= splash.dock - t;
   }
 
   measure();
   addEventListener('resize', measure);
   addEventListener('theme:change', measure);   // redraw in the new theme's ink
+  SKIP.forEach((e) => addEventListener(e, skip, { passive: true }));
   t0 = performance.now();
   requestAnimationFrame(tick);
 }

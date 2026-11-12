@@ -50,26 +50,6 @@ Dark is the default. Light applies under `prefers-color-scheme: light` unless `d
 `data-theme="light"`. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
 decorative footer name, never running text.
 
-**Palettes on trial.** The dot beside the theme switch picks orange (the tokens above, no attribute), jade or blue
-(`data-palette` on `<html>`, stored in `localStorage['palette']`, set before paint). Each palette restates the tokens
-above except `--hi` with the same three rules, dark, light by the system and light picked; its light rules set every
-token its dark rule does, so they win over it. Jade's `--logo` (and so `--spot`) takes its first colour, `--accent` its
-second, a darker step on light. Blue puts its blue in `--spot` and keeps the logo and the rocket's flame in its orange,
-the same on light. Selection keeps the rule: the other theme's page and text accent.
-
-| Token      | Jade dark | Jade light | Blue dark | Blue light |
-| ---------- | --------- | ---------- | --------- | ---------- |
-| `--bg`     | `#171f44` | `#eef0f7`  | `#02070a` | `#f0f3f5`  |
-| `--panel`  | `#1f2854` | `#e1e5f0`  | `#0c1419` | `#e2e8eb`  |
-| `--ink`    | `#e9ecf5` | `#171f44`  | `#e8eef1` | `#02070a`  |
-| `--muted`  | `#9ba2c2` | `#575e80`  | `#88949b` | `#56616a`  |
-| `--logo`   | `#74ffed` | `#0c9484`  | `#fc734d` | `#fc734d`  |
-| `--spot`   | `--logo`  | `--logo`   | `#0297de` | `#0284c7`  |
-| `--accent` | `#fe81d1` | `#b8187a`  | `#fc734d` | `#ad3b19`  |
-
-Text on `--bg`: accent 7.1 / 5.4 / 7.4 / 5.5:1, muted 6.3 / 5.6 / 6.5 / 5.7:1, so all four pass AA. `--line` is the
-palette's ink at 10% (12% on light), `--shadow` its ink or black. The splash reads `--logo` for its tint.
-
 Code in posts uses Shiki's `github-dark-default` and `github-light-default` on `--panel`, both themes emitted as
 `--shiki-dark` / `--shiki-light` and picked by the token rules in `prose.css`. The light theme is drawn for white, so a
 transformer in `astro.config.mjs` swaps its comment, keyword and function colours for Primer's next darker step: the
@@ -98,13 +78,9 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   showing the theme it switches to: a sun on dark, a moon on light, one drawing that morphs between them (§4). CSS
   sets its state, `--m` 0 or 1, with the same rules as the tokens, so it is right before any script runs; the name says the action ("Switch to light theme"). It follows the system until clicked,
   then stores `localStorage['theme']` and fires `theme:change` on window. One script drives every switch on a page.
-  A click pours the new theme out of the switch (§4). Before it, the palette dot (`.pal`, "Colours"): a 10px dot
-  split diagonally into the current `--spot` and `--accent`, in a 24px hit area. It opens the palette picker
-  (`.pick`), a native popover hung 10px under the dot by anchor positioning, flush with the right margin: a toggle
-  group on `--panel` (1px `--line`, radius 8px) with one segment per palette, each its swatch (that palette's own two
-  colours, whatever the page wears) and name: Orange, Jade, Blue. The pick is `--ink` on `--bg`, the others `--muted`.
-  Radios underneath: arrows move the pick, Esc or a click outside closes it, focus rings sit inside the segment. A
-  pick pours its palette out of its swatch (§2, §4); the picker stays open to compare.
+  A click pours the new theme out of the switch (§4). It holds the right margin's auto space. (The palette trial,
+  orange, jade and blue from a dot beside it, ended on 12 Nov: orange stays, and the pre-paint script clears the old
+  `localStorage['palette']`.)
 - **Skip link** (`BaseLayout.astro`, `.skip`): the first focusable thing on every page, "Skip to content". Off screen
   until the keyboard reaches it, then an `--ink` chip over the header's left corner; it jumps to `main#main`.
 - **Footer** (`Footer.astro`, every page): one row of "Write to me at <email>", the socials (GitHub, LinkedIn, X,
@@ -117,7 +93,7 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
 - **Text links** (`.ul`, and links in posts): 1px underline at 0.22em offset; on hover or keyboard focus the text and
   its underline turn `--accent` and the underline goes to 2px. Focus ring: 2px `--accent`, offset 2px.
 - **Hit areas**: small links and controls take a finger without growing. The logo and the theme switch pad out to
-  44px against a negative margin; the nav links and anything with `.hit` (footer links, the palette dot, a post's
+  44px against a negative margin; the nav links and anything with `.hit` (footer links, a post's
   back link and Markdown controls on a phone, "All writing", the 404's links) carry a pseudo-element about 44px tall
   over the label. Rows of them sit far enough apart that the areas meet and never overlap.
 - **Hover**: one answer everywhere. Whatever you point at or tab to turns `--accent` over 200ms `--ease`, the colour
@@ -158,8 +134,8 @@ section doodles while a mouse is on them.
   clip path that is empty until a mouse comes over its box. Then the footer name's blob (`trail` in `scripts/blob.ts`,
   the same springs, stretch and wobble, radius 270 units, about 82px at 1440) trails the cursor as the clip, so the
   sketch turns to ink under it, cut at its rim, as the footer name's fill is. A third path sharing the outline lies
-  under the lines as a faint jelly (`--line`). On leaving it shrinks away and rAF stops. On touch the sketch stays a
-  sketch; under reduced motion the blob is a plain circle on the cursor. (Until 11 Nov the drawing was hidden outside
+  under the lines as a faint jelly (`--line`). On leaving it shrinks away and rAF stops. On touch (`hover: none`) the ink copy is
+  unclipped, so it shows inked; under reduced motion the blob is a plain circle on the cursor. (Until 11 Nov the drawing was hidden outside
   the blob: nobody on touch and few with a mouse ever saw it.)
   - **Alive on hover**: while the svg is hovered, its parts loop on their own clocks (CSS only, rigged by
     `sections.mjs`), the sketch and its ink copy on one clock, so they stay in register; off hover every loop pauses
@@ -230,23 +206,24 @@ section doodles while a mouse is on them.
 
 ### Splash screen (`components/Splash.astro`, `scripts/splash/`)
 
-On a fresh load or a reload of the home page the mark assembles in the middle of the screen in the theme's ink, moves
+On a fresh arrival at the home page, once per tab session, the mark assembles in the middle of the screen in the theme's ink, moves
 into the header logo (800 ms, centre linear in eased time, scale geometric), turns orange (350 ms) and the real SVG
-takes over in the same frame; the content rises from 200 ms into the move. It does not play when the home page is
-reached from another page of the site (the header logo included) or by back and forward. `?splash=off` skips it (for
-screenshots and checks).
+takes over in the same frame; the content rises from 200 ms into the move. It does not play on a reload, a second arrival in the same tab session
+(`sessionStorage['splash']`), from another page of the site (the header logo included) or by back and forward.
+`?splash=off` skips it (for screenshots and checks), `?splash=on` forces it.
 
 - **Bits** (`bits.ts`, lands 4.05 s), the one splash: a faint field of 0s and 1s gathers into the mark hexagon by
   hexagon; read row by row the landed digits are the ASCII bits of "rajiv.me". A diagonal sweep turns them into a pixel
   mosaic that resolves into the vector mark. (Machine, the plates that unfolded into the mark, was dropped on 30 Oct.)
 
 Mechanics: a page opts in with `<BaseLayout splash>` (only the home page does), which renders the pre-paint gate and the
-splash canvas. The gate plays it only when the navigation type is `reload`, or `navigate` with no same-origin referrer;
+splash canvas. The gate plays it only when the navigation type is `navigate` with no same-origin referrer and the tab session has not
+seen it;
 it adds `html.splash` (never under reduced motion), which hides `.mark` and `.rise` until the splash lands, and
 everything after the landing too (a screen taller than the hero shows it); that rises with the last fact row (500).
 The splash's frame is a pure function of t (`kit.ts` holds the geometry; prototypes and frame-by-frame scrubbing live
-in the local `docs/v4-research/i-loaders/` playboard). It always plays to the end: clicks and keys don't cut it short,
-and the page holds at the top (`overflow: hidden`, gutter kept) until the content rises. A theme change mid-splash
+in the local `docs/v4-research/i-loaders/` playboard). A pointer down, key, touch or wheel while the bits gather moves its clock to the start of the move
+to the header, so the hand-off still plays and the wait is at most 1.35 s more; the page holds at the top (`overflow: hidden`, gutter kept) until the content rises. A theme change mid-splash
 redraws in the new ink. If the splash script hasn't started 2.5 s after the gate, the page shows anyway. rAF stops at
 the landing.
 
@@ -270,15 +247,15 @@ Sections, in order:
    `--ease`. Reduced motion: the colour switches at once. Touch shows plain text. Then two lines at `--t-s` (max
    42em). The person, muted and balanced: "Off screen: astronomy, rockets, physics and sport. The drawing covers three
    of the four." And 12px under it, in `--ink`, how to reach him, the address spelled out so it can be read and
-   copied: "Write to me at hello@rajiv.me, or find me on GitHub, LinkedIn and X." The right
+   copied: "Write to me at hello@rajiv.me." (the socials are in the footer) The right
    48% (to the screen edge) holds the doodle, centred with 96 / 56 / 40 px of air: a sketchbook line drawing of a
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local
    `docs/v4-research/art/vector/`; the planet is generated, see §4): strokes on `currentColor` (`--ink`), the flame in
    `--logo` and one hexagon in `--spot`, so it follows the theme. At 720px and under: the doodle in a 208px band under
    the header (strokes 1.8x thicker), the text below, the headline balanced over three lines (no forced break).
-2. **Now** (`#now`, counted as About by the scroll spy): a grid on `--cols`. The h2 "Now" in the first column with
-   its note under it ("Where most of my week goes."); from the axis, on the h2's baseline, the thesis (`--t-l`, 500,
+2. **How I work** (`#now`, counted as About by the scroll spy): a grid on `--cols`. The h2 "How I work" (it read as a status, not as
+   what he does) in the first column with its note under it ("Where most of my week goes."); from the axis, on the h2's baseline, the thesis (`--t-l`, 500,
    max 18em, balanced): "The model is rarely the hard part. Everything around it is." Under it its four parts in two
    columns (one on a phone), each a 500 title and a muted sentence on a `--line` hairline. Each sentence is in the
    first person and in words a founder or recruiter can follow, the outcome last; the posts on these
@@ -286,9 +263,9 @@ Sections, in order:
    real data and actions); A budget for every call (a time limit, a cost limit and a fallback on every feature);
    Tested before trusted (every prompt or model change runs against past failures); Agents on the team (coding agents
    under written rules). Last, a muted line led by "Coming soon" in `--accent`: Orca, a timer for the macOS menu bar
-   that you and an AI agent can both run (no link until it ships). Under 1000px everything stacks under the h2.
-3. **Experience** (`#experience`, counted as About by the scroll spy): the grid of Writing and Projects, the h2 alone
-   in the first column. From the axis, one row per job on a `--line` hairline (24px padding), newest first, read in
+   that you and an AI agent can both run (no link until it ships). Under 1000px everything stacks under the h2; on a phone it starts 72px under the landing, not 104px.
+3. **Experience** (`#experience`, counted as About by the scroll spy): the grid of Writing and Projects, the h2 and its
+   note ("The day jobs, newest first.") in the first column. From the axis, one row per job on a `--line` hairline (24px padding), newest first, read in
    the post rows' order: when (`--t-xs`, `--muted`: "Now", "2020"), the role and employer (`--t-sm`, 500), then one
    muted line on the product and his part in it, in plain words (max 38em). The one place an employer is named:
    "Senior Frontend Engineer, swipejobs", then "Frontend Engineer, Influence". Real titles only, no stats.
@@ -304,12 +281,13 @@ Sections, in order:
      `--spot`, and any other filled area is the stroke colour at 22%. Writing: a thought cloud with a
      lightbulb (the orange spark), a pen writing a page, a laptop showing it as a post (faint title bar). Projects: a
      lab flask (faint liquid), two gears, a parcel with a tag going out (orange tape). The traced wrench tangled with the
-     small gear, so both were dropped and the small gear redrawn as a scaled copy of the big one. Gone under 1000px.
+     small gear, so both were dropped and the small gear redrawn as a scaled copy of the big one. Under 1000px it stays, 200 x 130px, 28px under the note,
+     inked on touch.
    - Writing: the note "Notes on building for the web, and the problems I would rather solve once." (the same
      line as the /writing dek; "putting models to work" comes back into both when those posts are published), the
      four newest posts that have a cover drawing as `PostCard` rows (so the list is a mix and every row carries a
      doodle; a new post joins it once its cover is drawn), then a row of its own between hairlines: "Read all 6
-     posts" (`--t-sm`, 500, the live count)
+     posts" (`--t-sm`, 500, the live count; a phone shows three posts, then this row)
      with a `--accent` arrow at the far end that slides 6px on hover (reduced motion: it stays); the label turns
      `--accent` too.
    - Every clickable item (post rows, project rows, the /writing list) turns its title `--accent` while the pointer
@@ -319,10 +297,11 @@ Sections, in order:
      css-only-tooltip, YouTube Playlist Info), then this site as the colophon. One row per project on a `--line`
      hairline (28px padding, about 340px tall at 1440, so two fit on a screen), each a link to the real thing, split
      2fr / 3fr with a 32px gap: the text ("Kind, year" in `--muted`, the name in `--t-sm`, a muted two-sentence
-     summary, then where the link goes, underlined: View on npm, Chrome Web Store, Open the app, Read the source) and
+     summary, then where the link goes, underlined: View on npm, Get it for Chrome, Open the app, Read the source) and
      a 16:10 `--panel` still drawn in HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini copy
      of this page, the playlist total, the mark; scaled 1.35 when wider than 420px). On a phone the still sits above
-     the text.
+     the text at 2:1, so a row stays short. Each link opens a new tab and says so: its accessible name is "name: where
+     it goes (opens in a new tab)", described by the summary.
 
 Sections sit 136px apart (104px on a phone). The footer is the layout's (§3).
 
@@ -331,7 +310,7 @@ Sections sit 136px apart (104px on a phone). The footer is the layout's (§3).
 title in `--t-sm`, the muted summary, max 38em) and, 32px away, a 16:10 `--panel` cover `clamp(152px, 14vw, 208px)`
 wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in
 `--spot`, scaled 1.25 so the drawing (at most 70% of its frame) keeps only a thin margin; a post with no cover yet
-shows its line of code there, in mono at `--t-code`. On a phone the cover sits above the text.
+shows its line of code there, in mono at `--t-code`. On a phone the cover is a 96px thumbnail beside the text (16px gap; a code cover sets its line at 9px).
 
 ## §6 Writing list (`pages/writing/index.astro`)
 

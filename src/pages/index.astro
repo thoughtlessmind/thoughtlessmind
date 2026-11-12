@@ -14,7 +14,7 @@ const work = [
     kind: 'Chrome extension',
     year: 2023,
     summary: 'Outlines every element on a page in one click, so you can see the boxes, nesting and spacing of a layout you didn’t write.',
-    go: 'Chrome Web Store',
+    go: 'Get it for Chrome',
     href: 'https://chrome.google.com/webstore/detail/diver/onfnfdmnccoaknhjinebmlncejnofhoc',
   },
   {
@@ -104,22 +104,14 @@ const person = {
         Off screen: astronomy, rockets, physics and sport. The drawing covers three of the four.
       </p>
       <p class="reach rise" style="--d:420">
-        Write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>, or find me on <a
-          class="ul"
-          href={SITE.socials.github}
-          rel="me">GitHub</a
-        >, <a class="ul" href={SITE.socials.linkedin} rel="me">LinkedIn</a> and <a
-          class="ul"
-          href={SITE.socials.x}
-          rel="me">X</a
-        >.
+        Write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>.
       </p>
     </div>
   </section>
 
   <section class="sec now" id="now" aria-labelledby="now-h">
     <div>
-      <h2 class="h2" id="now-h">Now</h2>
+      <h2 class="h2" id="now-h">How I work</h2>
       <p class="note">Where most of my week goes.</p>
     </div>
     <div>
@@ -143,6 +135,7 @@ const person = {
   <section class="sec split" id="experience" aria-labelledby="xp-h">
     <div class="head">
       <h2 class="h2" id="xp-h">Experience</h2>
+      <p class="note">The day jobs, newest first.</p>
     </div>
     <ol class="list">
       {
@@ -187,13 +180,22 @@ const person = {
       {
         work.map((w) => (
           <li>
-            <a class="proj" href={w.href} rel="noopener" target="_blank">
+            <a
+              class="proj"
+              href={w.href}
+              rel="noopener"
+              target="_blank"
+              aria-label={`${w.name}: ${w.go} (opens in a new tab)`}
+              aria-describedby={`pj-${w.id}`}
+            >
               <span class="pj">
                 <span class="pm">
                   {w.kind}, {w.year}
                 </span>
                 <span class="pn">{w.name}</span>
-                <span class="cs">{w.summary}</span>
+                <span class="cs" id={`pj-${w.id}`}>
+                  {w.summary}
+                </span>
                 <span class="go">{w.go}</span>
               </span>
               <span class="still" aria-hidden="true">
@@ -371,8 +373,10 @@ const person = {
     text-wrap: pretty;
   }
   .soon {
+    max-width: 38em;
     margin-top: 48px;
     color: var(--muted);
+    text-wrap: pretty;
   }
   .soon span {
     margin-right: 12px;
@@ -421,7 +425,8 @@ const person = {
     text-wrap: pretty;
   }
   /* Under the note, the section's doodle: its story in three objects on a dashed route, a pencil sketch in --muted
-     that a mouse over this box inks and sets moving (Doodle.astro). Phones skip it: there the rows follow the head. */
+     that a mouse over this box inks and sets moving (Doodle.astro). Under 1000px it sits small under the note, so the
+     drawings carry on past the landing; on touch it shows inked (Doodle.astro). */
   .sk {
     width: min(100%, 300px);
     height: clamp(180px, 100svh - var(--head-h) - 420px, 270px);
@@ -429,7 +434,9 @@ const person = {
   }
   @media (max-width: 999px) {
     .sk {
-      display: none;
+      width: 200px;
+      height: 130px;
+      margin-top: 28px;
     }
   }
   /* After the post rows, the way to the rest: a row of its own, the arrow in orange. */
@@ -661,6 +668,16 @@ const person = {
     }
     .sec {
       padding-top: 104px;
+    }
+    #now {
+      padding-top: 72px;
+    }
+    /* Three posts on a phone; /writing has the rest. */
+    #writing li:nth-child(n + 4) {
+      display: none;
+    }
+    .still {
+      aspect-ratio: 2 / 1;
     }
     .parts {
       grid-template-columns: minmax(0, 1fr);
