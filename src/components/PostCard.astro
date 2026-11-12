@@ -1,5 +1,5 @@
 ---
-// One post as a row: the date and reading time, the title and summary on the left, the doodle cover on the right (or
+// One post as a row: the title, summary, then the date and reading time on the left, the doodle cover on the right (or
 // its line of code, set large, when it has no cover yet). Used by the home page and a post's "More writing". The
 // cover carries a view-transition-name, so it morphs into the post's own cover on navigation.
 import { cover, iso, minutes, month, type Post } from '../lib/writing';
@@ -14,9 +14,9 @@ const art = cover(post.id);
 
 <a class="post" href={`/writing/${post.id}`}>
   <span class="pc">
-    <span class="pm"><time datetime={iso(date)}>{month(date)}</time> · {minutes(post.body)} min read</span>
     <span class="pt">{title}</span>
     <span class="cs">{description}</span>
+    <span class="pm"><time datetime={iso(date)}>{month(date)}</time> · {minutes(post.body)} min read</span>
   </span>
   {
     art ? (
@@ -32,7 +32,7 @@ const art = cover(post.id);
 <style>
   .post {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(152px, 14vw, 208px);
+    grid-template-columns: minmax(0, 1fr) clamp(112px, 9vw, 136px);
     gap: 32px;
     align-items: start;
     padding-block: 24px;
@@ -40,13 +40,13 @@ const art = cover(post.id);
   }
   .pm {
     display: block;
+    margin-top: 14px;
     font-size: var(--t-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
   .pt {
     display: block;
-    margin-top: 8px;
     font-size: var(--t-sm);
     font-weight: 500;
     line-height: 1.25;
@@ -74,7 +74,7 @@ const art = cover(post.id);
     place-items: center;
     aspect-ratio: 16 / 10;
     overflow: hidden;
-    background: var(--panel);
+    border: 1px solid var(--frame);
   }
   /* The drawings fill at most 70% of their frame; at 1.25 they keep a thin margin in the small cover. */
   .cover :global(svg) {
@@ -109,7 +109,7 @@ const art = cover(post.id);
   /* Phone: the cover shrinks to a thumbnail beside the title, so the titles lead and the list stays short. */
   @media (max-width: 720px) {
     .post {
-      grid-template-columns: minmax(0, 1fr) 96px;
+      grid-template-columns: minmax(0, 1fr) 80px;
       gap: 16px;
     }
     .cover-code code {

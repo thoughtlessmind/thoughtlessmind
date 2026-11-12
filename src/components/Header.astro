@@ -3,14 +3,14 @@ import { SITE } from '../consts';
 import ThemeToggle from './ThemeToggle.astro';
 
 export interface Props {
-  /** The section the page belongs to: its nav link gets aria-current="page" and the dot. */
+  /** The section the page belongs to: its nav link gets aria-current="page" and the underline. */
   current?: 'writing';
   /** A reading-progress line along the header's bottom edge (post pages). */
   progress?: boolean;
 }
 const { current, progress = false } = Astro.props;
 // `.rise` + `--d` (ms) are the splash's hooks: the splash staggers them in. No CSS here hides or animates them.
-// The home page's scroll spy toggles `on` + aria-current="true" on the `[data-spy]` links.
+// The home page's scroll spy sets aria-current="true" on one of the `[data-spy]` links; the underline follows it.
 ---
 
 <header class="top wrap" data-progress={progress ? '' : undefined}>
@@ -32,6 +32,7 @@ const { current, progress = false } = Astro.props;
           </a>
         ))
       }
+      <span class="nav-line" aria-hidden="true"></span>
     </nav>
     <ThemeToggle />
   </div>
@@ -44,4 +45,24 @@ const { current, progress = false } = Astro.props;
   const at = document.querySelector('[data-top-at]');
   if (at && !CSS.supports('animation-timeline: scroll()'))
     new IntersectionObserver(([e]) => document.documentElement.classList.toggle('lifted', !e.isIntersecting)).observe(at);
+
+  // The current link's underline: measured from the link (labels differ in width) and slid there by a CSS transition.
+  // It moves when aria-current changes (the home page's scroll spy, or the page's own link), when the nav resizes and
+  // once the fonts have loaded. No scroll listener, no loop.
+  const nav = document.querySelector<HTMLElement>('.top nav');
+  const line = nav?.querySelector<HTMLElement>('.nav-line');
+  if (nav && line) {
+    const place = () => {
+      const a = nav.querySelector<HTMLElement>('a[aria-current]');
+      line.classList.toggle('shown', !!a);
+      if (a) line.style.transform = `translateX(${a.offsetLeft + (a.offsetWidth - line.offsetWidth) / 2}px)`;
+    };
+    place();
+    // The first placement doesn't slide in from the left edge.
+    line.getBoundingClientRect();
+    line.classList.add('ready');
+    new MutationObserver(place).observe(nav, { subtree: true, attributeFilter: ['aria-current'] });
+    new ResizeObserver(place).observe(nav);
+    document.fonts.ready.then(place);
+  }
 </script>

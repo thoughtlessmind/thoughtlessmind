@@ -23,6 +23,11 @@
   --accent: #ff5f1f;
   /* The drawings' filled bits (the doodles' star, the footer name, cover accents): the logo colour. */
   --spot: var(--logo);
+  /* The frame round post covers and project stills: the text colour at 16%, on no fill. */
+  --frame: color-mix(in oklab, var(--ink) 16%, transparent);
+  /* Experience's logo tiles: a light surface so a black mark reads on dark; on light, white with a --line border. */
+  --tile: #f3f2ee;
+  --tile-edge: transparent;
   /* Selected text shows the other theme: its page as the ground, its text orange as the letters (4.6:1 here,
      6.7:1 on light), so a selection reads as the site turned inside out and both pass AA. */
   --sel-bg: #f3f2ee;
@@ -60,6 +65,8 @@
     --sel-bg: #02070a;
     --sel-ink: #ff5f1f;
     --shadow: rgba(38, 34, 26, 0.14);
+    --tile: #ffffff;
+    --tile-edge: var(--line);
     color-scheme: light;
   }
 }
@@ -74,6 +81,8 @@
   --sel-bg: #02070a;
   --sel-ink: #ff5f1f;
   --shadow: rgba(38, 34, 26, 0.14);
+  --tile: #ffffff;
+  --tile-edge: var(--line);
   color-scheme: light;
 }
 
@@ -260,27 +269,33 @@
     position: relative;
     white-space: nowrap;
   }
-  /* The current link (aria-current on its page, .on from the home page's scroll spy): a 6px accent dot hung
-     before the label, so no label moves when it changes. */
-  .top nav a::before {
-    content: "";
+  /* The current link (aria-current on its page, or from the home page's scroll spy): a 16px accent underline centred
+     under its label. Header.astro measures the link and sets the transform; it slides between links, and moves at
+     once under reduced motion. No label moves when it changes. */
+  .top nav {
+    position: relative;
+  }
+  .nav-line {
     position: absolute;
-    top: 50%;
-    right: 100%;
-    width: 6px;
-    height: 6px;
-    margin: -3px 7px 0 0;
-    border-radius: 50%;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
     background: var(--accent);
     opacity: 0;
-    transition: opacity 300ms var(--ease);
+    pointer-events: none;
   }
-  .top nav a.on::before,
-  .top nav a[aria-current]::before {
+  .nav-line.shown {
     opacity: 1;
   }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav-line.ready {
+      transition: transform 320ms var(--ease), opacity 200ms var(--ease);
+    }
+  }
   /* Hover and keyboard focus answer in one colour: what you point at or tab to turns --accent, the colour of the
-     focus ring and the "you are here" dots. Hover only where there is a real pointer, so a tap on a phone never
+     focus ring and the "you are here" underline. Hover only where there is a real pointer, so a tap on a phone never
      leaves a link stuck orange. The logo is already orange and stays as it is. */
   .top nav a,
   .theme {

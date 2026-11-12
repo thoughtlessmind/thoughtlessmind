@@ -3,6 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Doodle from '../components/Doodle.astro';
 import PostCard from '../components/PostCard.astro';
 import { SITE } from '../consts';
+import swipejobs from '../assets/logos/swipejobs.png';
+import influence from '../assets/logos/influence.png';
 import { cover, getPosts } from '../lib/writing';
 
 // Each project links to the real thing; `go` says where. The stills are drawn in HTML below (DESIGN.md §5).
@@ -57,13 +59,38 @@ const now = [
   ['Tested before trusted', 'Every change to a prompt or a model runs against past failures first, so a mistake is caught by a test and not by a user.'],
   ['Agents on the team', 'I work with coding agents every day under written rules: small changes, each one checked in a real browser before I call it done.'],
 ];
-// Experience: the day jobs, newest first. Real titles only, and the one place an employer is named (AGENTS.md).
+// Experience: the day jobs, newest first, as a timeline. Real titles and dates only, and the one place an employer is
+// named (AGENTS.md). `from`/`to` are ISO months for <time>; `to` is empty while the job is current. The logos are
+// imported assets shown as plain <img>: the project has no Sharp, and two tiny PNGs need no resizing. `work` is a few
+// lines on what he built there and the problem it solved.
+// Placeholder: the `work` lines are lorem ipsum until he writes the real ones; replace before publishing.
 const jobs = [
-  { when: 'Now', role: `${SITE.role}, swipejobs`, text: 'A platform that matches workers with jobs. I build its web apps.' },
   {
-    when: '2020',
-    role: `Frontend Engineer, ${SITE.previousCompany}`,
+    from: ['2021-08', 'Aug 2021'],
+    to: null,
+    role: SITE.role,
+    company: 'swipejobs',
+    logo: swipejobs,
+    pad: 8,
+    text: 'A platform that matches workers with jobs. I build its web apps.',
+    work: [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.',
+      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.',
+      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.',
+    ],
+  },
+  {
+    from: ['2020-01', 'Jan 2020'],
+    to: ['2021-07', 'Jul 2021'],
+    role: 'Frontend Engineer',
+    company: SITE.previousCompany,
+    logo: influence,
+    pad: 5,
     text: 'A product that helps websites turn more visitors into customers. I built and maintained its web app.',
+    work: [
+      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt.',
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.',
+    ],
   },
 ];
 const mark =
@@ -132,24 +159,6 @@ const person = {
     </div>
   </section>
 
-  <section class="sec split" id="experience" aria-labelledby="xp-h">
-    <div class="head">
-      <h2 class="h2" id="xp-h">Experience</h2>
-      <p class="note">The day jobs, newest first.</p>
-    </div>
-    <ol class="list">
-      {
-        jobs.map((j) => (
-          <li class="job">
-            <span class="pm">{j.when}</span>
-            <h3 class="pn">{j.role}</h3>
-            <p class="cs">{j.text}</p>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
-
   <section class="sec split" id="writing" aria-labelledby="writing-h">
     <div class="head">
       <h2 class="h2" id="writing-h">Writing</h2>
@@ -168,6 +177,49 @@ const person = {
       </ul>
       <a class="all" href="/writing">Read all {all.length} posts<span aria-hidden="true">→</span></a>
     </div>
+  </section>
+
+  <section class="sec split" id="experience" aria-labelledby="xp-h">
+    <div class="head">
+      <h2 class="h2" id="xp-h">Experience</h2>
+      <p class="note">The teams I’ve built with, newest first.</p>
+    </div>
+    <ol class="list tl">
+      {
+        jobs.map((j) => (
+          <li class:list={['job', { cur: !j.to }]}>
+            <span class="when">
+              <time datetime={j.from[0]}>{j.from[1]}</time>
+              {j.to ? (
+                <>
+                  to <time datetime={j.to[0]}>{j.to[1]}</time>
+                </>
+              ) : (
+                'to now'
+              )}
+            </span>
+            <span class="node" aria-hidden="true" />
+            <div class="what">
+              <div class="who">
+                <span class="tile" style={`padding:${j.pad}px`}>
+                  <img src={j.logo.src} alt={`${j.company} logo`} width={j.logo.width} height={j.logo.height} loading="lazy" decoding="async" />
+                </span>
+                <div>
+                  <h3 class="pn">{j.role}</h3>
+                  <p class="co">{j.company}</p>
+                </div>
+              </div>
+              <p class="cs">{j.text}</p>
+              <ul class="wk">
+                {j.work.map((w) => (
+                  <li>{w}</li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
   </section>
 
   <section class="sec split" id="projects" aria-labelledby="projects-h">
@@ -189,12 +241,12 @@ const person = {
               aria-describedby={`pj-${w.id}`}
             >
               <span class="pj">
-                <span class="pm">
-                  {w.kind}, {w.year}
-                </span>
                 <span class="pn">{w.name}</span>
                 <span class="cs" id={`pj-${w.id}`}>
                   {w.summary}
+                </span>
+                <span class="pm">
+                  {w.kind}, {w.year}
                 </span>
                 <span class="go">{w.go}</span>
               </span>
@@ -247,25 +299,25 @@ const person = {
 </BaseLayout>
 
 <script>
-  // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Now and
-  // Experience count as About and the footer as Projects, so a jump to the end still lands there.
+  // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Now counts
+  // as About, Experience (under Writing) as Writing and the footer as Projects, so a jump to the end still lands there.
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
   const foot = document.querySelector('footer');
   const spy = new IntersectionObserver(
     (entries) =>
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
-        const id = e.target === foot ? 'projects' : ['now', 'experience'].includes(e.target.id) ? 'about' : e.target.id;
+        const t = e.target.id;
+        const id = e.target === foot ? 'projects' : t === 'now' ? 'about' : t === 'experience' ? 'writing' : t;
         links.forEach((a) => {
           const on = a.dataset.spy === id;
-          a.classList.toggle('on', on);
           if (on) a.setAttribute('aria-current', 'true');
           else a.removeAttribute('aria-current');
         });
       }),
     { rootMargin: '-45% 0px -54% 0px' },
   );
-  ['about', 'now', 'experience', 'writing', 'projects'].forEach((id) => {
+  ['about', 'now', 'writing', 'experience', 'projects'].forEach((id) => {
     const s = document.getElementById(id);
     if (s) spy.observe(s);
   });
@@ -425,8 +477,7 @@ const person = {
     text-wrap: pretty;
   }
   /* Under the note, the section's doodle: its story in three objects on a dashed route, a pencil sketch in --muted
-     that a mouse over this box inks and sets moving (Doodle.astro). Under 1000px it sits small under the note, so the
-     drawings carry on past the landing; on touch it shows inked (Doodle.astro). */
+     that a mouse over this box inks and sets moving (Doodle.astro). Under 1000px it is hidden: the lists lead. */
   .sk {
     width: min(100%, 300px);
     height: clamp(180px, 100svh - var(--head-h) - 420px, 270px);
@@ -434,9 +485,7 @@ const person = {
   }
   @media (max-width: 999px) {
     .sk {
-      width: 200px;
-      height: 130px;
-      margin-top: 28px;
+      display: none;
     }
   }
   /* After the post rows, the way to the rest: a row of its own, the arrow in orange. */
@@ -470,16 +519,130 @@ const person = {
       translate: 6px 0;
     }
   }
-  /* An experience row, in the post rows' order: when, the role, one plain line about the work. */
-  .job {
-    padding-block: 24px;
-    border-top: 1px solid var(--line);
-  }
-  .job .pn {
+  /* Experience as a timeline: the dates right-aligned, a rail with a node per job, then the logo tile, role and company,
+     one line about the product in --ink, then a few muted lines on the work, marked in orange. The rail is one line down the whole list, accent at the top fading into --line and
+     out at the bottom; the current job's node is filled, a past one is a ring. */
+  .tl {
+    position: relative;
     margin-top: 8px;
   }
+  .tl::before {
+    content: "";
+    position: absolute;
+    left: 143px;
+    top: 8px;
+    bottom: 0;
+    width: 2px;
+    border-radius: 1px;
+    background: linear-gradient(var(--accent), var(--line) 160px, var(--line) calc(100% - 64px), transparent);
+  }
+  .job {
+    display: grid;
+    grid-template-columns: 112px 64px minmax(0, 1fr);
+    padding-bottom: 64px;
+  }
+  .job:last-child {
+    padding-bottom: 8px;
+  }
+  .when {
+    font-size: var(--t-xs);
+    line-height: 1.4;
+    color: var(--muted);
+    text-align: right;
+  }
+  .when time:first-child {
+    display: block;
+    color: var(--ink);
+  }
+  .node {
+    position: relative;
+    justify-self: center;
+    width: 12px;
+    height: 12px;
+    margin-top: 4px;
+    border: 2px solid var(--muted);
+    border-radius: 50%;
+    background: var(--bg);
+  }
+  .cur .node {
+    border: 0;
+    background: var(--accent);
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--accent) 18%, transparent);
+  }
+  .who {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .tile {
+    display: grid;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--tile-edge);
+    border-radius: 11px;
+    background: var(--tile);
+  }
+  .tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .job .pn {
+    margin-top: 0;
+  }
+  .co {
+    margin-top: 2px;
+    color: var(--muted);
+  }
   .job .cs {
-    max-width: 38em;
+    max-width: 34em;
+    margin-top: 16px;
+    color: var(--ink);
+  }
+  .wk {
+    max-width: 34em;
+    margin-top: 14px;
+    padding-left: 18px;
+    list-style: disc;
+    color: var(--muted);
+  }
+  .wk li {
+    padding-left: 4px;
+    text-wrap: pretty;
+  }
+  .wk li + li {
+    margin-top: 8px;
+  }
+  .wk li::marker {
+    color: var(--accent);
+  }
+  /* Phone: the rail moves to the left edge and the dates sit over each job, on one line. */
+  @media (max-width: 720px) {
+    .tl::before {
+      left: 15px;
+    }
+    .job {
+      grid-template-columns: 32px minmax(0, 1fr);
+      padding-bottom: 40px;
+    }
+    .when {
+      grid-column: 2;
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .when time:first-child {
+      display: inline;
+      margin-right: 4px;
+    }
+    .node {
+      grid-area: 1 / 1 / 3;
+      justify-self: start;
+      margin-left: 10px;
+    }
+    .what {
+      grid-column: 2;
+    }
   }
   /* A project row: the text on the left, the still on the right with the larger share. */
   .proj {
@@ -492,13 +655,13 @@ const person = {
   }
   .pm {
     display: block;
+    margin-top: 14px;
     font-size: var(--t-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
   .pn {
     display: block;
-    margin-top: 10px;
     font-size: var(--t-sm);
     font-weight: 500;
     line-height: 1.25;
@@ -536,7 +699,7 @@ const person = {
     place-items: center;
     aspect-ratio: 16 / 10;
     overflow: hidden;
-    background: var(--panel);
+    border: 1px solid var(--frame);
   }
 
   /* Stills: each project drawn in HTML, a small illustration set at its own sizes and scaled to the still's width. */
@@ -652,8 +815,15 @@ const person = {
     fill: var(--logo);
   }
 
-  /* Phone: one column everywhere, stills above their text. */
+  /* Phone: one column everywhere, stills above their text. No landing doodle here (the 404 keeps its band), so the page
+     opens on the name and headline under the header. */
   @media (max-width: 720px) {
+    #about {
+      padding-top: calc(var(--head-h) + 32px);
+    }
+    #about .art {
+      display: none;
+    }
     .st {
       margin-top: 12px;
       line-height: 1;

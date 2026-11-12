@@ -41,7 +41,10 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 | `--hi`     | `#ffffff`               | `#000000`             | emphasis                  |
 | `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark and the rocket's flame (decorative) |
 | `--spot`   | `--logo`                | `--logo`              | the drawings' filled bits: the doodles' hexagon and spark, cover accents, the footer name's revealed fill (decorative) |
-| `--accent` | `#ff5f1f`               | `#c2410c`             | text orange, focus ring, active dots, reading line |
+| `--accent` | `#ff5f1f`               | `#c2410c`             | text orange, focus ring, the nav underline, active dots, reading line, the timeline's current node |
+| `--frame`  | `--ink` at 16%          | `--ink` at 16%        | the 1px border round post covers and project stills (no fill) |
+| `--tile`   | `#f3f2ee`               | `#ffffff`             | Experience's logo tiles, light in both themes so a black mark reads on dark |
+| `--tile-edge` | `transparent`        | `--line`              | the tile's 1px border, so a white tile still reads on the light page |
 | `--shadow` | `rgba(0,0,0,.55)`       | `rgba(38,34,26,.14)`  | the lifted header's drop shadow, nothing else |
 | `--sel-bg` | `#f3f2ee`               | `#02070a`             | selected text's ground: the other theme's page |
 | `--sel-ink`| `#c2410c`               | `#ff5f1f`             | selected text: the other theme's text orange (4.6:1 / 6.7:1) |
@@ -64,9 +67,12 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
 - **Header** (`Header.astro`, `.top`): fixed to the top on every page, a grid on `--cols`. The logo alone in the first
   column: the hexagon mark (`.mark`, `data-logo`, 28px) in a link labelled "rajiv.me, home". From the axis, `.bar`:
   nav (About `/#about`, Writing `/writing`, Projects `/#projects`, in the home page's section order; sans 15px, gap
-  28px), then the theme switch on the right margin. The current link is `--ink` with a 6px `--accent` dot hung before
-  it, so no label moves: `aria-current="page"` on the writing pages (`current="writing"`), and on the home page the
-  scroll spy's `.on` + `aria-current="true"`. At 720px and under it is a flex row (gap 16px, nav gap 20px); all three
+  28px), then the theme switch on the right margin. The current link has a small `--accent` underline (`.nav-line`: 16 x 2px,
+  radius 1px, 5px under the nav, centred under the label), so no label moves: `aria-current="page"` on the writing
+  pages (`current="writing"`), and on the home page the scroll spy's `aria-current="true"`. The header script measures
+  the current link (labels differ in width) and sets its `translateX`; it slides between links (320 ms `--ease`, no
+  slide on the first placement, none under reduced motion) and is placed again when `aria-current` changes, the nav
+  resizes or the fonts load. No scroll listener, no loop. With no current link (the 404) it is hidden. At 720px and under it is a flex row (gap 16px, nav gap 20px); all three
   labels fit at 375. Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
   - **Blended, then lifted**: at scroll 0 it is no surface at all. One registered property, `--lift` (0 to 1), drives
     the bar: background `--bg` mixed in at up to 80%, `backdrop-filter: blur(16px) saturate(160%)`, a `--line`
@@ -97,7 +103,7 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   back link and Markdown controls on a phone, "All writing", the 404's links) carry a pseudo-element about 44px tall
   over the label. Rows of them sit far enough apart that the areas meet and never overlap.
 - **Hover**: one answer everywhere. Whatever you point at or tab to turns `--accent` over 200ms `--ease`, the colour
-  of the focus ring and the "you are here" dots: nav links, the theme switch, text links, the post page's Back,
+  of the focus ring and the "you are here" underline and dots: nav links, the theme switch, text links, the post page's Back,
   contents, Copy and Markdown links, and the title of every clickable item (post rows, project rows, the /writing
   list, "Read all 12 posts"). Nothing fades. Hover rules sit under `@media (hover: hover)`, so a tap on a touch
   screen never leaves anything orange; `:focus-visible` gets the same colour. The hover moments that are not links,
@@ -107,8 +113,8 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   orange on its page: burnt orange on paper in dark, brand orange on black in light), the caret is `--accent`, the scrollbar is
   thin in half-`--muted` on transparent, and every `time` uses tabular numbers.
 - Hairlines between label rows (the landing facts, Lately), between writing list rows and years, and under the lifted
-  header. No boxes or gradients; the lifted header is the only shadow. Surfaces change by a tone step (`--panel` under
-  project stills, post covers and code).
+  header. No boxes or gradients; the lifted header is the only shadow. Code sits on `--panel`; project stills and post
+  covers have no fill, only a 1px `--frame` border (the text colour at 16%).
 
 ## §4 Motion
 
@@ -166,8 +172,8 @@ section doodles while a mouse is on them.
   `html.lifted` and `--lift` transitions over 300 ms. Under reduced motion the surface still forms but the bar keeps
   its resting height. The reading line on post pages runs on the same timeline (`progress`, scale 0 to 1).
 - **Scroll spy**: on the home page the section crossing the middle of the screen (`rootMargin: -45% 0px -54% 0px`)
-  lights its header link: the landing, Now and Experience are About, Writing is Writing, Projects and the footer are
-  Projects.
+  lights its header link: the landing and Now are About, Writing and Experience (which follows it) are Writing, Projects and the
+  footer are Projects, so the header never jumps back to About mid-page.
   On a post, the contents' active heading is the last one above 30% of the viewport (root margin
   `100000px 0px -70% 0px`, so a jump of any length still flips it). In-page links scroll smoothly
   (`html { scroll-behavior: smooth }`, instant under reduced motion).
@@ -229,8 +235,8 @@ the landing.
 
 ## §5 Home page (`pages/index.astro`)
 
-Quiet: about him in one paragraph, what he works on now, where he has worked, what he wrote, the things he made. One
-drawing that draws itself, two pencil sketches beside the lists, the header for getting around. The AI depth is shown, never titled: no
+Quiet: about him in one paragraph, what he works on now, what he wrote, where he has worked, the things he made. One
+drawing that draws itself, two pencil sketches beside the lists (none of the three on a phone), the header for getting around. The AI depth is shown, never titled: no
 "AI engineer" anywhere. Copy is written the way the best engineers' own sites are (Lee Robinson, Mitchell Hashimoto,
 Hamel Husain): who and where, what now, one line of values, one human line. No labels, no adjectives about himself.
 Sections, in order:
@@ -252,8 +258,10 @@ Sections, in order:
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local
    `docs/v4-research/art/vector/`; the planet is generated, see §4): strokes on `currentColor` (`--ink`), the flame in
-   `--logo` and one hexagon in `--spot`, so it follows the theme. At 720px and under: the doodle in a 208px band under
-   the header (strokes 1.8x thicker), the text below, the headline balanced over three lines (no forced break).
+   `--logo` and one hexagon in `--spot`, so it follows the theme. At 720px and under the home page has no doodle (the
+   404 keeps its 208px band): the landing starts `--head-h` + 32px down, so the page opens on the name and headline,
+   balanced over three lines (no forced break). The hidden doodle does no work: its observer never sees it, so the
+   planet's loop never starts and its CSS loops don't run.
 2. **How I work** (`#now`, counted as About by the scroll spy): a grid on `--cols`. The h2 "How I work" (it read as a status, not as
    what he does) in the first column with its note under it ("Where most of my week goes."); from the axis, on the h2's baseline, the thesis (`--t-l`, 500,
    max 18em, balanced): "The model is rarely the hard part. Everything around it is." Under it its four parts in two
@@ -264,15 +272,10 @@ Sections, in order:
    Tested before trusted (every prompt or model change runs against past failures); Agents on the team (coding agents
    under written rules). Last, a muted line led by "Coming soon" in `--accent`: Orca, a timer for the macOS menu bar
    that you and an AI agent can both run (no link until it ships). Under 1000px everything stacks under the h2; on a phone it starts 72px under the landing, not 104px.
-3. **Experience** (`#experience`, counted as About by the scroll spy): the grid of Writing and Projects, the h2 and its
-   note ("The day jobs, newest first.") in the first column. From the axis, one row per job on a `--line` hairline (24px padding), newest first, read in
-   the post rows' order: when (`--t-xs`, `--muted`: "Now", "2020"), the role and employer (`--t-sm`, 500), then one
-   muted line on the product and his part in it, in plain words (max 38em). The one place an employer is named:
-   "Senior Frontend Engineer, swipejobs", then "Frontend Engineer, Influence". Real titles only, no stats.
-4. **Writing** (`#writing`) and 5. **Projects** (`#projects`) share one grid on `--cols`: the h2 and its note (muted,
-   max 22em, under it) in the first column, sticky at `--head-h` + 40px, the rows from the axis. Under 1000px the head
-   is static and the rows follow it.
-   - Under each note, 56px down, the section's doodle (`.sk`, at most 300px wide and
+3. **Writing** (`#writing`), 4. **Experience** (`#experience`) and 5. **Projects** (`#projects`) share one grid on
+   `--cols`: the h2 and its note (muted, max 22em, under it) in the first column, sticky at `--head-h` + 40px, the
+   content from the axis. Under 1000px the head is static and the content follows it.
+   - Under the Writing and Projects notes, 56px down, the section's doodle (`.sk`, at most 300px wide and
      `clamp(180px, 100svh - --head-h - 420px, 270px)` tall, about the note's width, held to the left edge, sticky with
      the head): a story in three objects on one dashed route that zigzags down the column, traced from Codex line art
      like the landing doodle (`src/assets/doodle-<section>.svg`, made by `sections.mjs` in the local
@@ -281,8 +284,7 @@ Sections, in order:
      `--spot`, and any other filled area is the stroke colour at 22%. Writing: a thought cloud with a
      lightbulb (the orange spark), a pen writing a page, a laptop showing it as a post (faint title bar). Projects: a
      lab flask (faint liquid), two gears, a parcel with a tag going out (orange tape). The traced wrench tangled with the
-     small gear, so both were dropped and the small gear redrawn as a scaled copy of the big one. Under 1000px it stays, 200 x 130px, 28px under the note,
-     inked on touch.
+     small gear, so both were dropped and the small gear redrawn as a scaled copy of the big one. Under 1000px it is hidden: the lists lead.
    - Writing: the note "Notes on building for the web, and the problems I would rather solve once." (the same
      line as the /writing dek; "putting models to work" comes back into both when those posts are published), the
      four newest posts that have a cover drawing as `PostCard` rows (so the list is a mix and every row carries a
@@ -290,15 +292,29 @@ Sections, in order:
      posts" (`--t-sm`, 500, the live count; a phone shows three posts, then this row)
      with a `--accent` arrow at the far end that slides 6px on hover (reduced motion: it stays); the label turns
      `--accent` too.
+   - Experience (counted as Writing by the scroll spy): the note "The teams I’ve built with, newest first." From
+     the axis, a vertical timeline (`ol.tl`), one entry per job: a 112px date column (right-aligned, `--t-xs`; the
+     start month in `--ink` on its own line, then "to now" or "to Jul 2021" in `--muted`, each month a `<time>`), a
+     64px rail column, then the content. One 2px line runs down the rail through every entry, `--accent` at the top
+     into `--line` by 160px and fading out over the last 64px. Each entry has a 12px node on it: the current job
+     filled `--accent` with a 5px ring of the accent at 18%, a past job a 2px `--muted` ring on `--bg`. The content:
+     a 44px `--tile` (radius 11px, `--tile-edge` border) holding the logo (`src/assets/logos/`, imported and hashed, a plain `<img>`), beside
+     it the role as the h3 (`--t-sm`, 500) and the company muted under it, then one line on the product and his
+     part in it in `--ink` (max 34em, 16px down), then a short list of what he built there and the problem it
+     solved (`ul.wk`: muted, disc markers in `--accent`, 8px apart, 14px down). The `work` lines are lorem ipsum
+     placeholders until he writes them; they must be replaced before this ships. Entries sit 64px apart. The one place an employer is named: Senior Frontend
+     Engineer at swipejobs (Aug 2021 to now), Frontend Engineer at Influence (Jan 2020 to Jul 2021). Real titles and
+     dates only, no stats. At 720px and under the rail moves to a 32px column at the left edge and the dates sit on
+     one line above each entry's content.
    - Every clickable item (post rows, project rows, the /writing list) turns its title `--accent` while the pointer
      is anywhere on the item, cover and still included, or the item has keyboard focus (§3 Hover). Nothing else in
      the row changes colour.
    - Projects: the note "Tools I built for my own problems, then released." The tools newest first (Diver,
      css-only-tooltip, YouTube Playlist Info), then this site as the colophon. One row per project on a `--line`
      hairline (28px padding, about 340px tall at 1440, so two fit on a screen), each a link to the real thing, split
-     2fr / 3fr with a 32px gap: the text ("Kind, year" in `--muted`, the name in `--t-sm`, a muted two-sentence
-     summary, then where the link goes, underlined: View on npm, Get it for Chrome, Open the app, Read the source) and
-     a 16:10 `--panel` still drawn in HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini copy
+     2fr / 3fr with a 32px gap: the text (the name in `--t-sm`, a muted two-sentence summary, "Kind, year" in
+     `--muted` 14px under it, then where the link goes, underlined: View on npm, Get it for Chrome, Open the app, Read
+     the source) and a 16:10 still with a `--frame` border and no fill drawn in HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini copy
      of this page, the playlist total, the mark; scaled 1.35 when wider than 420px). On a phone the still sits above
      the text at 2:1, so a row stays short. Each link opens a new tab and says so: its accessible name is "name: where
      it goes (opens in a new tab)", described by the summary.
@@ -306,11 +322,12 @@ Sections, in order:
 Sections sit 136px apart (104px on a phone). The footer is the layout's (§3).
 
 **Post row** (`components/PostCard.astro`, on the home page and in "More writing", which uses the same split from
-1000px): on a `--line` hairline with 24px padding, the text on the left ("Oct 2026 · 4 min read" in `--muted`, the
-title in `--t-sm`, the muted summary, max 38em) and, 32px away, a 16:10 `--panel` cover `clamp(152px, 14vw, 208px)`
+1000px): on a `--line` hairline with 24px padding, the text on the left (the title in `--t-sm`, the muted summary,
+max 38em, then "Oct 2026 · 4 min read" in `--muted` 14px under it) and, 32px away, a 16:10 cover with a `--frame`
+border and no fill, `clamp(112px, 9vw, 136px)`
 wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in
 `--spot`, scaled 1.25 so the drawing (at most 70% of its frame) keeps only a thin margin; a post with no cover yet
-shows its line of code there, in mono at `--t-code`. On a phone the cover is a 96px thumbnail beside the text (16px gap; a code cover sets its line at 9px).
+shows its line of code there, in mono at `--t-code`. On a phone the cover is an 80px thumbnail beside the text (16px gap; a code cover sets its line at 9px).
 
 ## §6 Writing list (`pages/writing/index.astro`)
 
