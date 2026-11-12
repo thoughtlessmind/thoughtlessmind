@@ -1,7 +1,7 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { getPosts, type Post } from '../../lib/writing';
+import { getPosts, type Post } from '../../lib/blogs';
 
-// Each post as raw Markdown at /writing/<slug>.md, for agents and the post page's "Copy as Markdown".
+// Each post as raw Markdown at /blogs/<slug>.md, for agents and the post page's "Copy as Markdown".
 export const getStaticPaths = (async () =>
   (await getPosts()).map((post) => ({ params: { slug: post.id }, props: { post } }))) satisfies GetStaticPaths;
 

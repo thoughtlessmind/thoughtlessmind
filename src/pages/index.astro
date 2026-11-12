@@ -5,7 +5,7 @@ import PostCard from '../components/PostCard.astro';
 import { SITE } from '../consts';
 import swipejobs from '../assets/logos/swipejobs.png';
 import influence from '../assets/logos/influence.png';
-import { cover, getPosts } from '../lib/writing';
+import { cover, getPosts } from '../lib/blogs';
 
 // Each project links to the real thing; `go` says where. The stills are drawn in HTML below (DESIGN.md §5).
 // The tools newest first, then this site as the colophon.
@@ -47,7 +47,7 @@ const work = [
     href: `${SITE.socials.github}/thoughtlessmind`,
   },
 ];
-// The four newest posts that have a cover drawing; /writing has the rest. The four newest of all were four Material
+// The four newest posts that have a cover drawing; /blogs has the rest. The four newest of all were four Material
 // UI answers, two of them without a drawing. A new post shows here once its cover is drawn.
 const all = await getPosts();
 const posts = all.filter((p) => cover(p.id)).slice(0, 4);
@@ -159,11 +159,11 @@ const person = {
     </div>
   </section>
 
-  <section class="sec split" id="writing" aria-labelledby="writing-h">
+  <section class="sec split" id="blogs" aria-labelledby="blogs-h">
     <div class="head">
-      <h2 class="h2" id="writing-h">Writing</h2>
+      <h2 class="h2" id="blogs-h">Blogs</h2>
       <p class="note">Notes on building for the web, and the problems I would rather solve once.</p>
-      <div class="sk" aria-hidden="true"><Doodle art="writing" /></div>
+      <div class="sk" aria-hidden="true"><Doodle art="blogs" /></div>
     </div>
     <div class="list">
       <ul>
@@ -175,7 +175,7 @@ const person = {
           ))
         }
       </ul>
-      <a class="all" href="/writing">Read all {all.length} posts<span aria-hidden="true">→</span></a>
+      <a class="all" href="/blogs">Read all {all.length} posts<span aria-hidden="true">→</span></a>
     </div>
   </section>
 
@@ -266,7 +266,7 @@ const person = {
                         <span>rajiv.me</span>
                         <span class="dv-nav">
                           <span>About</span>
-                          <span>Writing</span>
+                          <span>Blogs</span>
                         </span>
                       </span>
                       <span class="dv-h">Software you don’t have to think about.</span>
@@ -300,7 +300,7 @@ const person = {
 
 <script>
   // Scroll spy for the header nav: the section crossing the middle of the screen is the active one. Now counts
-  // as About, Experience (under Writing) as Writing and the footer as Projects, so a jump to the end still lands there.
+  // as About, Experience (under Blogs) as Blogs and the footer as Projects, so a jump to the end still lands there.
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
   const foot = document.querySelector('footer');
   const spy = new IntersectionObserver(
@@ -308,7 +308,7 @@ const person = {
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
         const t = e.target.id;
-        const id = e.target === foot ? 'projects' : t === 'now' ? 'about' : t === 'experience' ? 'writing' : t;
+        const id = e.target === foot ? 'projects' : t === 'now' ? 'about' : t === 'experience' ? 'blogs' : t;
         links.forEach((a) => {
           const on = a.dataset.spy === id;
           if (on) a.setAttribute('aria-current', 'true');
@@ -317,7 +317,7 @@ const person = {
       }),
     { rootMargin: '-45% 0px -54% 0px' },
   );
-  ['about', 'now', 'writing', 'experience', 'projects'].forEach((id) => {
+  ['about', 'now', 'blogs', 'experience', 'projects'].forEach((id) => {
     const s = document.getElementById(id);
     if (s) spy.observe(s);
   });
@@ -442,7 +442,7 @@ const person = {
       margin-top: 24px;
     }
   }
-  /* Writing and Projects: the h2 and its note in the first column, sticky, the rows from the axis like Now's. */
+  /* Blogs and Projects: the h2 and its note in the first column, sticky, the rows from the axis like Now's. */
   .split {
     display: grid;
     grid-template-columns: var(--cols);
@@ -842,8 +842,8 @@ const person = {
     #now {
       padding-top: 72px;
     }
-    /* Three posts on a phone; /writing has the rest. */
-    #writing li:nth-child(n + 4) {
+    /* Three posts on a phone; /blogs has the rest. */
+    #blogs li:nth-child(n + 4) {
       display: none;
     }
     .still {

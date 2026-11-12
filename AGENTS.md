@@ -30,22 +30,22 @@ after a build.
 - Astro 7, `output: 'static'`, `trailingSlash: 'never'` (output stays `about/index.html`), prefetch on hover, sitemap.
 - Tailwind v4 via `@tailwindcss/vite`. Every token lives in `src/styles/global.css`.
 - Geist and Geist Mono from fontsource (variable).
-- One content collection, `writing`: plain Markdown, Shiki for code (themes in `astro.config.mjs`). No React or MDX.
+- One content collection, `blogs`: plain Markdown, Shiki for code (themes in `astro.config.mjs`). No React or MDX.
 
 ## Layout of src
 
 ```
-assets/          doodle.svg (the landing drawing), doodle-writing.svg and doodle-projects.svg (the section doodles),
+assets/          doodle.svg (the landing drawing), doodle-blogs.svg and doodle-projects.svg (the section doodles),
                  covers/<slug>.svg (post covers): line art traced to SVG;
                  name.svg (the footer's hand-drawn "rajiv")
 components/      Header (fixed, lifts on scroll), Footer (the name draws, a blob reveals it), ThemeToggle, PostCard,
                  Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet, the loops; `art` for a
                  section doodle: a pencil sketch the cursor inks)
-content/writing/ the posts, <slug>.md (frontmatter in content.config.ts)
+content/blogs/ the posts, <slug>.md (frontmatter in content.config.ts)
 layouts/         BaseLayout (head with the link-preview card and JSON-LD, pre-paint script, skip link, header, main,
                  footer, splash)
-lib/writing.ts   getPosts, cover, reading time, date formats
-pages/           index, writing/index, writing/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, rss.xml.ts,
+lib/blogs.ts   getPosts, cover, reading time, date formats
+pages/           index, blogs/index, blogs/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, rss.xml.ts,
                  404 (the landing doodle again)
 scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
                  planet.ts (the doodle's turning planet), blob.ts (the liquid blob: its outline, shared with the theme

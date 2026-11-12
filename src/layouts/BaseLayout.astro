@@ -11,7 +11,7 @@ export interface Props {
   /** Play the splash screen on a fresh load or reload (the home page). */
   splash?: boolean;
   /** The section the page belongs to, for the header nav's current link. */
-  current?: 'writing';
+  current?: 'blogs';
   /** The header's reading-progress line (post pages). */
   progress?: boolean;
   /** Open Graph type: a post is an article. */
@@ -47,7 +47,7 @@ const card = new URL('/og.png', Astro.site).href;
     <meta property="og:image:alt" content={`${SITE.name}. Software you don’t have to think about. A line drawing of a telescope, a ringed planet and a rocket.`} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={card} />
-    <link rel="alternate" type="application/rss+xml" href="/rss.xml" title={`${SITE.name}, writing`} />
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml" title={`${SITE.name}, blogs`} />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
     {jsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />}
     <slot name="head" />

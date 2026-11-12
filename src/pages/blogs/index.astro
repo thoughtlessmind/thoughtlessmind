@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Doodle from '../../components/Doodle.astro';
-import { day, getPosts, iso, minutes } from '../../lib/writing';
+import { day, getPosts, iso, minutes } from '../../lib/blogs';
 
 // Every post, grouped by year, newest first. The title carries a view-transition-name, so it morphs into the
 // post's own heading on navigation.
@@ -11,13 +11,13 @@ const first = posts.at(-1)?.data.date.getUTCFullYear();
 const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ? ` since ${first}` : ''}`;
 ---
 
-<BaseLayout title="Writing, Rajiv Kumar" description="Notes on building for the web, and the problems I would rather solve once." current="writing">
+<BaseLayout title="Blogs, Rajiv Kumar" description="Notes on building for the web, and the problems I would rather solve once." current="blogs">
   <div class="list">
     <header class="head">
-      <h1>Writing</h1>
+      <h1>Blogs</h1>
       <p class="dek">Notes on building for the web, and the problems I would rather solve once.</p>
       <p class="count">{count}</p>
-      <div class="sk" aria-hidden="true"><Doodle art="writing" /></div>
+      <div class="sk" aria-hidden="true"><Doodle art="blogs" /></div>
     </header>
     <div class="years">
       {
@@ -27,7 +27,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
             <ol>
               {list.map((p) => (
                 <li>
-                  <a class="row" href={`/writing/${p.id}`}>
+                  <a class="row" href={`/blogs/${p.id}`}>
                     <span class="rt" style={`view-transition-name: title-${p.id}`}>{p.data.title}</span>
                     <span class="rd">{p.data.description}</span>
                     <span class="rm">
@@ -78,7 +78,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
-  /* The home page's Writing doodle, here too: the pencil sketch under the head, inked by a mouse (Doodle.astro). */
+  /* The home page's Blogs doodle, here too: the pencil sketch under the head, inked by a mouse (Doodle.astro). */
   .sk {
     width: min(100%, 300px);
     height: clamp(180px, 100svh - var(--head-h) - 480px, 270px);

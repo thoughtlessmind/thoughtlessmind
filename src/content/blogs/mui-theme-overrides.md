@@ -167,9 +167,9 @@ If you customized the arrows on an older version: v9 removed `ScrollButtonCompon
 
 ## More MUI answers
 
-- [Remove or restyle the MUI TextField outline](/writing/mui-textfield-remove-outline)
-- [Use the MUI Link with the Next.js Link in the App Router](/writing/mui-link-with-nextjs-link)
-- [Why your MUI Divider is not showing in a flex container](/writing/mui-divider-not-showing)
+- [Remove or restyle the MUI TextField outline](/blogs/mui-textfield-remove-outline)
+- [Use the MUI Link with the Next.js Link in the App Router](/blogs/mui-link-with-nextjs-link)
+- [Why your MUI Divider is not showing in a flex container](/blogs/mui-divider-not-showing)
 
 ---
 

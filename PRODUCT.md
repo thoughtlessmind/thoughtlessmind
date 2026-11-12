@@ -28,7 +28,7 @@ production, evals and guardrails, coding agents as daily tools), the writing, an
 ## Capabilities and Constraints
 
 - Static Astro site, no backend, no login, no comments, no newsletter form.
-- Routes: home, /writing, /writing/<slug>, /writing/<slug>.md, /llms.txt, /rss.xml, 404. No about or work page: the
+- Routes: home, /blogs, /blogs/<slug>, /blogs/<slug>.md, /llms.txt, /rss.xml, 404. No about or work page: the
   home page is the about page, with Now and Experience under the landing.
 - Both themes (dark default), WCAG AA, reduced-motion paths, idle means zero work, no scroll listeners.
 
@@ -43,7 +43,7 @@ production, evals and guardrails, coding agents as daily tools), the writing, an
 ## Evidence on Hand
 
 - Projects: css-only-tooltip (npm), Diver (Chrome Web Store), YouTube Playlist Info (web app), this site.
-- Writing: six real posts (two from 2021 and 2023, four Material UI answers rewritten in 2026) and six placeholder
+- Blogs: six real posts (two from 2021 and 2023, four Material UI answers rewritten in 2026) and six placeholder
   posts on his AI and web topics, marked with a YAML comment and `draft: true`, so they are not built or listed
   until he has rewritten or confirmed each one (hidden 11 Nov, his call).
 - Orca (a macOS menu bar timer that people and agents drive over MCP) is unreleased: mention only, no link, until it
@@ -53,5 +53,5 @@ production, evals and guardrails, coding agents as daily tools), the writing, an
 ## Product Principles
 
 - Show, don't title: specifics and working artifacts over labels.
-- Every page is easy to leave for the next good thing: a post always offers more writing.
+- Every page is easy to leave for the next good thing: a post always offers more posts.
 - Calm by default: one authored motion moment (the intro and doodle), everything else quiet and fast.

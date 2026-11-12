@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { SITE } from '../consts';
-import { getPosts } from '../lib/writing';
+import { getPosts } from '../lib/blogs';
 
 // The site for language models (llmstxt.org): who this is, then every post as Markdown, the projects and where
 // else to find him. The projects mirror the home page's `work` list.
@@ -20,9 +20,9 @@ export const GET: APIRoute = async () => {
 
 I am ${SITE.name}, and this is my site. Lately most of my week goes to putting language models to work inside real products: MCP servers that give a model typed access to a product’s data and actions, model features with a budget for latency and cost and a fallback, and evals that run on every prompt and model change. Every post below links to its Markdown source.
 
-## Writing
+## Blogs
 
-${list(posts.map((p) => [p.data.title, `${SITE.url}/writing/${p.id}.md`, p.data.description]))}
+${list(posts.map((p) => [p.data.title, `${SITE.url}/blogs/${p.id}.md`, p.data.description]))}
 
 ## Projects
 

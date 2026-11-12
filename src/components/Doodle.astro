@@ -9,12 +9,12 @@
 // until a mouse comes over the box; then a jelly blob trails the cursor (scripts/blob.ts) and inks the sketch under
 // it. Both copies run the same loops on the same clock, so they stay in register; the ink copy's ids get a suffix.
 import doodle from '../assets/doodle.svg?raw';
-import writing from '../assets/doodle-writing.svg?raw';
+import blogs from '../assets/doodle-blogs.svg?raw';
 import projects from '../assets/doodle-projects.svg?raw';
 import { withPlanet } from '../scripts/planet';
 
 interface Props {
-  art?: 'writing' | 'projects';
+  art?: 'blogs' | 'projects';
 }
 const { art } = Astro.props;
 const id = `sk-${art}`;
@@ -23,7 +23,7 @@ function sketch(raw: string) {
   const ink = body.replace(/(id="|url\(#)([\w-]+)/g, '$1$2-ink');
   return `${open}<clipPath id="${id}"><path class="blob"></path></clipPath><path class="blob jelly"></path><g class="rest">${body}</g><g class="ink" clip-path="url(#${id})">${ink}</g></svg>`;
 }
-const svg = art ? sketch({ writing, projects }[art]) : withPlanet(doodle);
+const svg = art ? sketch({ blogs, projects }[art]) : withPlanet(doodle);
 ---
 
 <Fragment set:html={svg} />
@@ -120,7 +120,7 @@ const svg = art ? sketch({ writing, projects }[art]) : withPlanet(doodle);
     .doodle.sketch .glow { animation: sk-glow 1.8s ease-in-out infinite alternate; }
     .doodle.sketch .bob { animation: sk-bob 2.4s ease-in-out var(--dl, 0s) infinite alternate; }
     .doodle.sketch .twinkle { transform-box: fill-box; transform-origin: center; animation: sk-twinkle 2.2s ease-in-out var(--dl) infinite alternate; }
-    /* Writing: the pen writes the four rows in turn, lifts off, the full page tears away and a blank one settles. */
+    /* Blogs: the pen writes the four rows in turn, lifts off, the full page tears away and a blank one settles. */
     .doodle.sketch .pen { animation: sk-pen 12s linear infinite; }
     .doodle.sketch .page { transform-box: fill-box; transform-origin: 50% 0; animation: sk-page 12s var(--ease) infinite; }
     .doodle.sketch .row { stroke-dasharray: 1; animation: 12s linear infinite; }

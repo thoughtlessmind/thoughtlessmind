@@ -1,8 +1,8 @@
 ---
 // One post as a row: the title, summary, then the date and reading time on the left, the doodle cover on the right (or
-// its line of code, set large, when it has no cover yet). Used by the home page and a post's "More writing". The
+// its line of code, set large, when it has no cover yet). Used by the home page and a post's "More blogs". The
 // cover carries a view-transition-name, so it morphs into the post's own cover on navigation.
-import { cover, iso, minutes, month, type Post } from '../lib/writing';
+import { cover, iso, minutes, month, type Post } from '../lib/blogs';
 
 interface Props {
   post: Post;
@@ -12,7 +12,7 @@ const { title, description, date, code } = post.data;
 const art = cover(post.id);
 ---
 
-<a class="post" href={`/writing/${post.id}`}>
+<a class="post" href={`/blogs/${post.id}`}>
   <span class="pc">
     <span class="pt">{title}</span>
     <span class="cs">{description}</span>

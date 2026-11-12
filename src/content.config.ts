@@ -2,9 +2,9 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-// Posts are plain Markdown in src/content/writing/<slug>.md; the file name is the slug.
-const writing = defineCollection({
-  loader: glob({ pattern: '*.md', base: './src/content/writing' }),
+// Posts are plain Markdown in src/content/blogs/<slug>.md; the file name is the slug.
+const blogs = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/blogs' }),
   schema: z.object({
     title: z.string(),
     description: z.string().max(200),
@@ -18,4 +18,4 @@ const writing = defineCollection({
   }),
 });
 
-export const collections = { writing };
+export const collections = { blogs };
