@@ -34,6 +34,23 @@ const { current, progress = false } = Astro.props;
       }
       <span class="nav-line" aria-hidden="true"></span>
     </nav>
+    <div class="reach">
+      <a class="x rise" style="--d:160" href={SITE.socials.x} rel="noopener" target="_blank" aria-label="Rajiv on X (opens in a new tab)">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78zm-1.08 16.18h1.7L7.4 4.73H5.58z"></path></svg>
+      </a>
+      <button class="hi rise" style="--d:170" type="button" popovertarget="say-hi" aria-haspopup="dialog">Say hi</button>
+      <div class="hi-pop" id="say-hi" popover role="dialog" aria-label="Ways to reach Rajiv">
+        <p class="hi-head">Write to me wherever suits you.</p>
+        <ul>
+          <li class="hi-mail">
+            <a href={`mailto:${SITE.email}`}><span>Email</span><span class="hi-sub">{SITE.email}</span></a>
+            <button type="button" class="hi-copy" data-copy={SITE.email}>Copy</button>
+          </li>
+          <li><a href={SITE.socials.linkedin} rel="noopener" target="_blank"><span>LinkedIn</span><span class="hi-sub">Message me</span></a></li>
+          <li><a href={SITE.socials.x} rel="noopener" target="_blank"><span>X</span><span class="hi-sub">@{SITE.socials.x.split('/').pop()}</span></a></li>
+        </ul>
+      </div>
+    </div>
     <ThemeToggle />
   </div>
 </header>
@@ -65,4 +82,15 @@ const { current, progress = false } = Astro.props;
     new ResizeObserver(place).observe(nav);
     document.fonts.ready.then(place);
   }
+
+  // Say hi: a native popover (light dismiss and Esc for free). Copy puts the address on the clipboard and says so.
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(b.dataset.copy!);
+        b.textContent = 'Copied';
+        setTimeout(() => (b.textContent = 'Copy'), 1600);
+      } catch {}
+    }),
+  );
 </script>

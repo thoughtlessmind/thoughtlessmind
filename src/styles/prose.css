@@ -1,7 +1,7 @@
 /* A post's body: plain Markdown rendered by Astro, styled here because it carries no classes. Tailwind's preflight
    has reset every margin and list, so this puts back only what reading needs. */
 .prose {
-  max-width: 68ch;
+  max-width: 44em;
   font-size: var(--t-s);
   line-height: 1.7;
   overflow-wrap: break-word;
@@ -12,11 +12,7 @@
 .prose > :first-child {
   margin-top: 0;
 }
-/* Text keeps to about 75 characters a line (the full 68ch column ran to 92 in Geist); code, tables and images use
-   all of it. */
-.prose > :is(p, ul, ol, blockquote) {
-  max-width: 37em;
-}
+/* Text, code, tables and images all use the article's 44em measure (about 90 characters a line in Geist). */
 
 .prose h2 {
   margin: 2.4em 0 0.6em;

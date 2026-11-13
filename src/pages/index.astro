@@ -644,10 +644,10 @@ const person = {
       grid-column: 2;
     }
   }
-  /* A project row: the text on the left, the still on the right with the larger share. */
+  /* A project row: the text on the left and the larger share; the still on the right, capped so the copy has room. */
   .proj {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-columns: minmax(0, 1fr) clamp(240px, 22vw, 320px);
     gap: 32px;
     align-items: start;
     padding-block: 28px;

@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Doodle from '../../components/Doodle.astro';
-import { day, getPosts, iso, minutes } from '../../lib/blogs';
+import PostCard from '../../components/PostCard.astro';
+import { getPosts } from '../../lib/blogs';
 
-// Every post, grouped by year, newest first. The title carries a view-transition-name, so it morphs into the
-// post's own heading on navigation.
+// Every post, grouped by year, newest first, each as the home page's row (PostCard): its cover morphs into the
+// post's own cover on navigation.
 const posts = await getPosts();
 const years = [...Map.groupBy(posts, (p) => p.data.date.getUTCFullYear())];
 const first = posts.at(-1)?.data.date.getUTCFullYear();
@@ -27,15 +28,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
             <ol>
               {list.map((p) => (
                 <li>
-                  <a class="row" href={`/blogs/${p.id}`}>
-                    <span class="rt" style={`view-transition-name: title-${p.id}`}>{p.data.title}</span>
-                    <span class="rd">{p.data.description}</span>
-                    <span class="rm">
-                      <time datetime={iso(p.data.date)}>{day(p.data.date)}</time>
-                      <span>{minutes(p.body)} min read</span>
-                      <code>{p.data.code}</code>
-                    </span>
-                  </a>
+                  <PostCard post={p} />
                 </li>
               ))}
             </ol>
@@ -96,77 +89,9 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
-  li + li {
-    border-top: 1px solid var(--line);
-  }
-
-  /* A row is one link. On hover the title turns orange and the accent dot (the nav's "you are here") appears in the
-     margin beside it. */
-  .row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
-    padding-block: 24px;
-  }
-  .rt {
-    position: relative;
-    font-size: var(--t-sm);
-    font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.015em;
-    text-wrap: balance;
-    transition: color 200ms var(--ease);
-  }
-  .rt::before {
-    content: '';
-    position: absolute;
-    top: calc(0.625em - 3px);
-    left: -18px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    opacity: 0;
-    transition: opacity 200ms var(--ease);
-  }
-  @media (hover: hover) {
-    .row:hover .rt::before {
-      opacity: 1;
-    }
-    .row:hover .rt {
-      color: var(--accent);
-    }
-  }
-  .row:focus-visible .rt::before {
-    opacity: 1;
-  }
-  .row:focus-visible .rt {
-    color: var(--accent);
-  }
-  .rd {
-    max-width: 40em;
-    color: var(--muted);
-    text-wrap: pretty;
-  }
-  .rm {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    margin-top: 4px;
-    font-size: var(--t-xs);
-    color: var(--muted);
-  }
-  .rm > * {
-    flex: none;
-  }
-  .rm code {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    font-family: var(--mono);
-    font-size: var(--t-code);
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  /* The year's hairline stands in for the first row's. */
+  li:first-child > :global(.post) {
+    border-top: 0;
   }
 
   /* One column: the head on top, not sticky. */
@@ -192,9 +117,6 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     h1 {
       line-height: 1;
       letter-spacing: -0.04em;
-    }
-    .rt::before {
-      left: -13px;
     }
   }
 </style>

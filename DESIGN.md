@@ -66,8 +66,14 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   it, and `scroll-padding-top` keeps anchors below it.
 - **Header** (`Header.astro`, `.top`): fixed to the top on every page, a grid on `--cols`. The logo alone in the first
   column: the hexagon mark (`.mark`, `data-logo`, 28px) in a link labelled "rajiv.me, home". From the axis, `.bar`:
-  nav (About `/#about`, Blogs `/blogs`, Projects `/#projects`, in the home page's section order; sans 15px, gap
-  28px), then the theme switch on the right margin. The current link has a small `--accent` underline (`.nav-line`: 16 x 2px,
+  nav (About `/#about`, Blogs `/#blogs`, Projects `/#projects`, in the home page's section order; sans 15px, gap
+  28px; every link scrolls to its home section, from any page, and the blogs index is reached from the section's
+  "All blogs"), then on the right `.reach` (the X icon, 17px, and "Say hi", a pill with a 1px `--frame` border) and the
+  theme switch. "Say hi" opens a native popover (`#say-hi`, light dismiss and Esc built in) anchored 10px under it
+  (84px down without anchor positioning): a muted line, then Email (mailto, with a Copy button that reads "Copied" for
+  1.6s), LinkedIn and X, split by `--line` hairlines, on `--bg` with a 1px `--line` border, 14px radius and the
+  header's shadows. It fades and drops 6px in over 180 ms; under reduced motion it just appears. At 640px and under
+  the X icon goes (X is in the popover). The current link has a small `--accent` underline (`.nav-line`: 16 x 2px,
   radius 1px, 5px under the nav, centred under the label), so no label moves: `aria-current="page"` on the blogs
   pages (`current="blogs"`), and on the home page the scroll spy's `aria-current="true"`. The header script measures
   the current link (labels differ in width) and sets its `translateX`; it slides between links (320 ms `--ease`, no
@@ -311,8 +317,8 @@ Sections, in order:
      the row changes colour.
    - Projects: the note "Tools I built for my own problems, then released." The tools newest first (Diver,
      css-only-tooltip, YouTube Playlist Info), then this site as the colophon. One row per project on a `--line`
-     hairline (28px padding, about 340px tall at 1440, so two fit on a screen), each a link to the real thing, split
-     2fr / 3fr with a 32px gap: the text (the name in `--t-sm`, a muted two-sentence summary, "Kind, year" in
+     hairline (28px padding, about 250px tall at 1440), each a link to the real thing, split
+     text first (the rest of the row) and the still second (`clamp(240px, 22vw, 320px)`, 317px at 1440) with a 32px gap: the text (the name in `--t-sm`, a muted two-sentence summary, "Kind, year" in
      `--muted` 14px under it, then where the link goes, underlined: View on npm, Get it for Chrome, Open the app, Read
      the source) and a 16:10 still with a `--frame` border and no fill drawn in HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini copy
      of this page, the playlist total, the mark; scaled 1.35 when wider than 420px). On a phone the still sits above
@@ -334,36 +340,37 @@ shows its line of code there, in mono at `--t-code`. On a phone the cover is an 
 A grid on `--cols` from 1000px up. The first column is a sticky head (top `--head-h` + 40px): the h1 "Blogs"
 (`--t-xl`), the dek "Notes on building for the web, and the problems I would rather solve once." (`--t-sm`,
 `--muted`) and a count ("6 posts since 2021"). From the axis, the posts by year, newest first: the
-year (`--t-xs`, `--muted`) on a hairline, then one link per post with hairlines between: title (`--t-sm`, 500),
-description (`--muted`, max 40em) and a meta line of date, "N min read" and the post's code in mono. No thumbnails: the
-list is for scanning. Rows are a `minmax(0, 1fr)` grid, so the mono line ellipsises instead of widening the page.
+year (`--t-xs`, `--muted`) on a hairline, then each post as the home page's row (`PostCard`): title, summary, "Mon
+YYYY · N min read" under it and the cover on the right (or its line of code when it has none), the cover morphing into
+the post's own on navigation. The year's hairline stands in for its first row's.
 Under the count, 56px down, the home page's Blogs doodle (§5), the same sketch and blob, so the list has the
 site's drawing too. Under 1000px one column with the head on top and no doodle.
 
 ## §7 Post (`pages/blogs/[slug].astro`, `styles/prose.css`)
 
 Posts are plain Markdown in `src/content/blogs/<slug>.md` (`content.config.ts`: title, description, date, updated,
-code, canonical, draft; helpers in `lib/blogs.ts`). From 1000px a grid on `--cols`:
+code, canonical, draft; helpers in `lib/blogs.ts`). From 1200px three tracks, `minmax(220px, 1fr) minmax(0, 44em)
+minmax(0, 1fr)`, gap 64px, so the article is centred (it gives up its centre near 1200px before the rail narrows):
 
-- **Aside**, sticky under the header: "Blogs" with a Phosphor arrow back to the list, the date, "Updated" when there
-  is one, "N min read", then "On this page" and the `##` headings (when there are two or more; `--muted`, the active
-  one `--ink` with the `--accent` dot), then two controls with 16px Phosphor icons: "Copy as Markdown" (fetches the
-  post's `.md` into the clipboard; the icon becomes an `--accent` tick and the label "Copied" for 2 s, announced by an
-  `aria-live` region) and "View as Markdown".
-- **Article**, from the axis: the title (§1), the description as a dek (`--t-sm`, `--muted`), the cover (16:10
-  `--panel`, posts without one have none), then the prose: a column of max 68ch, 17px/1.7, whose text blocks
-  (paragraphs, lists, quotes) keep to 37em, about 75 characters a line (the full column measured 92 in Geist); code,
-  tables and images use all of it. h2 at `--t-sm`, inline code on
+- **Rail**, 220px at the start of the left track (under the logo), sticky under the header, its top level with the
+  title: "Blogs" with a Phosphor arrow back to the list; the meta as a column (date, "N min read", "Updated" when there
+  is one); then under a hairline "On this page" and the `##` headings (when there are two or more; `--muted`, the
+  active one `--ink` with the `--accent` dot); then two controls with 16px Phosphor icons: "Copy as Markdown"
+  (fetches the post's `.md` into the clipboard; the icon becomes an `--accent` tick and the label "Copied" for 2 s,
+  announced by an `aria-live` region) and "View as Markdown".
+- **Article**, 44em (20% wider than the old 37em): the title (§1), the description as a dek (`--t-sm`, `--muted`), the
+  cover (16:10 `--panel`, posts without one have none), then the prose, 17px/1.7, text, code, tables and images all on
+  the 44em measure (about 90 characters a line). h2 at `--t-sm`, inline code on
   `--panel`, code blocks on `--panel` with no radius, blockquotes with a 1px `--line` rule, tables and rules in
   hairlines. A post first published elsewhere ends with "First published on <host>." Every post then signs off
-  (`.by`, muted, max 37em, links in `--ink`), for the reader who came from a search and has not seen the home page:
+  (`.by`, muted, max 44em, links in `--ink`), for the reader who came from a search and has not seen the home page:
   "Written by Rajiv Kumar, a software engineer in New Delhi. If something here is wrong or unclear, write to me at
   hello@rajiv.me."
 - **More blogs**, full width under a hairline: the h2 with "All blogs" on the right and the three newest other
   posts as `PostCard`s (three columns, two from 721px, one on a phone).
 
-Under 1000px one column: back link, title, dek, a meta line, cover, prose, then the contents and the Markdown
-controls. The header's reading line (§3) runs on every post.
+Under 1200px one column on the 44em measure: Back, then the date and reading time stacked, then title, dek, cover,
+prose, then the contents and the Markdown controls. At 720px and under the contents are left out. The header's reading line (§3) runs on every post.
 
 **Page not found** (`pages/404.astro`): the landing's frame (`.hero`, `.hero-text` and `.art` in `global.css`, shared
 with the home page) and the landing doodle, which draws itself here too. "Page not found." (`--t-xl`), a muted line

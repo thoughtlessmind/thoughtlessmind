@@ -22,7 +22,7 @@ export const SITE = {
   // The header nav, in the home page's section order. `spy` is the home page section the scroll spy matches.
   nav: [
     { label: 'About', href: '/#about', spy: 'about' },
-    { label: 'Blogs', href: '/blogs', spy: 'blogs' },
+    { label: 'Blogs', href: '/#blogs', spy: 'blogs' },
     { label: 'Projects', href: '/#projects', spy: 'projects' },
   ],
 } as const;

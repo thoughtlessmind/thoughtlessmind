@@ -312,6 +312,161 @@
     color: var(--accent);
   }
 
+  /* Reach: the X icon and "Say hi" on the right, before the theme switch. Say hi opens a native popover under the
+     header's right edge with the ways to write (email with a copy button, LinkedIn, X). On a phone the X icon goes:
+     X is in the popover too. */
+  .top .reach {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-left: auto;
+  }
+  .top .reach + .theme {
+    margin-left: 4px;
+  }
+  .top .x {
+    display: inline-flex;
+    margin: -12px;
+    padding: 12px;
+    color: var(--ink);
+    transition: color 200ms var(--ease);
+  }
+  .top .x svg {
+    width: 17px;
+    height: 17px;
+  }
+  .hi {
+    appearance: none;
+    position: relative;
+    padding: 6px 14px;
+    white-space: nowrap;
+    border: 1px solid var(--frame);
+    border-radius: 999px;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+    transition: color 200ms var(--ease), border-color 200ms var(--ease);
+  }
+  .hi::after {
+    content: "";
+    position: absolute;
+    inset: -7px -4px;
+  }
+  @media (hover: hover) {
+    .top .x:hover,
+    .hi:hover {
+      color: var(--accent);
+    }
+    .hi:hover {
+      border-color: var(--accent);
+    }
+  }
+  .top .x:focus-visible,
+  .hi:focus-visible {
+    color: var(--accent);
+  }
+  .hi-pop {
+    position: fixed;
+    inset: auto var(--gut-r) auto auto;
+    top: 84px;
+    width: min(300px, calc(100vw - 2 * var(--gut-r)));
+    margin: 0;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: var(--t-xs);
+    box-shadow: 0 4px 10px -6px var(--shadow), 0 18px 40px -16px var(--shadow);
+  }
+  /* Hung 10px under the button wherever the header sits (it compacts on scroll); 84px where anchors are missing. */
+  @supports (anchor-name: --a) {
+    .hi {
+      anchor-name: --hi;
+    }
+    .hi-pop {
+      position-anchor: --hi;
+      top: calc(anchor(bottom) + 10px);
+    }
+  }
+  .hi-pop ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hi-head {
+    margin: 0;
+    padding: 8px 10px 10px;
+    color: var(--muted);
+  }
+  .hi-pop li {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--line);
+  }
+  .hi-pop li a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .hi-sub {
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .hi-copy {
+    appearance: none;
+    margin-right: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--frame);
+    border-radius: 999px;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+  }
+  @media (hover: hover) {
+    .hi-pop li a:hover > span:first-child,
+    .hi-copy:hover {
+      color: var(--accent);
+    }
+  }
+  .hi-pop li a:focus-visible > span:first-child {
+    color: var(--accent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hi-pop {
+      transition: opacity 180ms var(--ease), translate 180ms var(--ease), display 180ms allow-discrete, overlay 180ms allow-discrete;
+    }
+    .hi-pop:not(:popover-open) {
+      opacity: 0;
+      translate: 0 -6px;
+    }
+    @starting-style {
+      .hi-pop:popover-open {
+        opacity: 0;
+        translate: 0 -6px;
+      }
+    }
+  }
+  @media (max-width: 640px) {
+    .top .x {
+      display: none;
+    }
+    .top .reach {
+      gap: 0;
+    }
+    .hi {
+      padding-inline: 10px;
+    }
+    .top .reach + .theme {
+      margin-left: -6px;
+    }
+  }
+
   /* Theme switch: an icon button showing the theme it switches to (sun on dark, moon on light), one drawing that
      morphs between the two (ThemeToggle.astro). --m is 0 for the sun and 1 for the moon, set by the same rules as
      the tokens, so it is right before any script runs; every part follows it. */
