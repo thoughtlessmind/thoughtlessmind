@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Doodle from '../../components/Doodle.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getPosts } from '../../lib/blogs';
 
@@ -18,7 +17,6 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
       <h1>Blogs</h1>
       <p class="dek">Notes on building for the web, and the problems I would rather solve once.</p>
       <p class="count">{count}</p>
-      <div class="sk" aria-hidden="true"><Doodle art="blogs" /></div>
     </header>
     <div class="years">
       {
@@ -71,13 +69,6 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
-  /* The home page's Blogs doodle, here too: the pencil sketch under the head, inked by a mouse (Doodle.astro). */
-  .sk {
-    width: min(100%, 300px);
-    height: clamp(180px, 100svh - var(--head-h) - 480px, 270px);
-    margin-top: 56px;
-  }
-
   .year + .year {
     margin-top: 48px;
   }
@@ -102,9 +93,6 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     .head {
       position: static;
       padding-right: 0;
-    }
-    .sk {
-      display: none;
     }
     .years {
       margin-top: 56px;

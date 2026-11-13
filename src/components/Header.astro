@@ -16,6 +16,7 @@ const { current, progress = false } = Astro.props;
 <header class="top wrap" data-progress={progress ? '' : undefined}>
   <a class="name" href="/" aria-label={`${SITE.brand}, home`}>
     <svg class="mark" data-logo viewBox="-2.01 0 30 30" fill="#ff5f1f" aria-hidden="true"><path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path></svg>
+    <span class="sig" aria-hidden="true">{SITE.name}</span>
   </a>
   <div class="bar">
     <nav aria-label="Main">
@@ -62,6 +63,22 @@ const { current, progress = false } = Astro.props;
   const at = document.querySelector('[data-top-at]');
   if (at && !CSS.supports('animation-timeline: scroll()'))
     new IntersectionObserver(([e]) => document.documentElement.classList.toggle('lifted', !e.isIntersecting)).observe(at);
+
+  // The name beside the logo (DESIGN.md §3): on the home page it writes itself in once the hero's name has scrolled up
+  // under the header, and wipes out when it comes back, so the name is never on screen twice. Pages without the hero
+  // name show it from the start, with no animation.
+  const top = document.querySelector<HTMLElement>('.top');
+  const hero = document.querySelector('[data-hero-name]');
+  if (top && !hero) top.dataset.named = 'still';
+  if (top && hero)
+    new IntersectionObserver(
+      ([e]) => {
+        const gone = !e.isIntersecting && e.boundingClientRect.top < e.rootBounds!.top;
+        if (gone) top.dataset.named = '';
+        else delete top.dataset.named;
+      },
+      { rootMargin: `-${top.offsetHeight}px 0px 0px 0px` },
+    ).observe(hero);
 
   // The current link's underline: measured from the link (labels differ in width) and slid there by a CSS transition.
   // It moves when aria-current changes (the home page's scroll spy, or the page's own link), when the nav resizes and

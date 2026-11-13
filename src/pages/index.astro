@@ -7,14 +7,16 @@ import swipejobs from '../assets/logos/swipejobs.png';
 import influence from '../assets/logos/influence.png';
 import { cover, getPosts } from '../lib/blogs';
 
-// Each project links to the real thing; `go` says where. The stills are drawn in HTML below (DESIGN.md §5).
+// Each project links to the real thing; `go` says where. `from`/`to` are the years it was worked on (first release to
+// last update, from the Chrome Web Store, npm and GitHub); `to` is null while it is still active. The stills are drawn in HTML below (DESIGN.md §5).
 // The tools newest first, then this site as the colophon.
 const work = [
   {
     id: 'diver',
     name: 'Diver',
     kind: 'Chrome extension',
-    year: 2023,
+    from: 2023,
+    to: 2025,
     summary: 'Outlines every element on a page in one click, so you can see the boxes, nesting and spacing of a layout you didn’t write.',
     go: 'Get it for Chrome',
     href: 'https://chrome.google.com/webstore/detail/diver/onfnfdmnccoaknhjinebmlncejnofhoc',
@@ -23,7 +25,8 @@ const work = [
     id: 'tooltip',
     name: 'css-only-tooltip',
     kind: 'Library',
-    year: 2021,
+    from: 2021,
+    to: 2023,
     summary: 'A tooltip library with no JavaScript. Data attributes in, tooltip out, with light and dark themes and nothing to bundle.',
     go: 'View on npm',
     href: 'https://www.npmjs.com/package/css-only-tooltip',
@@ -32,7 +35,8 @@ const work = [
     id: 'yt',
     name: 'YouTube Playlist Info',
     kind: 'Web app',
-    year: 2020,
+    from: 2020,
+    to: 2025,
     summary: 'Paste a playlist link and see how long it really takes to watch, video by video, before you commit to it.',
     go: 'Open the app',
     href: 'https://youtube-playlist-info.netlify.app',
@@ -41,7 +45,8 @@ const work = [
     id: 'site',
     name: 'rajiv.me',
     kind: 'This site',
-    year: 2026,
+    from: 2026,
+    to: null,
     summary: 'Static pages, a drawing that draws itself and nothing running in the background once it has loaded. Every post is also served as Markdown, so AI tools can read it too.',
     go: 'Read the source',
     href: `${SITE.socials.github}/thoughtlessmind`,
@@ -114,7 +119,7 @@ const person = {
     <div class="art" aria-hidden="true"><Doodle /></div>
     <div class="hero-text">
       <h1 id="h1">
-        <span class="name rise" style="--d:120">{SITE.name}<span class="sr-only">,</span></span>
+        <span class="name rise" style="--d:120" data-hero-name>{SITE.name}<span class="sr-only">,</span></span>
         <span class="st rise" style="--d:190">Software you don’t <br />have to think about.</span>
       </h1>
       <div class="intro">
@@ -159,11 +164,13 @@ const person = {
     </div>
   </section>
 
-  <section class="sec split" id="blogs" aria-labelledby="blogs-h">
+  <section class="sec" id="blogs" aria-labelledby="blogs-h">
     <div class="head">
       <h2 class="h2" id="blogs-h">Blogs</h2>
       <p class="note">Notes on building for the web, and the problems I would rather solve once.</p>
-      <div class="sk" aria-hidden="true"><Doodle art="blogs" /></div>
+      <p class="hint">
+        Here for philosophy or psychology? Those essays are in <a class="ul" href="/blogs">the full list</a> too.
+      </p>
     </div>
     <div class="list">
       <ul>
@@ -179,7 +186,7 @@ const person = {
     </div>
   </section>
 
-  <section class="sec split" id="experience" aria-labelledby="xp-h">
+  <section class="sec" id="experience" aria-labelledby="xp-h">
     <div class="head">
       <h2 class="h2" id="xp-h">Experience</h2>
       <p class="note">The teams I’ve built with, newest first.</p>
@@ -222,11 +229,10 @@ const person = {
     </ol>
   </section>
 
-  <section class="sec split" id="projects" aria-labelledby="projects-h">
+  <section class="sec" id="projects" aria-labelledby="projects-h">
     <div class="head">
       <h2 class="h2" id="projects-h">Projects</h2>
       <p class="note">Tools I built for my own problems, then released.</p>
-      <div class="sk" aria-hidden="true"><Doodle art="projects" /></div>
     </div>
     <ul class="list">
       {
@@ -241,12 +247,15 @@ const person = {
               aria-describedby={`pj-${w.id}`}
             >
               <span class="pj">
-                <span class="pn">{w.name}</span>
+                <span class="pt">
+                  <span class="pn">{w.name}</span>
+                  <span class:list={['stat', { on: !w.to }]}>{w.to ? 'Finished' : 'Active'}</span>
+                  <span class="pm">
+                    {w.kind}, {w.to ? `${w.from} to ${w.to}` : `since ${w.from}`}
+                  </span>
+                </span>
                 <span class="cs" id={`pj-${w.id}`}>
                   {w.summary}
-                </span>
-                <span class="pm">
-                  {w.kind}, {w.year}
                 </span>
                 <span class="go">{w.go}</span>
               </span>
@@ -388,21 +397,63 @@ const person = {
     margin-top: 12px;
   }
   .sec {
-    padding-top: 136px;
+    padding-top: 120px;
   }
-  /* Now: the h2 in the first column; from the axis (in line with the header nav) the thesis, its four parts in two
-     columns on hairlines, then what ships next. */
-  .now {
-    display: grid;
-    grid-template-columns: var(--cols);
-    align-items: baseline;
+  /* Every section below the landing reads top to bottom: the h2 and its note at the margin, then the content under
+     them, indented a step (112px at 1440) and capped at 1040px. That indent is the one text edge: every title,
+     paragraph and logo in every section starts on it, and nothing indents further (the Experience rail hangs in the
+     gutter left of it, like a bullet). Rows that carry a picture or dates put them in one right-hand column,
+     `--media` wide, 48px from the text. Body text stops at 36em (about 68 characters). No indent on a phone. */
+  .sec > :last-child {
+    max-width: 1040px;
+    margin-top: 40px;
+    margin-left: clamp(0px, 7.8vw, 112px);
   }
+  @media (max-width: 720px) {
+    .sec > :last-child {
+      margin-top: 24px;
+      margin-left: 0;
+    }
+  }
+  /* Quiet reveals: each row fades up 12px as it scrolls in, tied to its own position (a CSS view timeline, no
+     script), so rows stagger by themselves and a jump from the nav lands with them already shown. Experience entries
+     only fade, so the nodes stay on the still rail. Without view timelines, under reduced motion and in print the
+     rows are simply there. The timeline and range sit in their own :root rule (the minifier would fold them into the
+     shorthand, where animation-timeline is reset-only; DESIGN.md §4). */
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .list > ul > li,
+      ul.list > li,
+      .all {
+        animation: row-in linear both;
+      }
+      .job {
+        animation: fade-in linear both;
+      }
+      :root :is(.list > ul > li, ul.list > li, .all, .job) {
+        animation-timeline: view();
+        animation-range: entry 10% entry 60%;
+      }
+    }
+  }
+  /* Now: the thesis, its four parts in two columns on hairlines, then what ships next. */
   .thesis {
-    max-width: 18em;
-    font-size: var(--t-l);
+    max-width: 22em;
+    font-size: var(--t-m);
     font-weight: 500;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
   .parts {
@@ -425,44 +476,14 @@ const person = {
     text-wrap: pretty;
   }
   .soon {
-    max-width: 38em;
-    margin-top: 48px;
+    max-width: 36em;
+    margin-top: 32px;
     color: var(--muted);
     text-wrap: pretty;
   }
   .soon span {
     margin-right: 12px;
     color: var(--accent);
-  }
-  @media (max-width: 999px) {
-    .now {
-      display: block;
-    }
-    .thesis {
-      margin-top: 24px;
-    }
-  }
-  /* Blogs and Projects: the h2 and its note in the first column, sticky, the rows from the axis like Now's. */
-  .split {
-    display: grid;
-    grid-template-columns: var(--cols);
-    align-items: start;
-  }
-  .split .head {
-    position: sticky;
-    top: calc(var(--head-h) + 40px);
-    padding-right: clamp(32px, 4.4vw, 72px);
-  }
-  @media (max-width: 999px) {
-    .split {
-      display: block;
-    }
-    .split .head {
-      position: static;
-    }
-    .list {
-      margin-top: 32px;
-    }
   }
   .h2 {
     font-size: var(--t-l);
@@ -471,21 +492,28 @@ const person = {
     letter-spacing: -0.02em;
   }
   .note {
-    max-width: 22em;
+    max-width: 36em;
     margin-top: 12px;
     color: var(--muted);
     text-wrap: pretty;
   }
-  /* Under the note, the section's doodle: its story in three objects on a dashed route, a pencil sketch in --muted
-     that a mouse over this box inks and sets moving (Doodle.astro). Under 1000px it is hidden: the lists lead. */
-  .sk {
-    width: min(100%, 300px);
-    height: clamp(180px, 100svh - var(--head-h) - 420px, 270px);
-    margin-top: 56px;
+  /* The hint for the other half of the writing: one muted line under the note. */
+  .hint {
+    max-width: 36em;
+    margin-top: 12px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+    text-wrap: pretty;
   }
-  @media (max-width: 999px) {
-    .sk {
-      display: none;
+  /* On the home page a post's cover takes the shared right-hand column, at 2:1 so the row stays about as tall as its
+     text (the /blogs list keeps its smaller 16:10 cover). */
+  @media (min-width: 721px) {
+    #blogs :global(.post) {
+      grid-template-columns: minmax(0, 1fr) var(--media);
+      gap: 48px;
+    }
+    #blogs :global(.cover) {
+      aspect-ratio: 2 / 1;
     }
   }
   /* After the post rows, the way to the rest: a row of its own, the arrow in orange. */
@@ -511,55 +539,67 @@ const person = {
   .all span {
     color: var(--accent);
   }
+  .all:active {
+    color: var(--accent);
+  }
   @media (prefers-reduced-motion: no-preference) {
     .all span {
       transition: translate 200ms var(--ease);
     }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .all:hover span {
       translate: 6px 0;
     }
   }
-  /* Experience as a timeline: the dates right-aligned, a rail with a node per job, then the logo tile, role and company,
-     one line about the product in --ink, then a few muted lines on the work, marked in orange. The rail is one line down the whole list, accent at the top fading into --line and
-     out at the bottom; the current job's node is filled, a past one is a ring. */
+  /* Experience as a timeline that keeps the text edge: each entry is the job (logo tile, role and company, one line
+     on the product, the work) on the edge, and its dates in the right-hand column where the covers and stills sit.
+     The rail hangs in the gutter left of the edge, one line down the whole list, accent at the top fading into
+     --line and out at the bottom; each job's node sits on it level with the logo tile, the current job's filled, a
+     past one a ring. */
   .tl {
     position: relative;
-    margin-top: 8px;
   }
   .tl::before {
     content: "";
     position: absolute;
-    left: 143px;
-    top: 8px;
+    left: -35px;
+    top: 22px;
     bottom: 0;
     width: 2px;
     border-radius: 1px;
     background: linear-gradient(var(--accent), var(--line) 160px, var(--line) calc(100% - 64px), transparent);
   }
   .job {
+    position: relative;
     display: grid;
-    grid-template-columns: 112px 64px minmax(0, 1fr);
-    padding-bottom: 64px;
+    grid-template-columns: minmax(0, 1fr) var(--media);
+    gap: 0 48px;
+    padding-bottom: 48px;
   }
   .job:last-child {
     padding-bottom: 8px;
   }
+  .what {
+    grid-area: 1 / 1;
+  }
   .when {
+    grid-area: 1 / 2;
+    padding-top: 2px;
     font-size: var(--t-xs);
     line-height: 1.4;
     color: var(--muted);
-    text-align: right;
   }
   .when time:first-child {
     display: block;
     color: var(--ink);
   }
   .node {
-    position: relative;
-    justify-self: center;
+    position: absolute;
+    left: -40px;
+    top: 16px;
     width: 12px;
     height: 12px;
-    margin-top: 4px;
     border: 2px solid var(--muted);
     border-radius: 50%;
     background: var(--bg);
@@ -596,66 +636,94 @@ const person = {
     color: var(--muted);
   }
   .job .cs {
-    max-width: 34em;
+    max-width: 36em;
     margin-top: 16px;
     color: var(--ink);
   }
+  /* The work list's markers hang into the gutter, so its text keeps the edge too. */
   .wk {
-    max-width: 34em;
-    margin-top: 14px;
-    padding-left: 18px;
-    list-style: disc;
+    max-width: 36em;
+    margin-top: 12px;
+    padding-left: 0;
+    list-style: disc outside;
     color: var(--muted);
   }
   .wk li {
-    padding-left: 4px;
     text-wrap: pretty;
   }
   .wk li + li {
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .wk li::marker {
     color: var(--accent);
   }
-  /* Phone: the rail moves to the left edge and the dates sit over each job, on one line. */
+  /* Phone: no gutter, so no rail. The dates sit on one line over each job, which keeps the full width. */
   @media (max-width: 720px) {
-    .tl::before {
-      left: 15px;
+    .tl::before,
+    .node {
+      display: none;
     }
     .job {
-      grid-template-columns: 32px minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       padding-bottom: 40px;
     }
     .when {
-      grid-column: 2;
+      grid-area: 1 / 1;
       margin-bottom: 12px;
-      text-align: left;
+      padding-top: 0;
     }
     .when time:first-child {
       display: inline;
       margin-right: 4px;
     }
-    .node {
-      grid-area: 1 / 1 / 3;
-      justify-self: start;
-      margin-left: 10px;
-    }
     .what {
-      grid-column: 2;
+      grid-area: 2 / 1;
+    }
+    .wk {
+      padding-left: 18px;
     }
   }
   /* A project row: the text on the left and the larger share; the still on the right, capped so the copy has room. */
   .proj {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(240px, 22vw, 320px);
-    gap: 32px;
+    grid-template-columns: minmax(0, 1fr) var(--media);
+    gap: 48px;
     align-items: start;
-    padding-block: 28px;
+    padding-block: 24px;
     border-top: 1px solid var(--line);
   }
+  /* The name, then its status: Active with a filled accent dot (the timeline's current node, small), Finished with a
+     muted ring. */
+  .pt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+  }
+  .stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .stat::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+  }
+  .stat.on {
+    color: var(--ink);
+  }
+  .stat.on::before {
+    border: 0;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
+  }
+  /* Kind and years ride on the title line after the status. */
   .pm {
-    display: block;
-    margin-top: 14px;
     font-size: var(--t-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
@@ -679,6 +747,7 @@ const person = {
   }
   .cs {
     display: block;
+    max-width: 36em;
     margin-top: 8px;
     color: var(--muted);
     text-wrap: pretty;
@@ -691,8 +760,23 @@ const person = {
     text-decoration-thickness: 1px;
     text-underline-offset: 0.22em;
   }
-  .proj:hover .go {
-    text-decoration-thickness: 2px;
+  @media (hover: hover) {
+    .proj:hover .go {
+      text-decoration-thickness: 2px;
+    }
+  }
+  /* Press: the still gives a little under the finger and the title takes the accent (a colour on :active does not
+     stick after a tap the way hover does). */
+  .proj:active .pn {
+    color: var(--accent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .still {
+      transition: transform 160ms var(--ease);
+    }
+    .proj:active .still {
+      transform: scale(0.97);
+    }
   }
   .still {
     display: grid;
@@ -750,6 +834,17 @@ const person = {
     border-bottom: 0;
     border-top-color: var(--ink);
   }
+  /* On hover the tip rises 4px, as if it had just been shown. */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .tt::before,
+    .tt::after {
+      transition: translate 200ms var(--ease);
+    }
+    .proj:hover .tt::before,
+    .proj:hover .tt::after {
+      translate: -50% -4px;
+    }
+  }
   .tt-code {
     margin-top: 22px;
     font-family: var(--mono);
@@ -766,9 +861,20 @@ const person = {
     font-size: 11px;
     line-height: 1.3;
   }
+  /* Diver: the outlines rest dim and turn full accent while the row is pointed at or focused, which is what the
+     tool does. A colour change, so it stays under reduced motion. */
   .dv,
   .dv * {
-    outline: 1px solid var(--accent);
+    outline: 1px solid color-mix(in oklab, var(--accent) 45%, transparent);
+    transition: outline-color 200ms var(--ease);
+  }
+  @media (hover: hover) {
+    .proj:hover :is(.dv, .dv *) {
+      outline-color: var(--accent);
+    }
+  }
+  .proj:focus-visible :is(.dv, .dv *) {
+    outline-color: var(--accent);
   }
   .dv-top {
     display: flex;
@@ -837,10 +943,10 @@ const person = {
       margin-top: 28px;
     }
     .sec {
-      padding-top: 104px;
+      padding-top: 88px;
     }
     #now {
-      padding-top: 72px;
+      padding-top: 64px;
     }
     /* Three posts on a phone; /blogs has the rest. */
     #blogs li:nth-child(n + 4) {
@@ -855,12 +961,12 @@ const person = {
       margin-top: 36px;
     }
     .soon {
-      margin-top: 36px;
+      margin-top: 28px;
     }
     .proj {
       grid-template-columns: minmax(0, 1fr);
-      gap: 20px;
-      padding-block: 28px;
+      gap: 16px;
+      padding-block: 24px;
     }
     .still {
       order: -1;

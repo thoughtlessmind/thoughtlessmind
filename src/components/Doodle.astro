@@ -4,37 +4,16 @@
 // itself once when the content rises (DESIGN.md §4): each stroke carries its delay (--d) and duration (--t) in ms.
 // The planet is generated (scripts/planet.ts) and keeps turning, with its rings; the pendulum keeps swinging. All of it
 // holds still while the doodle is off screen.
-// With `art`, a section doodle instead (DESIGN.md §5): traced the same way and drawn twice. `.rest` is always on
-// show, a pencil sketch in --muted. Over it `.ink`, the same lines in --ink, sits inside a clip path that is empty
-// until a mouse comes over the box; then a jelly blob trails the cursor (scripts/blob.ts) and inks the sketch under
-// it. Both copies run the same loops on the same clock, so they stay in register; the ink copy's ids get a suffix.
 import doodle from '../assets/doodle.svg?raw';
-import blogs from '../assets/doodle-blogs.svg?raw';
-import projects from '../assets/doodle-projects.svg?raw';
 import { withPlanet } from '../scripts/planet';
 
-interface Props {
-  art?: 'blogs' | 'projects';
-}
-const { art } = Astro.props;
-const id = `sk-${art}`;
-function sketch(raw: string) {
-  const [, open, body] = raw.match(/^(<svg[^>]*>)([\s\S]*)<\/svg>\s*$/)!;
-  const ink = body.replace(/(id="|url\(#)([\w-]+)/g, '$1$2-ink');
-  return `${open}<clipPath id="${id}"><path class="blob"></path></clipPath><path class="blob jelly"></path><g class="rest">${body}</g><g class="ink" clip-path="url(#${id})">${ink}</g></svg>`;
-}
-const svg = art ? sketch({ blogs, projects }[art]) : withPlanet(doodle);
+const svg = withPlanet(doodle);
 ---
 
 <Fragment set:html={svg} />
 
 <script>
   import { BANDS, bandPath } from '../scripts/planet';
-  import { trail } from '../scripts/blob';
-  // A section doodle is inked under the blob that trails a mouse over its box: the clip path and the faint jelly share it.
-  document
-    .querySelectorAll<SVGSVGElement>('.sketch')
-    .forEach((s) => trail(s.parentElement!, s, [...s.querySelectorAll('.blob')], 270));
   // The bands turn with the planet: projected each frame, only while the doodle is on screen and the splash is not
   // covering it. Time only runs while it does, so nothing jumps. Off screen the svg is also `.idle`, which pauses the
   // CSS loops (the rings and the pendulum).
@@ -112,84 +91,6 @@ const svg = art ? sketch({ blogs, projects }[art]) : withPlanet(doodle);
     html.splash:not(.go) .doodle * { animation-play-state: paused; }
     .doodle.idle .ring,
     .doodle.idle .swing { animation-play-state: paused; }
-    /* The section doodles don't draw on: they rest as a pencil sketch and the blob is their moment. While the svg is
-       hovered, their parts loop on their own clocks (sections.mjs rigs them): slow and small. Off hover every loop
-       holds where it is. */
-    .doodle.sketch circle,
-    .doodle.sketch [pathLength] { animation: none; }
-    .doodle.sketch .glow { animation: sk-glow 1.8s ease-in-out infinite alternate; }
-    .doodle.sketch .bob { animation: sk-bob 2.4s ease-in-out var(--dl, 0s) infinite alternate; }
-    .doodle.sketch .twinkle { transform-box: fill-box; transform-origin: center; animation: sk-twinkle 2.2s ease-in-out var(--dl) infinite alternate; }
-    /* Blogs: the pen writes the four rows in turn, lifts off, the full page tears away and a blank one settles. */
-    .doodle.sketch .pen { animation: sk-pen 12s linear infinite; }
-    .doodle.sketch .page { transform-box: fill-box; transform-origin: 50% 0; animation: sk-page 12s var(--ease) infinite; }
-    .doodle.sketch .row { stroke-dasharray: 1; animation: 12s linear infinite; }
-    .doodle.sketch .r0 { animation-name: sk-r0; }
-    .doodle.sketch .r1 { animation-name: sk-r1; }
-    .doodle.sketch .r2 { animation-name: sk-r2; }
-    .doodle.sketch .r3 { animation-name: sk-r3; }
-    .doodle.sketch .scroll { animation: sk-scroll 16s linear infinite; }
-    /* Projects: the gears turn (the small one faster, the other way), the flask simmers, the tag sways. */
-    .doodle.sketch .spin { transform-box: view-box; animation: sk-spin var(--p) linear infinite; }
-    .doodle.sketch .ccw { animation-direction: reverse; }
-    .doodle.sketch .slosh { transform-box: fill-box; transform-origin: center; animation: sk-slosh 1.6s ease-in-out infinite alternate; }
-    .doodle.sketch .boil { transform-box: fill-box; transform-origin: center; animation: sk-boil var(--dur) ease-in var(--dl) infinite; }
-    .doodle.sketch .rise { transform-box: fill-box; transform-origin: center; animation: sk-rise 3.6s linear var(--dl) infinite; }
-    .doodle.sketch .sway { transform-box: view-box; animation: sk-sway 2.6s ease-in-out infinite alternate; }
-    .doodle.sketch .whoosh { animation: sk-whoosh 1.8s var(--ease) var(--dl) infinite; }
-    .doodle.sketch:not(:hover) * { animation-play-state: paused; }
-  }
-  .doodle .jelly { fill: var(--line); stroke: none; }
-  /* A section doodle: the sketch at rest in --muted, the blob's copy in --ink. */
-  .doodle.sketch { color: var(--muted); }
-  .doodle.sketch .ink { color: var(--ink); }
-  /* No pointer to ink it with on touch: the sketch shows inked. */
-  @media (hover: none) { .doodle.sketch .ink { clip-path: none; } }
-  @keyframes sk-glow { to { opacity: 0.3; } }
-  @keyframes sk-bob { to { transform: translateY(-5px); } }
-  @keyframes sk-twinkle { to { opacity: 0.35; transform: scale(0.55); } }
-  @keyframes sk-pen {
-    0%, 2% { transform: translate(var(--s0)); }
-    15% { transform: translate(var(--e0)); }
-    19% { transform: translate(var(--s1)); }
-    32% { transform: translate(var(--e1)); }
-    36% { transform: translate(var(--s2)); }
-    49% { transform: translate(var(--e2)); }
-    53% { transform: translate(var(--s3)); }
-    66% { transform: translate(var(--e3)); }
-    70%, 86% { transform: translate(var(--lift)); animation-timing-function: var(--ease); }
-    100% { transform: translate(var(--s0)); }
-  }
-  @keyframes sk-page {
-    0%, 70% { transform: none; opacity: 1; }
-    75% { transform: translate(-6px, -16px) rotate(-4deg); opacity: 0; }
-    75.5% { transform: translateY(10px); opacity: 0; }
-    84%, 100% { transform: none; opacity: 1; }
-  }
-  @keyframes sk-r0 { 0%, 2% { stroke-dashoffset: 1; } 15%, 75% { stroke-dashoffset: 0; } 75.5%, 100% { stroke-dashoffset: 1; } }
-  @keyframes sk-r1 { 0%, 19% { stroke-dashoffset: 1; } 32%, 75% { stroke-dashoffset: 0; } 75.5%, 100% { stroke-dashoffset: 1; } }
-  @keyframes sk-r2 { 0%, 36% { stroke-dashoffset: 1; } 49%, 75% { stroke-dashoffset: 0; } 75.5%, 100% { stroke-dashoffset: 1; } }
-  @keyframes sk-r3 { 0%, 53% { stroke-dashoffset: 1; } 66%, 75% { stroke-dashoffset: 0; } 75.5%, 100% { stroke-dashoffset: 1; } }
-  @keyframes sk-scroll { to { transform: translate(var(--page)); } }
-  @keyframes sk-spin { to { transform: rotate(1turn); } }
-  @keyframes sk-slosh { to { transform: scaleY(-0.5); } }
-  @keyframes sk-boil {
-    0% { transform: translateY(0) scale(0.4); opacity: 0; }
-    15% { transform: translateY(0) scale(1); opacity: 1; }
-    85% { opacity: 1; }
-    100% { transform: translateY(var(--rise)) scale(1.15); opacity: 0; }
-  }
-  @keyframes sk-rise {
-    0% { transform: translateY(var(--a)) scale(0.5); opacity: 0; }
-    20%, 75% { opacity: 1; }
-    100% { transform: translateY(var(--b)) scale(1); opacity: 0; }
-  }
-  @keyframes sk-sway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
-  @keyframes sk-whoosh {
-    0% { transform: translate(0, 0); opacity: 1; }
-    55% { transform: translate(var(--w)); opacity: 0; }
-    56% { transform: translate(0, 0); opacity: 0; }
-    100% { transform: translate(0, 0); opacity: 1; }
   }
   @keyframes d-draw { from { stroke-dasharray: 1; stroke-dashoffset: 1; visibility: hidden; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
   @keyframes d-pop { from { opacity: 0; transform: scale(0.2); } }

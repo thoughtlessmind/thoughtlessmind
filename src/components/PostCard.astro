@@ -64,7 +64,7 @@ const art = cover(post.id);
   }
   .cs {
     display: block;
-    max-width: 38em;
+    max-width: 36em;
     margin-top: 8px;
     color: var(--muted);
     text-wrap: pretty;
@@ -96,21 +96,52 @@ const art = cover(post.id);
     text-wrap: balance;
     overflow-wrap: anywhere;
   }
+  /* Press: the cover gives a little under the finger and the title takes the accent (a colour on :active does not
+     stick after a tap). */
+  .post:active .pt {
+    color: var(--accent);
+  }
   @media (prefers-reduced-motion: no-preference) {
+    .cover {
+      transition: transform 160ms var(--ease);
+    }
+    .post:active .cover {
+      transform: scale(0.97);
+    }
     .cover :global(svg),
     .cover-code code {
       transition: transform 800ms var(--ease);
     }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .post:hover .cover :global(svg),
     .post:hover .cover-code code {
       transform: scale(1.03);
     }
   }
-  /* Phone: the cover shrinks to a thumbnail beside the title, so the titles lead and the list stays short. */
+  /* Phone: the cover shrinks to a thumbnail beside the title only; the summary and date run the full width under
+     them, so the summary keeps a readable line. */
   @media (max-width: 720px) {
     .post {
       grid-template-columns: minmax(0, 1fr) 80px;
-      gap: 16px;
+      grid-template-areas: "t c" "s s" "m m";
+      gap: 0 16px;
+    }
+    .pc {
+      display: contents;
+    }
+    .pt {
+      grid-area: t;
+      align-self: center;
+    }
+    .cs {
+      grid-area: s;
+    }
+    .pm {
+      grid-area: m;
+    }
+    .cover {
+      grid-area: c;
     }
     .cover-code code {
       font-size: 9px;

@@ -35,12 +35,10 @@ after a build.
 ## Layout of src
 
 ```
-assets/          doodle.svg (the landing drawing), doodle-blogs.svg and doodle-projects.svg (the section doodles),
-                 covers/<slug>.svg (post covers): line art traced to SVG;
-                 name.svg (the footer's hand-drawn "rajiv")
-components/      Header (fixed, lifts on scroll), Footer (the name draws, a blob reveals it), ThemeToggle, PostCard,
-                 Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet, the loops; `art` for a
-                 section doodle: a pencil sketch the cursor inks)
+assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG
+components/      Header (fixed, lifts on scroll, writes the name in), Footer (links, then the star field), ThemeToggle, PostCard,
+                 Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet,
+                 the loops)
 content/blogs/ the posts, <slug>.md (frontmatter in content.config.ts)
 layouts/         BaseLayout (head with the link-preview card and JSON-LD, pre-paint script, skip link, header, main,
                  footer, splash)
@@ -48,8 +46,8 @@ lib/blogs.ts   getPosts, cover, reading time, date formats
 pages/           index, blogs/index, blogs/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, rss.xml.ts,
                  404 (the landing doodle again)
 scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
-                 planet.ts (the doodle's turning planet), blob.ts (the liquid blob: its outline, shared with the theme
-                 pour, and the cursor trail that fills the footer name and inks the section doodles) (DESIGN.md §4)
+                 planet.ts (the doodle's turning planet), blob.ts (the liquid blob's outline, for the theme pour),
+                 field.ts (the footer's star field) (DESIGN.md §4)
 styles/          global.css (tokens, @theme, base, header, landing frame, theme switch, links, view transitions),
                  prose.css (posts)
 consts.ts        facts: name, brand, title, description, email, socials, location, role, since, nav

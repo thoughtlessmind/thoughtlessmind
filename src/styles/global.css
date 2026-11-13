@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/caveat";
 
 /* How far the header has lifted off the page, 0 at rest to 1 as a bar (see the header below). Registered so it can
    animate and transition. */
@@ -36,6 +37,8 @@
   --shadow: rgba(0, 0, 0, 0.55);
   --sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   /* Mono is for code and the splash screen's digits only. */
+  /* Hand is for the header's written name only. */
+  --hand: "Caveat Variable", "Bradley Hand", cursive;
   --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* taste-skill-ignore */
   /* Type steps (DESIGN.md §1): full size at 1440, the phone size by 720 or so. */
   --t-xl: clamp(40px, 5vw, 72px);
@@ -50,6 +53,8 @@
   --gut-r: max(clamp(20px, 3.4vw, 48px), env(safe-area-inset-right, 0px));
   --cols: minmax(0, 42fr) minmax(0, 58fr);
   --head-h: 76px;
+  /* The home page's right-hand column: post covers, project stills and job dates all start on it (DESIGN.md §5). */
+  --media: 240px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   color-scheme: dark;
 }
@@ -249,6 +254,65 @@
     content: "";
     position: absolute;
     inset: -12px -10px;
+  }
+  .top .name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  /* The name beside the logo, in the hand font (Header.astro shows it). Hidden, it is clipped away to its left edge.
+     Shown, the clip opens left to right at a steady pen speed, so the name reads as written; leaving, it fades fast
+     and the clip resets behind the fade. Reduced motion: a plain fade. `still` (pages without the hero name): shown,
+     no transition. */
+  .sig {
+    font-family: var(--hand);
+    font-size: 27px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.005em;
+    white-space: nowrap;
+    translate: 0 1px;
+    opacity: 0;
+    clip-path: inset(-40% 100% -40% 0);
+    transition: opacity 150ms var(--ease), clip-path 0s 150ms;
+  }
+  .top[data-named] .sig {
+    opacity: 1;
+    clip-path: inset(-40% -12% -40% -4%);
+    transition: clip-path 750ms linear;
+  }
+  .top[data-named="still"] .sig {
+    transition: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sig,
+    .top[data-named] .sig {
+      clip-path: none;
+      transition: opacity 200ms var(--ease);
+    }
+  }
+  /* Phone: no room for the name and the nav side by side. The name floats over the nav's place and the nav fades
+     out while it shows; scrolled back to the top, the nav returns. Other pages keep the nav and show no name. */
+  @media (max-width: 720px) {
+    .top .name {
+      position: relative;
+    }
+    .sig {
+      position: absolute;
+      left: calc(100% + 4px);
+      font-size: 25px;
+    }
+    .top[data-named="still"] .sig {
+      display: none;
+    }
+    .top nav {
+      transition: opacity 200ms var(--ease);
+    }
+    .top[data-named=""] nav {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 150ms var(--ease), visibility 0s 150ms;
+    }
   }
   .mark {
     display: block;
