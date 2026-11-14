@@ -69,7 +69,7 @@ and never "freelancer". Client work is never named.
 
 - Both themes, and both pass WCAG AA. Dark is the default; light follows the system until the switch picks one
   (`data-theme` on `<html>`, stored in `localStorage['theme']`).
-- The logo is orange `#ff5f1f` in both themes. Text orange (`--accent`) is `#ff5f1f` on dark and `#c2410c` on light.
+- The logo is orange `#ff5f1f` in both themes. Text orange (`--accent`) is `#ff5f1f` on dark and `#b23c0a` on light.
 - Tokens only: no ad-hoc colours or fonts in components. Change a colour in `global.css` and nowhere else. Canvas and
   WebGL code can't read CSS, so it keeps hex fallbacks.
 - Copy is sentence case. No emoji, no em or en dashes.

@@ -53,7 +53,7 @@ const card = new URL('/og.png', Astro.site).href;
     {jsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />}
     <slot name="head" />
     <meta name="theme-color" content="#03060c" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#e4e7eb" media="(prefers-color-scheme: light)" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />

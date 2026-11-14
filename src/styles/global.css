@@ -12,7 +12,7 @@
 }
 
 /* Tokens. Dark is the default; light follows the system until the switch picks one (data-theme on <html>).
-   The logo is #ff5f1f in both themes; text orange darkens to #c2410c on light for AA. */
+   The logo is #ff5f1f in both themes; text orange darkens to #b23c0a on light for AA. */
 :root {
   --bg: #03060c;
   --panel: #0d121c;
@@ -28,6 +28,9 @@
      top edge, as a band that does not change downwards, so whatever height the pull opens, the gap meets the page
      top in the same colour and the two read as one surface. Top half only: the page's foot has no sheen. */
   --gloss-edge: linear-gradient(90deg, rgba(160, 190, 255, 0.015) -10%, rgba(160, 190, 255, 0.06) 10%, rgba(160, 190, 255, 0.13) 30%, rgba(160, 190, 255, 0.2) 50%, rgba(160, 190, 255, 0.13) 70%, rgba(160, 190, 255, 0.06) 90%, rgba(160, 190, 255, 0.015) 110%) 0 0 / 100% 50% no-repeat;
+  /* How the gloss meets the page. Normal on dark (light added over light text). Overlay on light: there a white
+     gloss lifts the pale ground towards white but barely touches dark text, which a normal blend would wash grey. */
+  --gloss-blend: normal;
   --line: rgba(237, 237, 234, 0.1);
   --ink: #ededea;
   --muted: #8f8f8a;
@@ -48,8 +51,8 @@
   --raised: var(--panel);
   /* Selected text shows the other theme: its page as the ground, its text orange as the letters (4.6:1 here,
      6.7:1 on light), so a selection reads as the site turned inside out and both pass AA. */
-  --sel-bg: #f3f2ee;
-  --sel-ink: #c2410c;
+  --sel-bg: #e4e7eb;
+  --sel-ink: #b23c0a;
   /* The lifted header's drop shadow. */
   --shadow: rgba(0, 0, 0, 0.55);
   --sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -77,22 +80,26 @@
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --bg: #f3f2ee;
-    --panel: #e8e7e1;
-    --line: rgba(21, 21, 21, 0.12);
-    --ink: #151515;
-    --muted: #63635e;
+    --bg: #e4e7eb;
+    --panel: #dde1e6;
+    --line: rgba(20, 23, 28, 0.12);
+    --ink: #14171c;
+    --muted: #555b66;
     --hi: #000000;
-    --accent: #c2410c;
-    --sig: linear-gradient(90deg, #9a3412, #c2410c 70%, #d4500f);
+    --accent: #b23c0a;
+    --sig: linear-gradient(90deg, #9a3412, #b23c0a 70%, #c2410c);
     --sel-bg: #03060c;
     --sel-ink: #ff5f1f;
-    --shadow: rgba(38, 34, 26, 0.14);
+    --shadow: rgba(24, 32, 48, 0.16);
     --tile: #ffffff;
-    --raised: #ffffff;
+    --raised: #f6f7f9;
     --tile-edge: var(--line);
-    --gloss: none;
-    --gloss-edge: none;
+    --gloss:
+      radial-gradient(80% 100% at 50% 0, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.36) 25%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.04) 75%, transparent) 0 0 / 100% 120svh no-repeat,
+      radial-gradient(48% 28% at 10% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.15) 40%, rgba(255, 255, 255, 0.04) 75%, transparent) 0 0 / 100% 180svh repeat-y,
+      radial-gradient(52% 25% at 92% 72%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.14) 40%, rgba(255, 255, 255, 0.035) 75%, transparent) 0 0 / 100% 180svh repeat-y;
+    --gloss-edge: linear-gradient(90deg, rgba(255, 255, 255, 0.04) -10%, rgba(255, 255, 255, 0.16) 10%, rgba(255, 255, 255, 0.36) 30%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0.36) 70%, rgba(255, 255, 255, 0.16) 90%, rgba(255, 255, 255, 0.04) 110%) 0 0 / 100% 50% no-repeat;
+    --gloss-blend: overlay;
     color-scheme: light;
   }
 }
@@ -104,22 +111,26 @@
   }
 }
 :root[data-theme="light"] {
-  --bg: #f3f2ee;
-  --panel: #e8e7e1;
-  --line: rgba(21, 21, 21, 0.12);
-  --ink: #151515;
-  --muted: #63635e;
+  --bg: #e4e7eb;
+  --panel: #dde1e6;
+  --line: rgba(20, 23, 28, 0.12);
+  --ink: #14171c;
+  --muted: #555b66;
   --hi: #000000;
-  --accent: #c2410c;
-  --sig: linear-gradient(90deg, #9a3412, #c2410c 70%, #d4500f);
+  --accent: #b23c0a;
+  --sig: linear-gradient(90deg, #9a3412, #b23c0a 70%, #c2410c);
   --sel-bg: #03060c;
   --sel-ink: #ff5f1f;
-  --shadow: rgba(38, 34, 26, 0.14);
+  --shadow: rgba(24, 32, 48, 0.16);
   --tile: #ffffff;
-  --raised: #ffffff;
+  --raised: #f6f7f9;
   --tile-edge: var(--line);
-  --gloss: none;
-  --gloss-edge: none;
+  --gloss:
+    radial-gradient(80% 100% at 50% 0, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.36) 25%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.04) 75%, transparent) 0 0 / 100% 120svh no-repeat,
+    radial-gradient(48% 28% at 10% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.15) 40%, rgba(255, 255, 255, 0.04) 75%, transparent) 0 0 / 100% 180svh repeat-y,
+    radial-gradient(52% 25% at 92% 72%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.14) 40%, rgba(255, 255, 255, 0.035) 75%, transparent) 0 0 / 100% 180svh repeat-y;
+  --gloss-edge: linear-gradient(90deg, rgba(255, 255, 255, 0.04) -10%, rgba(255, 255, 255, 0.16) 10%, rgba(255, 255, 255, 0.36) 30%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0.36) 70%, rgba(255, 255, 255, 0.16) 90%, rgba(255, 255, 255, 0.04) 110%) 0 0 / 100% 50% no-repeat;
+  --gloss-blend: overlay;
   color-scheme: light;
 }
 
@@ -153,6 +164,7 @@
     inset: 0;
     z-index: 60;
     background: var(--gloss);
+    mix-blend-mode: var(--gloss-blend);
     pointer-events: none;
   }
   /* Anchors land clear of the fixed header. The browser's own surfaces (scrollbar, caret, selection) wear the

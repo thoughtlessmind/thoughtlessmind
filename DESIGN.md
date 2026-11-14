@@ -33,25 +33,26 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 
 | Token      | Dark                    | Light                 | Use                       |
 | ---------- | ----------------------- | --------------------- | ------------------------- |
-| `--bg`     | `#03060c`               | `#f3f2ee`             | page (lacquer black)      |
-| `--panel`  | `#0d121c`               | `#e8e7e1`             | raised surfaces           |
-| `--line`   | `rgba(237,237,234,.1)`  | `rgba(21,21,21,.12)`  | hairlines                 |
-| `--ink`    | `#ededea`               | `#151515`             | text                      |
-| `--muted`  | `#8f8f8a`               | `#63635e`             | secondary text            |
+| `--bg`     | `#03060c`               | `#e4e7eb`             | page (lacquer black / pearl grey) |
+| `--panel`  | `#0d121c`               | `#dde1e6`             | raised surfaces           |
+| `--line`   | `rgba(237,237,234,.1)`  | `rgba(20,23,28,.12)`  | hairlines                 |
+| `--ink`    | `#ededea`               | `#14171c`             | text                      |
+| `--muted`  | `#8f8f8a`               | `#555b66`             | secondary text            |
 | `--hi`     | `#ffffff`               | `#000000`             | emphasis                  |
 | `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark and the rocket's flame (decorative) |
 | `--spot`   | `--logo`                | `--logo`              | the drawings' filled bits: the doodles' hexagon and spark, cover accents (decorative) |
-| `--accent` | `#ff5f1f`               | `#c2410c`             | text orange, focus ring, the nav underline, active dots, reading line, the timeline's current node |
+| `--accent` | `#ff5f1f`               | `#b23c0a`             | text orange, focus ring, the nav underline, active dots, reading line, the timeline's current node |
 | `--frame`  | `--ink` at 16%          | `--ink` at 16%        | the 1px border round post covers and project stills (no fill) |
 | `--tile`   | `#f3f2ee`               | `#ffffff`             | Experience's logo tiles, light in both themes so a black mark reads on dark |
 | `--tile-edge` | `transparent`        | `--line`              | the tile's 1px border, so a white tile still reads on the light page |
-| `--raised` | `--panel`               | `#ffffff`             | the Say hi popover, a raised layer (text orange 6.1:1 / 5.2:1 on it) |
-| `--shadow` | `rgba(0,0,0,.55)`       | `rgba(38,34,26,.14)`  | the lifted header's drop shadow, nothing else |
-| `--sel-bg` | `#f3f2ee`               | `#03060c`             | selected text's ground: the other theme's page |
-| `--gloss`  | sheen and blooms        | `none`                | a layer over the whole page that scrolls with it (`body::after`): a cool sheen over the top, soft blooms left then right every 180svh, each easing out over several stops |
-| `--sig`    | `#ff5f1f` to `#ffb877`  | `#9a3412` to `#d4500f` | the header's written name: a gradient along the writing (large text, 3:1 or better on light) |
-| `--gloss-edge` | the sheen's top row | `none`         | the overscroll gap's ground: `--gloss` along the page's top edge, held as a vertical band (top half of the screen) |
-| `--sel-ink`| `#c2410c`               | `#ff5f1f`             | selected text: the other theme's text orange (4.6:1 / 6.7:1) |
+| `--raised` | `--panel`               | `#f6f7f9`             | the Say hi popover, a raised layer (text orange 6.1:1 / 5.5:1 on it) |
+| `--shadow` | `rgba(0,0,0,.55)`       | `rgba(24,32,48,.16)`  | the lifted header's drop shadow, nothing else |
+| `--sel-bg` | `#e4e7eb`               | `#03060c`             | selected text's ground: the other theme's page |
+| `--gloss`  | cool sheen and blooms   | white sheen and blooms | a layer over the whole page that scrolls with it (`body::after`): a sheen over the top, soft blooms left then right every 180svh, each easing out over several stops |
+| `--gloss-blend` | `normal`           | `overlay`             | how the gloss meets the page: on light, overlay lifts the pale ground towards white but barely touches dark text |
+| `--sig`    | `#ff5f1f` to `#ffb877`  | `#9a3412` to `#c2410c` | the header's written name: a gradient along the writing (large text, 3:1 or better on light) |
+| `--gloss-edge` | the sheen's top row | the sheen's top row | the overscroll gap's ground: `--gloss` along the page's top edge, held as a vertical band (top half of the screen) |
+| `--sel-ink`| `#b23c0a`               | `#ff5f1f`             | selected text: the other theme's text orange (4.8:1 / 6.7:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
 `data-theme="light"`. Under `prefers-contrast: more`, `--line` and `--frame` both go to `--ink` at 40%. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
@@ -60,7 +61,7 @@ footer's star field, never running text.
 Code in posts uses Shiki's `github-dark-default` and `github-light-default` on `--panel`, both themes emitted as
 `--shiki-dark` / `--shiki-light` and picked by the token rules in `prose.css`. The light theme is drawn for white, so a
 transformer in `astro.config.mjs` swaps its comment, keyword and function colours for Primer's next darker step: the
-worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
+worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
 
 ## §3 Chrome
 

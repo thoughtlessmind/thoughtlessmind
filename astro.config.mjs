@@ -3,8 +3,8 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-// github-light-default is drawn for white; on the light --panel (#e8e7e1) three of its colours miss AA (comments
-// 3.7:1, keywords 4.3:1, function names 4.1:1), so they take Primer's next darker step (5.2, 6.4, 5.9). The dark
+// github-light-default is drawn for white; on the light --panel (#dde1e6) three of its colours miss AA (comments
+// 3.3:1, keywords 3.9:1, function names 3.7:1), so they take Primer's next darker step (4.9, 6.0, 5.6). The dark
 // theme passes as it is (5.5:1 and up on #1c1c1c).
 /** @type {Record<string, string>} */
 const lightAA = { '#6E7781': '#57606A', '#CF222E': '#A40E26', '#8250DF': '#6639BA' };
