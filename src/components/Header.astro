@@ -13,6 +13,7 @@ const { current, progress = false } = Astro.props;
 // The home page's scroll spy sets aria-current="true" on one of the `[data-spy]` links; the underline follows it.
 ---
 
+<div class="dock">
 <header class="top wrap" data-progress={progress ? '' : undefined}>
   <a class="name" href="/" aria-label={`${SITE.brand}, home`}>
     <svg class="mark" data-logo viewBox="-2.01 0 30 30" fill="#ff5f1f" aria-hidden="true"><path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path></svg>
@@ -55,6 +56,7 @@ const { current, progress = false } = Astro.props;
     <ThemeToggle />
   </div>
 </header>
+</div>
 <div class="top-at" data-top-at aria-hidden="true"></div>
 
 <script>
@@ -99,6 +101,15 @@ const { current, progress = false } = Astro.props;
     new ResizeObserver(place).observe(nav);
     document.fonts.ready.then(place);
   }
+
+  // The logo on the home page scrolls back to the top instead of reloading. Elsewhere it is a plain link home, and a
+  // modified click (new tab, new window) is left to the browser.
+  document.querySelector<HTMLAnchorElement>('.top .name')?.addEventListener('click', (e) => {
+    if (location.pathname !== '/' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    if (location.hash) history.replaceState(null, '', '/');
+    scrollTo({ top: 0 });
+  });
 
   // Say hi: a native popover (light dismiss and Esc for free). Copy puts the address on the clipboard and says so.
   document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>

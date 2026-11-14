@@ -33,8 +33,8 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 
 | Token      | Dark                    | Light                 | Use                       |
 | ---------- | ----------------------- | --------------------- | ------------------------- |
-| `--bg`     | `#02070a`               | `#f3f2ee`             | page (midnight black)     |
-| `--panel`  | `#0c1419`               | `#e8e7e1`             | raised surfaces           |
+| `--bg`     | `#03060c`               | `#f3f2ee`             | page (lacquer black)      |
+| `--panel`  | `#0d121c`               | `#e8e7e1`             | raised surfaces           |
 | `--line`   | `rgba(237,237,234,.1)`  | `rgba(21,21,21,.12)`  | hairlines                 |
 | `--ink`    | `#ededea`               | `#151515`             | text                      |
 | `--muted`  | `#8f8f8a`               | `#63635e`             | secondary text            |
@@ -47,7 +47,10 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 | `--tile-edge` | `transparent`        | `--line`              | the tile's 1px border, so a white tile still reads on the light page |
 | `--raised` | `--panel`               | `#ffffff`             | the Say hi popover, a raised layer (text orange 6.1:1 / 5.2:1 on it) |
 | `--shadow` | `rgba(0,0,0,.55)`       | `rgba(38,34,26,.14)`  | the lifted header's drop shadow, nothing else |
-| `--sel-bg` | `#f3f2ee`               | `#02070a`             | selected text's ground: the other theme's page |
+| `--sel-bg` | `#f3f2ee`               | `#03060c`             | selected text's ground: the other theme's page |
+| `--gloss`  | sheen and blooms        | `none`                | a layer over the whole page that scrolls with it (`body::after`): a cool sheen over the top, soft blooms left then right every 180svh, each easing out over several stops |
+| `--sig`    | `#ff5f1f` to `#ffb877`  | `#9a3412` to `#d4500f` | the header's written name: a gradient along the writing (large text, 3:1 or better on light) |
+| `--gloss-edge` | the sheen's top row | `none`         | the overscroll gap's ground: `--gloss` along the page's top edge, held as a vertical band (top half of the screen) |
 | `--sel-ink`| `#c2410c`               | `#ff5f1f`             | selected text: the other theme's text orange (4.6:1 / 6.7:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
@@ -66,7 +69,7 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   blogs list and a post's article all start on it. `--media` (240px) is the home page's right-hand column (§5).
   `--head-h` (76px) is the header's height at rest; pages clear
   it, and `scroll-padding-top` keeps anchors below it.
-- **Header** (`Header.astro`, `.top`): fixed to the top on every page, a grid on `--cols`. The logo in the first
+- **Header** (`Header.astro`, `.top`): pinned to the top on every page (a zero-height sticky dock, so a rubber-band overscroll pulls it along with the page), a grid on `--cols`. The logo in the first
   column: the hexagon mark (`.mark`, `data-logo`, 28px) in a link labelled "rajiv.me, home", and 12px after it his name
   in `--hand` (`.sig`, `--ink`). On the home page the name is hidden while the hero's name is on screen and writes
   itself in once that name has scrolled up under the header (§4), so it is never on screen twice; other pages show it
@@ -221,6 +224,20 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   Only under `screen`, `prefers-reduced-motion: no-preference` and `@supports (animation-timeline: view())`; anywhere
   else the rows are simply there. The timeline sits in its own `:root` rule (see Header lift).
 
+### Overscroll (`components/Overscroll.astro`)
+
+A fixed canvas under the body's background, on the page's own ground: `--bg` under `--gloss-edge`, the gloss's top row as a band that does not change
+downwards, so whatever height the pull opens, the gap meets the page top in the same colour and reads as one surface, seen only in the gap a rubber-band overscroll opens past the top or the
+bottom: a fine dot grid, 15px pitch, from 6px off the edge, thinning out over 160px. The pull lights it softly from
+the point on that edge straight above (or below) the pointer, brighter the harder the pull, decaying over about half a second. Every pull sends a ripple
+out from there (each keeps the pointer's x from when it started) at 620px/s, like a drop on still water, gone in 1.5 s, and earlier ripples keep spreading under
+new ones, like stones dropped in a pond (up to 10, at least 140 ms apart). A pull is a new wheel gesture after a
+120 ms pause, or deltas that rise again while the last push was easing off, which is how a second pull mid-bounce
+arrives on macOS. Each ripple also moves the dots it passes along the line from its centre, up to 5px: out on its
+leading edge, back behind it, so the grid swells and settles like water (ripples add up). Dots on its
+crest swell a little and warm to `--logo`. Dots in `--ink`. The grid fades with the light, and the loop stops when
+both are gone. Reduced motion: the light only, no ripple. Trackpad wheel only.
+
 ### Splash screen (`components/Splash.astro`, `scripts/splash/`)
 
 On a fresh arrival at the home page, once per tab session, the mark assembles in the middle of the screen in the theme's ink, moves
@@ -253,18 +270,17 @@ Hamel Husain): who and where, what now, one line of values, one human line. No l
 Sections, in order:
 
 1. **Landing** (`#about`): `min-height: clamp(640px, 100vh, 960px)`, the text vertically centred. Left column
-   `min(760px, 52vw)`: the name (`--t-m`, `--accent`), then the h1 "Software you don’t / have to think about."
-   (`--t-xl`, two authored lines). Under it two short paragraphs (`--t-sm`, `--ink`, max 31em, 16px apart): "I’m a
-   software engineer in New Delhi. I’ve been building web and native apps since 2019, along with the backends behind
-   them and the infrastructure they run on." / "These days most of my time goes to putting language models to work inside real
-   products. The goal hasn’t changed: software that’s fast to load, clear to use and boring to run." The values phrase
-   (`.hl`) looks like the rest until the pointer is anywhere on the two paragraphs; then `--accent` flows through it
-   left to right, line after line, and ebbs back on leave. It is text clipped to a `--accent` to `--ink` gradient
-   (soft 40% to 60% edge, 250% wide, one strip across the line break) whose position slides 100% to 0 over 1100ms
-   `--ease`. Reduced motion: the colour switches at once. Touch shows plain text. Then two lines at `--t-s` (max
-   42em). The person, muted and balanced: "Off screen: astronomy, rockets, physics and sport. The drawing covers three
-   of the four." And 12px under it, in `--ink`, how to reach him, the address spelled out so it can be read and
-   copied: "Write to me at hello@rajiv.me." (the socials are in the footer) The right
+   `min(760px, 52vw)`: the name (`--t-sm`, `--accent`), then 20px under it the h1 "Software you don’t / have to think
+   about." (`clamp(38px, 4.6vw, 66px)`, weight 400, leading 1, `--hi`, two authored lines): big and quiet, a step
+   lighter than the rest of the display type. Under it one short paragraph (`clamp(17px, 1.3vw, 19px)`, leading 1.55,
+   `--muted`, max 28em, 36px down): "A software engineer in New Delhi, building web and native apps, their backends and
+   the infrastructure under them since 2019. Lately, language models inside real products. The aim stays the same:
+   fast to load, clear to use, boring to run." The values phrase (`.hl`) reads in `--ink` until the pointer is on the
+   paragraph; then `--accent` flows through it left to right, line after line, and ebbs back on leave. It is text
+   clipped to a `--accent` to `--ink` gradient (soft 40% to 60% edge, 250% wide, one strip across the line break)
+   whose position slides 100% to 0 over 1100ms `--ease`. Reduced motion: the colour switches at once. Touch shows
+   plain text. Then 28px under it, at `--t-xs`, the address alone as an underlined link (the header's Say hi and the
+   footer carry the rest). The right
    48% (to the screen edge) holds the doodle, centred with 96 / 56 / 40 px of air: a sketchbook line drawing of a
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local

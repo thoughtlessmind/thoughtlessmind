@@ -1,0 +1,139 @@
+---
+// Behind the page, in the gap a rubber-band overscroll opens past the top or the bottom (a trackpad in Chrome or
+// Safari): a fine dot grid. The pull lights it softly from the point on that edge under the pointer, brighter the harder the pull, and
+// each new pull sends a ripple out from there, like a drop on still water; the dots on its crest swell a
+// little, sway out and back as it passes, and warm to the logo orange. The canvas is fixed under the body's own background, so it is only ever seen in
+// that gap, and its loop stops once the light has faded and the ripples have passed (DESIGN.md §4).
+---
+
+<canvas class="edge" aria-hidden="true" data-edge></canvas>
+
+<script>
+  // ponytail: trackpad wheel only; a touch overscroll on a phone shows the plain gap.
+  const GAP = 15;        // grid pitch, px
+  const DEPTH = 160;     // how far from the edge the grid is drawn, px
+  const SPEED = 620;     // ripple speed, px/s
+  const RING = 1500;     // ripple life, ms
+  const TAU = 520;       // the light's decay, ms
+  const SWAY = 5;        // how far a ripple moves a dot at most, px
+  const QUIET = 120;     // a pause this long between wheel events makes the next one a new pull, ms
+
+  const cv = document.querySelector<HTMLCanvasElement>('[data-edge]');
+  const c = cv?.getContext('2d');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let raf = 0, dpr = 1, ink = '#ededea', logo = '#ff5f1f';
+  const GAP_MS = 140;    // the closest two ripples may start, ms
+  const MAX_RINGS = 10;
+  let side: 1 | -1 = 1, energy = 0, last = 0, lastWheel = 0, lastRing = 0, prevPush = 0, falling = false;
+  // Each ripple: when it started and the pointer's x then, its centre on the edge. The light follows the pointer too.
+  let rings: { t: number; x: number }[] = [];
+  let px = innerWidth / 2;
+  // Each dot of the grid: x and its depth from the edge.
+  let dots: { x: number; dep: number }[] = [];
+
+  function layout() {
+    const W = innerWidth, x0 = ((W % GAP) + GAP) / 2;
+    dots = [];
+    for (let dep = 0; dep < DEPTH; dep += GAP) for (let x = x0; x < W; x += GAP) dots.push({ x, dep });
+  }
+
+  function size() {
+    dpr = Math.min(2, devicePixelRatio || 1);
+    cv!.width = Math.round(innerWidth * dpr);
+    cv!.height = Math.round(innerHeight * dpr);
+    const css = getComputedStyle(document.documentElement);
+    ink = css.getPropertyValue('--ink').trim() || ink;
+    logo = css.getPropertyValue('--logo').trim() || logo;
+    layout();
+  }
+
+  function pull(dir: 1 | -1, push: number, x: number, now: number) {
+    px = x;
+    if (!raf) { size(); last = now; }
+    if (dir !== side) { side = dir; rings = []; energy = 0; }
+    // A new pull: after a pause, or a push that grows again while the last one was easing off (macOS keeps sending
+    // wheel events through the bounce, so a second pull mid-bounce shows up as rising deltas, not as a pause). Each
+    // one drops a fresh ripple; the earlier ones keep spreading, like stones in a pond.
+    if (push < prevPush) falling = true;
+    const fresh = now - lastWheel > QUIET || (falling && push > prevPush * 1.4 + 2);
+    if (fresh && !still && now - lastRing > GAP_MS) {
+      rings.push({ t: now, x });
+      if (rings.length > MAX_RINGS) rings.shift();
+      lastRing = now;
+      falling = false;
+    }
+    prevPush = push;
+    lastWheel = now;
+    energy = Math.min(1, energy + push / 260);
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+
+  function frame(now: number) {
+    const ctx = c!, W = innerWidth, H = innerHeight;
+    energy *= Math.exp(-(now - last) / TAU);
+    last = now;
+    rings = rings.filter((g) => now - g.t < RING);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    const cy = side === 1 ? 0 : H, reach = Math.max(420, W * 0.45);
+    // The dots fade with the light and the last ripple, so they never blink off when the loop stops.
+    const present = Math.min(1, Math.max(energy * 3, ...rings.map((g) => 1 - (now - g.t) / RING), 0));
+    for (const p of dots) {
+      const x = p.x, y = side === 1 ? 6 + p.dep : H - 6 - p.dep;
+      // Thinning out away from the edge, so it reads as light falling into the gap, not a hard band.
+      const fade = 1 - p.dep / DEPTH;
+      const dy = y - cy;
+      const glow = energy * Math.max(0, 1 - Math.hypot(x - px, dy) / reach) ** 2;
+      // Each ripple also moves the dots it passes, along the line from its centre: pushed out on the leading edge,
+      // drawn back behind it (the slope of the crest), so the grid swells and settles like water. Ripples add up.
+      let crest = 0, ox = 0, oy = 0;
+      for (const g of rings) {
+        const age = (now - g.t) / RING, r = SPEED * (now - g.t) / 1000, rx = x - g.x, d = Math.hypot(rx, dy) || 1;
+        const w = (d - r) / 26, fall = (1 - age) ** 2, bump = Math.exp(-w * w);
+        crest = Math.max(crest, bump * fall);
+        const push = -SWAY * 2.33 * w * bump * fall;
+        ox += (rx / d) * push; oy += (dy / d) * push;
+      }
+      const a = fade * (0.12 * present + 0.55 * glow + 0.6 * crest);
+      const rad = 0.7 + 0.8 * crest + 0.3 * glow;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = ink;
+      ctx.beginPath(); ctx.arc(x + ox, y + oy, rad, 0, 7); ctx.fill();
+      if (crest > 0.05) {
+        ctx.globalAlpha = a * crest;
+        ctx.fillStyle = logo;
+        ctx.beginPath(); ctx.arc(x + ox, y + oy, rad, 0, 7); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (energy > 0.01 || rings.length) raf = requestAnimationFrame(frame);
+    else { raf = 0; ctx.clearRect(0, 0, W, H); }
+  }
+
+  // One cheap check per wheel event, no scroll listener.
+  if (cv && c)
+    addEventListener(
+      'wheel',
+      (e) => {
+        const el = document.documentElement, now = performance.now();
+        if (e.deltaY < 0 && el.scrollTop <= 0) pull(1, -e.deltaY, e.clientX, now);
+        else if (e.deltaY > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 1) pull(-1, e.deltaY, e.clientX, now);
+      },
+      { passive: true },
+    );
+</script>
+
+<style is:global>
+  /* The gap wears the page's own ground: --bg under the gloss's top row (--gloss-edge), a band that is the same
+     colour all the way down, so it meets the page top seamlessly however far the pull has moved the page. */
+  .edge {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--gloss-edge), var(--bg);
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+</style>

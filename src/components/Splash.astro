@@ -27,6 +27,8 @@
   html.splash:not(.docked) .mark { opacity: 0; }
 
   html.splash:not(.go) .rise { opacity: 0; }
+  /* The nav's underline waits with the links, then fades in as they rise. */
+  html.splash:not(.go) .nav-line { opacity: 0; }
   html.go .rise { animation: splash-rise 800ms var(--ease) both; animation-delay: calc(var(--d, 0) * 1ms); }
   /* A screen taller than the landing shows what follows it: that waits too, and rises with the last fact row. */
   html.splash:not(.go) :is(main > :not(:first-child), main ~ footer) { opacity: 0; }

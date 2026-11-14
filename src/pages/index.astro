@@ -122,21 +122,13 @@ const person = {
         <span class="name rise" style="--d:120" data-hero-name>{SITE.name}<span class="sr-only">,</span></span>
         <span class="st rise" style="--d:190">Software you don’t <br />have to think about.</span>
       </h1>
-      <div class="intro">
-        <p class="rise" style="--d:300">
-          I’m a software engineer in New Delhi. I’ve been building web and native apps since {SITE.since}, along with
-          the backends behind them and the infrastructure they run on.
-        </p>
-        <p class="rise" style="--d:340">
-          These days most of my time goes to putting language models to work inside real products. The goal hasn’t
-          changed: <span class="hl">software that’s fast to load, clear to use and boring to run</span>.
-        </p>
-      </div>
-      <p class="aside rise" style="--d:380">
-        Off screen: astronomy, rockets, physics and sport. The drawing covers three of the four.
+      <p class="intro rise" style="--d:300">
+        A software engineer in New Delhi, building web and native apps, their backends and the infrastructure under
+        them since {SITE.since}. Lately, language models inside real products. The aim stays the
+        same: <span class="hl">fast to load, clear to use, boring to run</span>.
       </p>
-      <p class="reach rise" style="--d:420">
-        Write to me at <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+      <p class="reach rise" style="--d:380">
+        <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>
       </p>
     </div>
   </section>
@@ -340,31 +332,32 @@ const person = {
   }
   .name {
     display: block;
-    font-size: var(--t-m);
+    font-size: var(--t-sm);
     line-height: 1.2;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
     color: var(--accent);
   }
+  /* The headline a step lighter than the rest of the display type: big and quiet, not heavy. */
   .st {
     display: block;
-    margin-top: 16px;
-    font-size: var(--t-xl);
-    line-height: 0.98;
+    margin-top: 20px;
+    font-size: clamp(38px, 4.6vw, 66px);
+    font-weight: 400;
+    line-height: 1;
     letter-spacing: -0.045em;
+    color: var(--hi);
   }
-  /* About in two short paragraphs, then a muted line with the person and the ways to reach him. */
+  /* One short paragraph in --muted, the values phrase in --ink, then the address. */
   .intro {
-    max-width: 31em;
-    margin-top: 44px;
-    font-size: var(--t-sm);
-    line-height: 1.45;
-    letter-spacing: -0.01em;
+    max-width: 28em;
+    margin-top: 36px;
+    font-size: clamp(17px, 1.3vw, 19px);
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    color: var(--muted);
     text-wrap: pretty;
   }
-  .intro p + p {
-    margin-top: 16px;
-  }
-  /* The values phrase reads as plain text until the pointer is on the paragraphs. Then the orange flows through it
+  /* The values phrase reads as plain text until the pointer is on the paragraph. Then the orange flows through it
      left to right, line after line (the gradient spans the phrase as one strip), and ebbs back on leave. */
   .hl {
     background: linear-gradient(90deg, var(--accent) 40%, var(--ink) 60%) 100% 0 / 250% 100% no-repeat;
@@ -382,19 +375,9 @@ const person = {
       background-position: 0 0;
     }
   }
-  /* The person in one muted line, then how to reach him in --ink with the address spelled out. */
-  .aside,
   .reach {
-    max-width: 42em;
-    text-wrap: pretty;
-  }
-  .aside {
-    margin-top: 20px;
-    color: var(--muted);
-    text-wrap: balance;
-  }
-  .reach {
-    margin-top: 12px;
+    margin-top: 28px;
+    font-size: var(--t-xs);
   }
   .sec {
     padding-top: 120px;
