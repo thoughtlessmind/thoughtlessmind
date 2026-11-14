@@ -87,7 +87,9 @@
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   let pouring: ViewTransition | undefined;
   const pour = (from: Element, apply: () => void) => {
-    if (still.matches || !document.startViewTransition) return apply();
+    if (!document.startViewTransition) return apply();
+    // Reduced motion: no pour, but no full-screen brightness jump either; the themes cross-fade.
+    if (still.matches) return void document.startViewTransition(apply);
     const knobs = roll();
     const b = from.getBoundingClientRect();
     const x = b.left + b.width / 2, y = b.top + b.height / 2;

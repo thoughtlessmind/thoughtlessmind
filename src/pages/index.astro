@@ -177,7 +177,7 @@ const person = {
         {
           posts.map((p) => (
             <li>
-              <PostCard post={p} />
+              <PostCard post={p} wide />
             </li>
           ))
         }
@@ -504,53 +504,6 @@ const person = {
     font-size: var(--t-xs);
     color: var(--muted);
     text-wrap: pretty;
-  }
-  /* On the home page a post's cover takes the shared right-hand column, at 2:1 so the row stays about as tall as its
-     text (the /blogs list keeps its smaller 16:10 cover). */
-  @media (min-width: 721px) {
-    #blogs :global(.post) {
-      grid-template-columns: minmax(0, 1fr) var(--media);
-      gap: 48px;
-    }
-    #blogs :global(.cover) {
-      aspect-ratio: 2 / 1;
-    }
-  }
-  /* After the post rows, the way to the rest: a row of its own, the arrow in orange. */
-  .all {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding-block: 22px;
-    border-block: 1px solid var(--line);
-    font-size: var(--t-sm);
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    transition: color 200ms var(--ease);
-  }
-  @media (hover: hover) {
-    .all:hover {
-      color: var(--accent);
-    }
-  }
-  .all:focus-visible {
-    color: var(--accent);
-  }
-  .all span {
-    color: var(--accent);
-  }
-  .all:active {
-    color: var(--accent);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .all span {
-      transition: translate 200ms var(--ease);
-    }
-  }
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .all:hover span {
-      translate: 6px 0;
-    }
   }
   /* Experience as a timeline that keeps the text edge: each entry is the job (logo tile, role and company, one line
      on the product, the work) on the edge, and its dates in the right-hand column where the covers and stills sit.

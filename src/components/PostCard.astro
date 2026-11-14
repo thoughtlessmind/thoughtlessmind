@@ -6,13 +6,15 @@ import { cover, iso, minutes, month, type Post } from '../lib/blogs';
 
 interface Props {
   post: Post;
+  /** The cover in the shared right-hand column (`--media`, 2:1) from 721px: the home page and "More blogs". */
+  wide?: boolean;
 }
-const { post } = Astro.props;
+const { post, wide = false } = Astro.props;
 const { title, description, date, code } = post.data;
 const art = cover(post.id);
 ---
 
-<a class="post" href={`/blogs/${post.id}`}>
+<a class:list={['post', { wide }]} href={`/blogs/${post.id}`}>
   <span class="pc">
     <span class="pt">{title}</span>
     <span class="cs">{description}</span>
@@ -117,6 +119,16 @@ const art = cover(post.id);
     .post:hover .cover :global(svg),
     .post:hover .cover-code code {
       transform: scale(1.03);
+    }
+  }
+  /* Wide: the cover takes the shared right-hand column at 2:1, so the row stays about as tall as its text. */
+  @media (min-width: 721px) {
+    .wide {
+      grid-template-columns: minmax(0, 1fr) var(--media);
+      gap: 48px;
+    }
+    .wide .cover {
+      aspect-ratio: 2 / 1;
     }
   }
   /* Phone: the cover shrinks to a thumbnail beside the title only; the summary and date run the full width under

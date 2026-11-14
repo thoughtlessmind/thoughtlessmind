@@ -29,6 +29,9 @@
   /* Experience's logo tiles: a light surface so a black mark reads on dark; on light, white with a --line border. */
   --tile: #f3f2ee;
   --tile-edge: transparent;
+  /* The Say hi popover: a raised layer, lighter than the page in both themes (--panel on dark, white on light, so
+     the text orange keeps AA on it). */
+  --raised: var(--panel);
   /* Selected text shows the other theme: its page as the ground, its text orange as the letters (4.6:1 here,
      6.7:1 on light), so a selection reads as the site turned inside out and both pass AA. */
   --sel-bg: #f3f2ee;
@@ -71,8 +74,16 @@
     --sel-ink: #ff5f1f;
     --shadow: rgba(38, 34, 26, 0.14);
     --tile: #ffffff;
+    --raised: #ffffff;
     --tile-edge: var(--line);
     color-scheme: light;
+  }
+}
+/* More contrast: hairlines and frames (the Say hi pill, covers, stills, the popover) at 40% of the text colour. */
+@media (prefers-contrast: more) {
+  :root {
+    --frame: color-mix(in oklab, var(--ink) 40%, transparent) !important;
+    --line: color-mix(in oklab, var(--ink) 40%, transparent) !important;
   }
 }
 :root[data-theme="light"] {
@@ -87,6 +98,7 @@
   --sel-ink: #ff5f1f;
   --shadow: rgba(38, 34, 26, 0.14);
   --tile: #ffffff;
+  --raised: #ffffff;
   --tile-edge: var(--line);
   color-scheme: light;
 }
@@ -232,6 +244,13 @@
       padding-block: calc(env(safe-area-inset-top, 0px) + var(--pt)) 12px;
     }
   }
+  /* Reduced transparency: the lifted bar is solid --bg, no blur. */
+  @media (prefers-reduced-transparency: reduce) {
+    .top {
+      background: color-mix(in oklab, var(--bg) calc(var(--lift) * 100%), transparent);
+      backdrop-filter: none;
+    }
+  }
   @keyframes lift {
     to {
       --lift: 1;
@@ -375,6 +394,17 @@
   .theme:focus-visible {
     color: var(--accent);
   }
+  /* Press answers on pointer-down, touch included (:active never sticks): the colour, and the buttons give a
+     little (below). */
+  .top nav a:active,
+  .theme:active,
+  .top .x:active,
+  .hi:active,
+  .hi-copy:active,
+  .hi-pop li a:active > span:first-child,
+  .ul:active {
+    color: var(--accent);
+  }
 
   /* Reach: the X icon and "Say hi" on the right, before the theme switch. Say hi opens a native popover under the
      header's right edge with the ways to write (email with a copy button, LinkedIn, X). On a phone the X icon goes:
@@ -439,7 +469,7 @@
     padding: 8px;
     border: 1px solid var(--line);
     border-radius: 14px;
-    background: var(--bg);
+    background: var(--raised);
     color: var(--ink);
     font-size: var(--t-xs);
     box-shadow: 0 4px 10px -6px var(--shadow), 0 18px 40px -16px var(--shadow);
@@ -500,6 +530,23 @@
   }
   .hi-pop li a:focus-visible > span:first-child {
     color: var(--accent);
+  }
+  /* The buttons give a little under the finger (after the rules above, so their transitions win). */
+  @media (prefers-reduced-motion: no-preference) {
+    .hi,
+    .hi-copy,
+    .theme {
+      transition-property: color, border-color, scale;
+      transition-duration: 200ms, 200ms, 100ms;
+      transition-timing-function: var(--ease);
+    }
+    .hi:active,
+    .hi-copy:active {
+      scale: 0.96;
+    }
+    .theme:active {
+      scale: 0.9;
+    }
   }
   @media (prefers-reduced-motion: no-preference) {
     .hi-pop {
@@ -647,6 +694,40 @@
     }
     .hero .art .doodle {
       --k: 1.8;
+    }
+  }
+
+  /* "Read all N posts" (the home page's Blogs and a post's More blogs): a row of its own between hairlines after the
+     post rows, the arrow in orange at the far end, sliding 6px on hover. */
+  .all {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-block: 22px;
+    border-block: 1px solid var(--line);
+    font-size: var(--t-sm);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    transition: color 200ms var(--ease);
+  }
+  @media (hover: hover) {
+    .all:hover {
+      color: var(--accent);
+    }
+  }
+  .all:focus-visible,
+  .all:active,
+  .all span {
+    color: var(--accent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .all span {
+      transition: translate 200ms var(--ease);
+    }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .all:hover span {
+      translate: 6px 0;
     }
   }
 

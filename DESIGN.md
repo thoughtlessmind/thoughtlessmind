@@ -45,12 +45,13 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 | `--frame`  | `--ink` at 16%          | `--ink` at 16%        | the 1px border round post covers and project stills (no fill) |
 | `--tile`   | `#f3f2ee`               | `#ffffff`             | Experience's logo tiles, light in both themes so a black mark reads on dark |
 | `--tile-edge` | `transparent`        | `--line`              | the tile's 1px border, so a white tile still reads on the light page |
+| `--raised` | `--panel`               | `#ffffff`             | the Say hi popover, a raised layer (text orange 6.1:1 / 5.2:1 on it) |
 | `--shadow` | `rgba(0,0,0,.55)`       | `rgba(38,34,26,.14)`  | the lifted header's drop shadow, nothing else |
 | `--sel-bg` | `#f3f2ee`               | `#02070a`             | selected text's ground: the other theme's page |
 | `--sel-ink`| `#c2410c`               | `#ff5f1f`             | selected text: the other theme's text orange (4.6:1 / 6.7:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
-`data-theme="light"`. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
+`data-theme="light"`. Under `prefers-contrast: more`, `--line` and `--frame` both go to `--ink` at 40%. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
 footer's star field, never running text.
 
 Code in posts uses Shiki's `github-dark-default` and `github-light-default` on `--panel`, both themes emitted as
@@ -75,8 +76,8 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   28px; every link scrolls to its home section, from any page, and the blogs index is reached from the section's
   "All blogs"), then on the right `.reach` (the X icon, 17px, and "Say hi", a pill with a 1px `--frame` border) and the
   theme switch. "Say hi" opens a native popover (`#say-hi`, light dismiss and Esc built in) anchored 10px under it
-  (84px down without anchor positioning): a muted line, then Email (mailto, with a Copy button that reads "Copied" for
-  1.6s), LinkedIn and X, split by `--line` hairlines, on `--bg` with a 1px `--line` border, 14px radius and the
+  (84px down without anchor positioning): a muted line, then Email (mailto, with a Copy button that reads "Copied", announced politely, for
+  1.6s), LinkedIn and X, split by `--line` hairlines, on `--raised` (a layer lighter than the page, so it reads apart from it and from the lifted bar) with a 1px `--line` border, 14px radius and the
   header's shadows. It fades and drops 6px in over 180 ms; under reduced motion it just appears. At 640px and under
   the X icon goes (X is in the popover). The current link has a small `--accent` underline (`.nav-line`: 16 x 2px,
   radius 1px, 5px under the nav, centred under the label), so no label moves: `aria-current="page"` on the blogs
@@ -88,7 +89,8 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   - **Blended, then lifted**: at scroll 0 it is no surface at all. One registered property, `--lift` (0 to 1), drives
     the bar: background `--bg` mixed in at up to 80%, `backdrop-filter: blur(16px) saturate(160%)`, a `--line`
     hairline, two offset shadows in `--shadow` (`0 4px 10px -6px`, `0 14px 32px -16px`), and padding compacting from
-    the resting 76px to 56px. See §4 for what moves it.
+    the resting 76px to 56px. See §4 for what moves it. Under `prefers-reduced-transparency` the bar is solid `--bg`
+    with no blur.
   - **Reading line** (`progress`, post pages): a 2px `--accent` line along the header's bottom edge, filling from the
     left with the page's scroll.
 - **Theme switch** (`ThemeToggle.astro`): an icon button (20px, 32px hit area, drawn in Phosphor's regular weight)
@@ -117,7 +119,10 @@ worst token is 5.2:1 on the light panel and 6.0:1 on the dark one.
   list, "Read all 12 posts"). Nothing fades. Hover rules sit under `@media (hover: hover)`, so a tap on a touch
   screen never leaves anything orange; `:focus-visible` gets the same colour. Press (`:active`, so it works on touch
   too and never sticks): a post or project row's title takes `--accent` and its cover or still gives to 0.97 over
-  160 ms (the colour only under reduced motion); "Read all" turns `--accent`. The hover moments that are not links,
+  160 ms (the colour only under reduced motion); "Read all" turns `--accent`. Every other link and control (nav, text
+  links, the post page's Back, contents, Copy and Markdown, the popover's rows) turns `--accent` on press, and the
+  Say hi pill and Copy chip give to 0.96 and the theme switch to 0.9 over 100 ms (colour only under reduced motion).
+  The hover moments that are not links,
   the landing phrase (§5) and the footer's star field (§4), are slow and large, so they do
   not read as links.
 - **Browser surfaces**: `::selection` turns the site inside out, `--sel-ink` on `--sel-bg` (the other theme's text
@@ -184,7 +189,8 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   pours are alike: every click rolls each knob inside a range that still reads as liquid: 850 to 1250 ms, ease-out
   power 1.7 to 2.6, and per wave its lobes (3 to 5, 6 to 9, 10 to 14), depth (4 to 8%, 2.5 to 5%, 1 to 3% of the
   radius, so the rim never dips more than 16%), speed (3 to 6, 4 to 7, 2 to 5 rad/s, either way round) and phase.
-  A click mid-pour starts a new one from the current state. Under reduced motion, or without view transitions, the
+  A click mid-pour starts a new one from the current state. Under reduced motion the themes cross-fade (the view
+  transition's default, about 250 ms), so there is no full-screen brightness jump; without view transitions the
   theme flips at once.
 - **Switch morph** (`global.css`, `.theme`): as the theme flips the icon morphs over 600 ms `--ease`. Sun to moon:
   the rays spin a quarter turn into the middle and vanish (opacity 200 ms), the orb grows by half (its outline
@@ -209,8 +215,8 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   devices only, not under reduced motion). On the project stills the css-only tooltip's tip rises 4px (200 ms) and
   Diver's outlines go from the accent at 45% to full (200 ms, a colour, so it stays under reduced motion and on
   keyboard focus). Press is in §3.
-- **Row reveal** (home page): every post row, "Read all", project row and Experience entry fades in as it scrolls
-  in, on its own CSS view timeline (`animation-range: entry 10% entry 60%`, linear, fill both): rows rise 12px,
+- **Row reveal** (home page, and a post's More blogs): every post row, "Read all", project row and Experience entry
+  fades in as it scrolls in, on its own CSS view timeline (`animation-range: entry 10% entry 60%`, linear, fill both): rows rise 12px,
   Experience entries only fade so the nodes stay on the rail. No script; a nav jump lands with rows already shown.
   Only under `screen`, `prefers-reduced-motion: no-preference` and `@supports (animation-timeline: view())`; anywhere
   else the rows are simply there. The timeline sits in its own `:root` rule (see Header lift).
@@ -333,8 +339,8 @@ Sections, in order:
 
 Sections sit 120px apart (88px on a phone). The footer is the layout's (§3).
 
-**Post row** (`components/PostCard.astro`, on the home page and in "More blogs", which uses the same split from
-1000px): on a `--line` hairline with 24px padding, the text on the left (the title in `--t-sm`, the muted summary,
+**Post row** (`components/PostCard.astro`, on the home page, /blogs and "More blogs"; the home page and More blogs
+pass `wide`, which from 721px puts the cover in the `--media` column at 2:1, 48px from the text): on a `--line` hairline with 24px padding, the text on the left (the title in `--t-sm`, the muted summary,
 max 36em, then "Oct 2026 · 4 min read" in `--muted` 14px under it) and, 32px away, a 16:10 cover with a `--frame`
 border and no fill, `clamp(112px, 9vw, 136px)`
 wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in
@@ -373,8 +379,11 @@ minmax(0, 1fr)`, gap 64px, so the article is centred (it gives up its centre nea
   (`.by`, muted, max 44em, links in `--ink`), for the reader who came from a search and has not seen the home page:
   "Written by Rajiv Kumar, a software engineer in New Delhi. If something here is wrong or unclear, write to me at
   hello@rajiv.me."
-- **More blogs**, full width under a hairline: the h2 with "All blogs" on the right and the three newest other
-  posts as `PostCard`s (three columns, two from 721px, one on a phone).
+- **More blogs**, 120px under the article (88px on a phone), laid out exactly as the home page's Blogs (§5): the h2
+  (`--t-l`) and the same note at the left margin, then 40px down (24px on a phone) the three newest other posts as
+  wide `PostCard` rows on the home page's text edge (indented `clamp(0px, 7.8vw, 112px)`, at most 1040px wide, covers
+  in the `--media` column at 2:1), then the "Read all N posts" row (`.all`, shared in `global.css`). Rows fade up as
+  they scroll in, like the home page's row reveal (§4).
 
 Under 1200px one column on the 44em measure: Back, then the date and reading time stacked, then title, dek, cover,
 prose, then the contents and the Markdown controls. At 720px and under the contents are left out. The header's reading line (§3) runs on every post.

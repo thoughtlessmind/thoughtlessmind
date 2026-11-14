@@ -15,15 +15,16 @@ export async function getStaticPaths() {
   const posts = await getPosts();
   return posts.map((post) => ({
     params: { slug: post.id },
-    props: { post, more: posts.filter((p) => p.id !== post.id).slice(0, 3) },
+    props: { post, more: posts.filter((p) => p.id !== post.id).slice(0, 3), total: posts.length },
   }));
 }
 
 interface Props {
   post: Post;
   more: Post[];
+  total: number;
 }
-const { post, more } = Astro.props;
+const { post, more, total } = Astro.props;
 const { title, description, date, updated, canonical } = post.data;
 const { Content, headings } = await render(post);
 const toc = headings.filter((h) => h.depth === 2);
@@ -142,14 +143,19 @@ const article = {
   {
     more.length > 0 && (
       <section class="more" aria-labelledby="more-h">
-        <div class="more-head">
+        <div>
           <h2 id="more-h">More blogs</h2>
-          <a class="ul hit" href="/blogs">All blogs</a>
+          <p class="note">Notes on building for the web, and the problems I would rather solve once.</p>
         </div>
-        <div class="rows">
-          {more.map((p) => (
-            <PostCard post={p} />
-          ))}
+        <div class="list">
+          <ul>
+            {more.map((p) => (
+              <li>
+                <PostCard post={p} wide />
+              </li>
+            ))}
+          </ul>
+          <a class="all" href="/blogs">Read all {total} posts<span aria-hidden="true">→</span></a>
         </div>
       </section>
     )
@@ -279,7 +285,11 @@ const article = {
   .back:focus-visible,
   .toc a:focus-visible,
   .copy:focus-visible,
-  .md:focus-visible {
+  .md:focus-visible,
+  .back:active,
+  .toc a:active,
+  .copy:active,
+  .md:active {
     color: var(--accent);
   }
   .back svg {
@@ -443,41 +453,45 @@ const article = {
     border-top: 1px solid var(--line);
   }
 
-  /* More blogs spans the full width under a hairline. */
+  /* More blogs reads like the home page's Blogs (DESIGN.md §5): the h2 and its note at the margin, then the rows 40px
+     under them on the home page's text edge (indented 112px at 1440, at most 1040px wide), covers in the --media
+     column, and "Read all" as the last row. Each row fades up as it scrolls in. */
   .more {
-    margin-top: 136px;
-    padding-top: 40px;
-    border-top: 1px solid var(--line);
+    margin-top: 120px;
   }
-  .more-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-  }
-  .more-head h2 {
+  .more h2 {
     font-size: var(--t-l);
     font-weight: 500;
     line-height: 1.15;
     letter-spacing: -0.02em;
   }
-  .rows {
-    margin-top: 32px;
+  .note {
+    max-width: 36em;
+    margin-top: 12px;
+    color: var(--muted);
+    text-wrap: pretty;
   }
-  /* From 1000px, like the home page's Blogs: the heading and link in the first column, the rows from the axis. */
-  @media (min-width: 1000px) {
-    .more {
-      display: grid;
-      grid-template-columns: var(--cols);
-      align-items: start;
+  .list {
+    max-width: 1040px;
+    margin-top: 40px;
+    margin-left: clamp(0px, 7.8vw, 112px);
+  }
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      translate: 0 12px;
     }
-    .more-head {
-      display: grid;
-      justify-items: start;
-      gap: 12px;
-    }
-    .rows {
-      margin-top: 0;
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .list li,
+      .all {
+        animation: row-in linear both;
+      }
+      :root :is(.list li, .all) {
+        animation-timeline: view();
+        animation-range: entry 10% entry 60%;
+      }
     }
   }
 
@@ -518,7 +532,11 @@ const article = {
       margin-top: 24px;
     }
     .more {
-      margin-top: 104px;
+      margin-top: 88px;
+    }
+    .list {
+      margin-top: 24px;
+      margin-left: 0;
     }
   }
 </style>

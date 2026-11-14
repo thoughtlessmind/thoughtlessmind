@@ -50,7 +50,8 @@
     text-decoration-thickness: 2px;
   }
 }
-.prose a:focus-visible {
+.prose a:focus-visible,
+.prose a:active {
   color: var(--accent);
   text-decoration-thickness: 2px;
 }
