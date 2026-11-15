@@ -20,9 +20,11 @@ export interface Props {
   type?: 'website' | 'article';
   /** Structured data for the page (schema.org), as one object. */
   jsonLd?: Record<string, unknown>;
+  /** false keeps the page out of search: noindex and no canonical (the 404 page). */
+  index?: boolean;
 }
 
-const { title = SITE.title, description = SITE.description, splash = false, current, progress = false, type = 'website', jsonLd } = Astro.props;
+const { title = SITE.title, description = SITE.description, splash = false, current, progress = false, type = 'website', jsonLd, index = true } = Astro.props;
 // No trailing slash (trailingSlash: 'never'); the root stays `/`.
 const path = Astro.url.pathname;
 const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Astro.site);
@@ -37,7 +39,7 @@ const card = new URL('/og.png', Astro.site).href;
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {index ? <link rel="canonical" href={canonical} /> : <meta name="robots" content="noindex" />}
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content={SITE.brand} />
     <meta property="og:title" content={title} />
@@ -98,6 +100,8 @@ const card = new URL('/og.png', Astro.site).href;
             const root = document.documentElement;
             const q = new URLSearchParams(location.search).get('splash');
             if (q === 'off') return;
+            // Crawlers and audits get the page at once: each of their visits looks fresh, so they would always wait on it.
+            if (/bot|crawl|spider|slurp|lighthouse|headless/i.test(navigator.userAgent)) return;
             if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             if (q !== 'on') {
               const type = performance.getEntriesByType('navigation')[0]?.type;

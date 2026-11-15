@@ -42,13 +42,18 @@ const article = {
   description,
   datePublished: iso(date),
   dateModified: iso(updated ?? date),
-  author: { '@type': 'Person', name: SITE.name, url: SITE.url },
+  // The home page's Person, by @id, so search engines tie every post to one author.
+  author: { '@type': 'Person', '@id': `${SITE.url}/#person`, name: SITE.name, url: SITE.url },
+  publisher: { '@id': `${SITE.url}/#person` },
   image: `${SITE.url}/og.png`,
   mainEntityOfPage: url,
 };
+// The name only while the title still fits a search result (about 60 characters).
+const pageTitle = title.length > 46 ? title : `${title}, ${SITE.name}`;
 ---
 
-<BaseLayout title={`${title}, Rajiv Kumar`} description={description} current="blogs" progress type="article" jsonLd={article}>
+<BaseLayout title={pageTitle} description={description} current="blogs" progress type="article" jsonLd={article}>
+  <link slot="head" rel="alternate" type="text/markdown" href={md} title="Markdown" />
   <meta slot="head" property="article:published_time" content={date.toISOString()} />
   {updated && <meta slot="head" property="article:modified_time" content={updated.toISOString()} />}
   {/* From 1200px a sticky rail on the left holds Back, the date and reading time, the contents and the Markdown

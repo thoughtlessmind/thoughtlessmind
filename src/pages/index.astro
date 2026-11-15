@@ -102,17 +102,34 @@ const jobs = [
 ];
 const mark =
   '<path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path>';
-// Who this is, for search engines and agents (schema.org). The job title is the real one; no employer here.
+// Who this is, for search engines and agents (schema.org): a profile page about one Person, whose @id the posts
+// name as their author. The job title is the real one; no employer here. `knowsAbout` repeats the page's own claims.
 const person = {
   '@context': 'https://schema.org',
-  '@type': 'Person',
-  name: SITE.name,
-  url: SITE.url,
-  jobTitle: SITE.role,
-  description: SITE.description,
-  email: `mailto:${SITE.email}`,
-  address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
-  sameAs: Object.values(SITE.socials),
+  '@graph': [
+    { '@type': 'WebSite', '@id': `${SITE.url}/#website`, url: SITE.url, name: SITE.brand, inLanguage: 'en', publisher: { '@id': `${SITE.url}/#person` } },
+    {
+      '@type': 'ProfilePage',
+      '@id': `${SITE.url}/#profile`,
+      url: SITE.url,
+      name: SITE.title,
+      isPartOf: { '@id': `${SITE.url}/#website` },
+      mainEntity: { '@id': `${SITE.url}/#person` },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${SITE.url}/#person`,
+      name: SITE.name,
+      alternateName: 'thoughtlessmind',
+      url: SITE.url,
+      jobTitle: SITE.role,
+      description: SITE.description,
+      email: `mailto:${SITE.email}`,
+      address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
+      knowsAbout: ['Web applications', 'Native apps', 'Backend development', 'Infrastructure', 'Large language models', 'Model Context Protocol', 'Evals'],
+      sameAs: Object.values(SITE.socials),
+    },
+  ],
 };
 ---
 

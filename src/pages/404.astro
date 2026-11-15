@@ -4,7 +4,7 @@ import Doodle from '../components/Doodle.astro';
 import { SITE } from '../consts';
 ---
 
-<BaseLayout title={`Page not found, ${SITE.name}`} description="There is nothing at this address.">
+<BaseLayout title={`Page not found, ${SITE.name}`} description="There is nothing at this address." index={false}>
   {/* The landing's frame and its drawing (global.css `.hero`): the telescope, still looking. */}
   <section class="hero" aria-labelledby="h1">
     <div class="hero-text">
@@ -20,7 +20,6 @@ import { SITE } from '../consts';
     </div>
     <div class="art"><Doodle /></div>
   </section>
-  <meta slot="head" name="robots" content="noindex" />
 </BaseLayout>
 
 <style>

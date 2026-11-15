@@ -49,7 +49,7 @@ content/blogs/ the posts, <slug>.md (frontmatter in content.config.ts)
 layouts/         BaseLayout (head with the link-preview card and JSON-LD, pre-paint script, skip link, header, main,
                  footer, splash)
 lib/blogs.ts   getPosts, cover, reading time, date formats
-pages/           index, blogs/index, blogs/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, rss.xml.ts,
+pages/           index, blogs/index, blogs/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, llms-full.txt.ts, rss.xml.ts,
                  404 (the landing doodle again)
 scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
                  planet.ts (the doodle's turning planet), blob.ts (the liquid blob's outline, for the theme pour),

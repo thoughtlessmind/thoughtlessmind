@@ -11,7 +11,11 @@ const first = posts.at(-1)?.data.date.getUTCFullYear();
 const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ? ` since ${first}` : ''}`;
 ---
 
-<BaseLayout title="Blogs, Rajiv Kumar" description="Notes on building for the web, and the problems I would rather solve once." current="blogs">
+<BaseLayout
+  title="Blogs by Rajiv Kumar, software engineer"
+  description="Rajiv Kumar on building for the web: React, TypeScript and CSS fixes, and the problems I would rather solve once."
+  current="blogs"
+>
   <div class="list">
     <header class="head">
       <h1>Blogs</h1>
