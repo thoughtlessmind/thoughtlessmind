@@ -14,7 +14,7 @@ export const SITE = {
     linkedin: 'https://www.linkedin.com/in/thoughtlessmind/',
     devto: 'https://dev.to/thoughtlessmind',
     stackoverflow: 'https://stackoverflow.com/users/11222282/rajiv',
-    x: 'https://x.com/d_rajivkumar',
+    x: 'https://x.com/rajiv_x_',
   },
   // The header nav, in the home page's section order. `spy` is the home page section the scroll spy matches.
   nav: [
