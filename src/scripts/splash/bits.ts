@@ -54,6 +54,9 @@ function sprites(env: Env, cwPx: number, rhPx: number) {
 }
 
 function init(env: Env) {
+  // A zero-size viewport (hidden frame, background prerender) leaves no field to deal; draw() shows the solid mark
+  // until a resize brings a real size. Without this the field is empty and init throws, leaving the splash up.
+  if (!env.W || !env.H) { G = null; return; }
   const cam = { x: env.C0[0], y: env.C0[1], s: env.S0 }, s = cam.s, d = env.dpr;
   const snap = (v: number) => Math.round(v * d) / d;
   const X = (u: number) => LX(cam, u), Y = (v: number) => LY(cam, v);

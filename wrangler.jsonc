@@ -1,5 +1,6 @@
 {
   "name": "thoughtlessmind",
+  "account_id": "1f1a6505e47bc9217a0d29ae2d661c0a",
   "compatibility_date": "2026-10-06",
   "assets": {
     "directory": "./dist",
