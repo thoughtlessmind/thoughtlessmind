@@ -408,6 +408,15 @@ const person = {
     background-clip: text;
     color: transparent;
   }
+  /* The text-clipped gradient hides a selection (the letters are transparent), so a selected phrase drops the clip
+     and reads like the rest of the selection. */
+  .hl::selection {
+    color: var(--sel-ink);
+    background-color: var(--sel-bg);
+  }
+  :global(.sel-fx) .hl::selection {
+    background-color: transparent;
+  }
   @media (prefers-reduced-motion: no-preference) {
     .hl {
       transition: background-position 1100ms var(--ease);

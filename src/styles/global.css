@@ -93,10 +93,13 @@
   /* The Say hi popover: a raised layer, lighter than the page in both themes (--panel on dark, white on light, so
      the text orange keeps AA on it). */
   --raised: var(--panel);
-  /* Selected text shows the other theme: its page as the ground, its text orange as the letters (4.6:1 here,
-     6.7:1 on light), so a selection reads as the site turned inside out and both pass AA. */
-  --sel-bg: #e4e7eb;
-  --sel-ink: #b23c0a;
+  /* Selected text: a soft wash of the logo orange laid into the page (30% here, 26% on light), with the text in the
+     text colour. A gentle highlight, not a flip to the other theme: 11.5:1 here, 11.2:1 on light. */
+  --sel-bg: #4f2112;
+  --sel-ink: var(--ink);
+  /* How the drawn selection (scripts/selection.ts) meets the page: lighten on dark, darken on light, so the wash
+     tints the ground and leaves the letters as they are. */
+  --sel-blend: lighten;
   /* The lifted header's drop shadow. */
   --shadow: rgba(0, 0, 0, 0.55);
   --sans: "Geist Variable", "Geist Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -136,8 +139,9 @@
     --hi: #000000;
     --accent: #b23c0a;
     --sig: linear-gradient(90deg, #9a3412, #b23c0a 70%, #c2410c);
-    --sel-bg: #03060c;
-    --sel-ink: #ff5f1f;
+    --sel-bg: #ebc4b6;
+    --sel-ink: var(--ink);
+    --sel-blend: darken;
     --shadow: rgba(24, 32, 48, 0.16);
     --tile: #ffffff;
     --raised: #f6f7f9;
@@ -169,8 +173,9 @@
   --hi: #000000;
   --accent: #b23c0a;
   --sig: linear-gradient(90deg, #9a3412, #b23c0a 70%, #c2410c);
-  --sel-bg: #03060c;
-  --sel-ink: #ff5f1f;
+  --sel-bg: #ebc4b6;
+  --sel-ink: var(--ink);
+  --sel-blend: darken;
   --shadow: rgba(24, 32, 48, 0.16);
   --tile: #ffffff;
   --raised: #f6f7f9;
@@ -229,10 +234,39 @@
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
-  /* Selected text turns --ink on an accent tint: AA on both themes, muted text included. */
+  /* Selected text turns --ink on a soft orange wash (--sel-bg): AA on both themes, muted text included. */
   ::selection {
     background: var(--sel-bg);
     color: var(--sel-ink);
+  }
+  /* The fading selection (scripts/selection.ts): with it running, the native highlight goes clear and text keeps its
+     own colour; the layer draws the wash under the header and fades it in and out. */
+  .sel-fx ::selection {
+    background: transparent;
+    color: inherit;
+  }
+  .sel-layer {
+    position: absolute;
+    inset: 0 auto auto 0;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: var(--sel-blend);
+    transition: opacity 260ms var(--ease);
+  }
+  .sel-layer.on {
+    opacity: 1;
+    transition-duration: 180ms;
+  }
+  .sel-layer i {
+    position: absolute;
+    border-radius: 2px;
+    background: var(--sel-bg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sel-layer {
+      transition: none;
+    }
   }
   time {
     font-variant-numeric: tabular-nums;

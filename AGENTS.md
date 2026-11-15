@@ -52,7 +52,7 @@ lib/blogs.ts   getPosts, cover, reading time, date formats
 pages/           index, blogs/index, blogs/[slug] (+ [slug].md.ts, the Markdown copy), llms.txt.ts, llms-full.txt.ts, rss.xml.ts,
                  404 (the landing doodle again)
 scripts/         splash/ (index: engine, gate hand-off, dock, tint; kit: mark geometry; bits: the splash),
-                 planet.ts (the doodle's turning planet), blob.ts (the liquid blob's outline, for the theme pour),
+                 planet.ts (the doodle's turning planet), selection.ts (the fading text selection), blob.ts (the liquid blob's outline, for the theme pour),
                  field.ts (the footer's star field) (DESIGN.md §4)
 styles/          global.css (tokens, @theme, base, header, landing frame, theme switch, links, view transitions),
                  prose.css (posts)

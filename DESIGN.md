@@ -53,12 +53,12 @@ rule is hand-written); `@theme inline` maps `--sans` and `--mono` into preflight
 | `--tile-edge` | `transparent`        | `--line`              | the tile's 1px border, so a white tile still reads on the light page |
 | `--raised` | `--panel`               | `#f6f7f9`             | the Say hi popover, a raised layer (text orange 6.1:1 / 5.5:1 on it) |
 | `--shadow` | `rgba(0,0,0,.55)`       | `rgba(24,32,48,.16)`  | the lifted header's drop shadow, nothing else |
-| `--sel-bg` | `#e4e7eb`               | `#03060c`             | selected text's ground: the other theme's page |
+| `--sel-bg` | `#4f2112`               | `#ebc4b6`             | selected text's ground: the logo orange washed into the page (30% / 26%) |
 | `--gloss`  | cool sheen and blooms   | white sheen and blooms | a layer over the whole page that scrolls with it (`body::after`): a sheen over the top, soft blooms left then right every 180svh, each easing out over several stops |
 | `--gloss-blend` | `normal`           | `overlay`             | how the gloss meets the page: on light, overlay lifts the pale ground towards white but barely touches dark text |
 | `--sig`    | `#ff5f1f` to `#ffb877`  | `#9a3412` to `#c2410c` | the header's written name: a gradient along the writing (large text, 3:1 or better on light) |
 | `--gloss-edge` | the sheen's top row | the sheen's top row | the overscroll gap's ground: `--gloss` along the page's top edge, held as a vertical band (top half of the screen) |
-| `--sel-ink`| `#b23c0a`               | `#ff5f1f`             | selected text: the other theme's text orange (4.8:1 / 6.7:1) |
+| `--sel-ink`| `--ink`                 | `--ink`               | selected text: the text colour (11.5:1 / 11.2:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
 `data-theme="light"`. Under `prefers-contrast: more`, `--line` and `--frame` both go to `--ink` at 40% `--draw` and `--lede` to `--ink`. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
@@ -143,8 +143,8 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
   The hover moments that are not links,
   the landing phrase (§5) and the footer's star field (§4), are slow and large, so they do
   not read as links.
-- **Browser surfaces**: `::selection` turns the site inside out, `--sel-ink` on `--sel-bg` (the other theme's text
-  orange on its page: burnt orange on paper in dark, brand orange on black in light), the caret is `--accent`, the scrollbar is
+- **Browser surfaces**: `::selection` is a soft orange wash, `--sel-ink` (the text colour) on `--sel-bg` (the logo
+  orange laid 30% into the dark page, 26% into the light one), a gentle highlight rather than a flip to the other theme, and it fades in and out (§4, Selection); the caret is `--accent`, the scrollbar is
   thin in half-`--muted` on transparent, and every `time` uses tabular numbers.
 - Hairlines between label rows (the landing facts, Lately), between blogs list rows and years, and under the lifted
   header. No boxes or gradients; the lifted header is the only shadow. Code sits on `--panel`; project stills and post
@@ -228,6 +228,20 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   the shade's outline is two round-capped quarter circles turned to end at the same points, clipped to the orb.
   (Until 14 Nov the moon was cut with a mask and a clip, which left long, square-cut horns.) Without CSS trig the
   halves don't turn and the moon shows as an eclipsed orb. Under reduced motion it swaps at once.
+- **Doodle hover ink**: with a mouse over the landing (and 404) doodle, its lines move from `--draw` to `--ink`
+  (near-black on light, near-white on dark), spreading out from where the pointer came in. Every line is painted by
+  one `radialGradient` (`#d-ink`: `--ink` to 82% of its radius, then a soft edge to `--draw`); the squashed rings, the
+  tilted planet and the traced groups get copies with their inverse transform so the circle lands in the same place on
+  all of them. On enter the radius grows from 0 to the farthest corner over 900 ms, ease-out cubic; on leave the
+  circle moves to the exit point (unseen, it still covers everything) and closes there over 700 ms, ease-in-out.
+  Coming back mid-exit regrows from where it is. One short rAF only while the radius changes. Mouse only (touch has
+  no hover); under reduced motion it switches at once. The orange fill, flame and planet body keep their colours.
+- **Selection**: browsers can't transition `::selection`, so `scripts/selection.ts` draws it. It sets `html.sel-fx`
+  (the native highlight goes clear, so without the script the native one still shows), then on `selectionchange`,
+  once a frame, measures each selected text node's lines and places a rectangle per line in one `.sel-layer` under the
+  header (z 10). The layer blends with the page (`--sel-blend`: lighten on dark, darken on light), so letters keep
+  their colour and code blocks take the wash too. It fades in over 180 ms and out over 260 ms, `--ease`; a resize
+  redraws a held selection. Nothing runs while idle. Under reduced motion it shows and hides at once.
 - **Header name**: the name beside the logo (§3) is shown when the hero's name has left the area under the header
   (an IntersectionObserver with the header's height as its top margin). It writes itself in: a `clip-path` inset
   opens left to right over 750 ms, linear, a steady pen speed, so the hand font reads as written. Scrolled back, it
