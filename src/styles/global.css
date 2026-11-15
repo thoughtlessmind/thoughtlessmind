@@ -659,12 +659,14 @@
       padding-inline: 8px;
     }
   }
-  @media (max-width: 340px) {
+  /* Under 360 there is no room for Say hi beside the nav: it goes, and the footer's links and the landing's address
+     carry the ways to write. */
+  @media (max-width: 359px) {
     :root .top nav {
       column-gap: 10px;
     }
-    .hi {
-      padding-inline: 6px;
+    .top .reach {
+      display: none;
     }
   }
 
@@ -870,7 +872,8 @@
     translate: 0;
   }
 
-  /* Phone: the same bar as a flex row, the mark left, the nav and the switch right. */
+  /* Phone: the same bar as a flex row, the mark left, Say hi and the switch right, and the nav centred in the room
+     between them, so the row balances instead of bunching at the left. */
   @media (max-width: 720px) {
     .top {
       display: flex;
@@ -878,11 +881,14 @@
     }
     .top .bar {
       flex: 1;
-      justify-content: flex-end;
       gap: 16px;
     }
     .top nav {
       gap: 20px;
+      margin-inline: auto;
+    }
+    .top .reach {
+      margin-left: 0;
     }
   }
 }

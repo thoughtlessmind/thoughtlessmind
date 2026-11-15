@@ -177,16 +177,6 @@ const person = {
       {
         jobs.map((j, i) => (
           <li class:list={['job', { cur: !j.to }]} style={`--t0:${i / Math.max(1, jobs.length - 1)};--t1:${(i + 1) / Math.max(1, jobs.length - 1)}`}>
-            <span class="when">
-              <time datetime={j.from[0]}>{j.from[1]}</time>
-              {j.to ? (
-                <>
-                  to <time datetime={j.to[0]}>{j.to[1]}</time>
-                </>
-              ) : (
-                <span class="till">to now</span>
-              )}
-            </span>
             <span class="node" aria-hidden="true" />
             <div class="what">
               <div class="who">
@@ -196,6 +186,16 @@ const person = {
                 <div>
                   <h3 class="pn">{j.role}</h3>
                   <p class="co">{j.company}</p>
+                  <p class="when">
+                    <time datetime={j.from[0]}>{j.from[1]}</time>
+                    {j.to ? (
+                      <>
+                        to <time datetime={j.to[0]}>{j.to[1]}</time>
+                      </>
+                    ) : (
+                      <span class="till">to now</span>
+                    )}
+                  </p>
                 </div>
               </div>
               <p class="cs">{j.text}</p>
@@ -560,8 +560,13 @@ const person = {
   .what {
     grid-area: 1 / 1;
   }
+  /* The dates sit under the company in the markup (read in that order); from 721px they are lifted into the
+     right-hand column, level with the top of the entry. */
   .when {
-    grid-area: 1 / 2;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--media);
     padding-top: 2px;
     font-size: var(--t-xs);
     line-height: 1.4;
@@ -667,27 +672,41 @@ const person = {
   .wk li::marker {
     color: var(--accent);
   }
-  /* Phone: no gutter, so no rail. The dates sit on one line over each job, which keeps the full width. */
+  /* Phone: no gutter, so the logo tiles become the nodes. Role, company and dates stack beside each tile, the rail
+     runs down from one tile to the next, and the text under them keeps the tile's indent, so the column reads as a
+     timeline. */
   @media (max-width: 720px) {
-    .job::before,
     .node {
       display: none;
     }
+    .job:not(:last-child)::before {
+      left: 21px;
+      top: 54px;
+      bottom: 10px;
+    }
     .job {
       grid-template-columns: minmax(0, 1fr);
-      padding-bottom: 40px;
+      padding-bottom: 36px;
+    }
+    .who {
+      align-items: flex-start;
     }
     .when {
-      grid-area: 1 / 1;
-      margin-bottom: 12px;
+      position: static;
+      width: auto;
+      margin-top: 4px;
       padding-top: 0;
     }
     .when time:first-child {
       display: inline;
       margin-right: 4px;
     }
-    .what {
-      grid-area: 2 / 1;
+    .job .cs,
+    .wk {
+      margin-left: 58px;
+    }
+    .job .cs {
+      margin-top: 12px;
     }
     .wk {
       padding-left: 18px;
@@ -1014,9 +1033,6 @@ const person = {
     #blogs li:nth-child(n + 4) {
       display: none;
     }
-    .still {
-      aspect-ratio: 2 / 1;
-    }
     .parts {
       grid-template-columns: minmax(0, 1fr);
       gap: 28px;
@@ -1025,13 +1041,44 @@ const person = {
     .soon {
       margin-top: 28px;
     }
+    /* A project row: the name, its status and, under them, the kind and years, beside a small still; the summary
+       and the link run the full width below. */
     .proj {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) 96px;
+      grid-template-areas: "t c" "s s" "g g";
+      gap: 0 16px;
       padding-block: 24px;
     }
+    .pj {
+      display: contents;
+    }
+    .pt {
+      grid-area: t;
+      align-self: center;
+    }
+    .pm {
+      flex-basis: 100%;
+    }
+    .proj .cs {
+      grid-area: s;
+      margin-top: 14px;
+    }
+    .go {
+      grid-area: g;
+      justify-self: start;
+    }
+    /* One cell the size of the frame, so the drawing stays centred in it at any scale. */
     .still {
-      order: -1;
+      grid-area: c;
+      grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+      aspect-ratio: 4 / 3;
+    }
+  }
+  /* The still as a thumbnail: the drawing shrinks to fit it whole. */
+  @container (max-width: 160px) {
+    .st-in {
+      width: max-content;
+      scale: 0.4;
     }
   }
 </style>

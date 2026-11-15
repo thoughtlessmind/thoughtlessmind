@@ -1,6 +1,7 @@
 ---
 // One post as a row: the title, summary, then the date and reading time on the left, the doodle cover on the right (or
-// its line of code, set large, when it has no cover yet). Used by the home page and a post's "More blogs". The
+// its line of code, set large, when it has no cover yet); on a phone just the text, as a row. Used by the home page,
+// /blogs and a post's "More blogs". The
 // cover morphs into the post's own cover on navigation: BaseLayout names it (`data-cover`) only for the card clicked.
 import { cover, iso, minutes, month, type Post } from '../lib/blogs';
 
@@ -134,36 +135,25 @@ const art = cover(post.id);
       aspect-ratio: 2 / 1;
     }
   }
-  /* Phone: the cover shrinks to a thumbnail beside the title only; the summary and date run the full width under
-     them, so the summary keeps a readable line. */
+  /* Phone: a plain row, no cover. The title, the summary held to two lines, then the date, at the full width. */
   @media (max-width: 720px) {
     .post {
-      grid-template-columns: minmax(0, 1fr) 80px;
-      grid-template-areas: "t c" "s s" "m m";
-      gap: 0 16px;
-    }
-    .pc {
-      display: contents;
-    }
-    .pt {
-      grid-area: t;
-      align-self: center;
-    }
-    .cs {
-      grid-area: s;
-    }
-    .pm {
-      grid-area: m;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding-block: 20px;
     }
     .cover {
-      grid-area: c;
-    }
-    /* An 80px thumbnail is too small for a line of code: the title takes the row instead. */
-    .cover-code {
       display: none;
     }
-    .post:has(.cover-code) .pt {
-      grid-column: 1 / -1;
+    .cs {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .pm {
+      margin-top: 10px;
     }
   }
 </style>

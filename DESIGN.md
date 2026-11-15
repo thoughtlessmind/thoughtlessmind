@@ -96,9 +96,10 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
   pages (`current="blogs"`), and on the home page the scroll spy's `aria-current="true"`. The header script measures
   the current link (labels differ in width) and sets its `translateX`; it slides between links (320 ms `--ease`, no
   slide on the first placement, none under reduced motion) and is placed again when `aria-current` changes, the nav
-  resizes or the fonts load. No scroll listener, no loop. A click on a home nav link sets the underline on it at once and holds the spy until the smooth scroll ends (one `scrollend`, or 2 s), then reads the section in the middle, so the underline slides straight there instead of stopping at each section on the way. With no current link (the 404) it is hidden. At 720px and under it is a flex row (gap 16px, nav gap 20px); all three
-  labels fit at 375. From 400px down the bar packs tighter (gap 8px, nav gap 14px, the pill 8px in) so nothing leaves
-  the screen at 320, and the nav may wrap under enlarged text spacing (WCAG 1.4.10, 1.4.12). Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
+  resizes or the fonts load. No scroll listener, no loop. A click on a home nav link sets the underline on it at once and holds the spy until the smooth scroll ends (one `scrollend`, or 2 s), then reads the section in the middle, so the underline slides straight there instead of stopping at each section on the way. With no current link (the 404) it is hidden. At 720px and under it is a flex row (gap 16px, nav gap 20px): the mark left, Say hi and the switch right, the nav
+  centred in the room between them (`margin-inline: auto`) so the row balances; all three labels fit at 375. From 400px
+  down the bar packs tighter (gap 8px, nav gap 12px, the pill 8px in), and under 360px Say hi is left out (the
+  footer's links and the landing's address carry the ways to write), so nothing leaves the screen at 320, and the nav may wrap under enlarged text spacing (WCAG 1.4.10, 1.4.12). Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
   - **Blended, then lifted**: at scroll 0 it is no surface at all. One registered property, `--lift` (0 to 1), drives
     the bar: background `--bg` mixed in at up to 80%, `backdrop-filter: blur(16px) saturate(160%)`, a `--line`
     hairline, two offset shadows in `--shadow` (`0 4px 10px -6px`, `0 14px 32px -16px`), and padding compacting from
@@ -361,16 +362,18 @@ Sections, in order:
      soft ring of its colour swells out of the dot and fades (`::after`, opacity 0.4 to 0 and scale 1 to 2.8 over the
      first 70% of 3000 ms `--ease`, then a rest), on a loop. A past job never pulses, so the pulse says "still here".
      The drawing's pause button stops it too (it sets `html.held`), which is how it meets WCAG 2.2.2. Only transform
-     and opacity move; under reduced motion there is the still halo only, and on a phone, with no rail, there is no
+     and opacity move; under reduced motion there is the still halo only, and on a phone, where the tiles are the nodes, there is no
      dot to pulse. The line draws itself down from each node as it scrolls in (`scale` 1 0 to 1 1 from the top, on
      the job's named view timeline `--job`, `entry 40%` to `cover 55%`; a pseudo-element can't be a view timeline's
      subject); under reduced motion or without view timelines it is simply there. (Until 14 Nov it was one line down
      the whole list, accent fading into `--line` and out at the bottom, with a `--bg` ring for past jobs: the fades
      said nothing and it read unfinished.) Entries sit
      48px apart. The `work` lines are empty until he writes them (no placeholder text on the page). The one place an employer is named: Senior Frontend Engineer at swipejobs (Aug 2021 to now),
-     Frontend Engineer at Influence (Jan 2020 to Jul 2021). Real titles and dates only, no stats. At 720px and under
-     there is no gutter, so no rail or nodes: the dates sit on one line above each job, which takes the full width
-     (the work list's markers move inside, 18px).
+     Frontend Engineer at Influence (Jan 2020 to Jul 2021). Real titles and dates only, no stats. The dates sit under the company in the markup (read in that order); from 721px they are lifted
+     into the right-hand column. At 720px and under there is no gutter, so the logo tiles are the nodes: role, company
+     and the dates (one line) stack beside each tile, the rail runs from 10px under one tile to 10px over the next
+     (centred on the tile, 21px in), and the line on the product and the work list keep the tile's 58px indent (the
+     work list's markers move inside, 18px), so the column reads as a timeline. Entries sit 36px apart.
    - Every clickable item (post rows, project rows, the /blogs list) turns its title `--accent` while the pointer
      is anywhere on the item, cover and still included, or the item has keyboard focus (§3 Hover). Nothing else in
      the row changes colour.
@@ -383,8 +386,9 @@ Sections, in order:
      active), wrapping as a group; a muted two-sentence summary (max 36em), then where the link goes, underlined: View on npm, Get it for Chrome, Open the app, Read
      the source) and a 16:10 still with a `--frame` border and no fill drawn in HTML (the CSS-only tooltip with its attribute, the Diver outline on a mini copy
      of this page, the playlist total, the mark; at 240px they show at their own size, scaled 1.35 only when wider
-     than 420px). On a phone the still sits above
-     the text at 2:1, so a row stays short. The status is `--t-xs` after a 7px dot: "Active" in `--ink` with a filled
+     than 420px). On a phone the still is a 96px 4:3
+     thumbnail beside the title block (16px gap; the drawing at 0.4, its natural width, centred), the kind and years
+     drop to their own line under the name and status, and the summary and link run the full width under them. The status is `--t-xs` after a 7px dot: "Active" in `--ink` with a filled
      `--accent` dot and a soft halo (the Experience rail's current node, small), "Finished" in `--muted` with a ring. Each link opens a new tab and says so: its accessible name is "name: where
      it goes (opens in a new tab)", described by the summary.
 
@@ -397,9 +401,8 @@ border and no fill, `clamp(112px, 9vw, 136px)`
 wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, `--draw` on `currentColor`, orange in
 `--spot`, scaled 1.25 so the drawing (at most 70% of its frame) keeps only a thin margin; a post with no cover yet
 shows its line of code there, in mono, sized to its frame (`clamp(9px, 7.4cqi, --t-code)`) and broken only between
-tokens, so the `code` line in its frontmatter stays short (about 20 characters). On a phone the cover is an 80px thumbnail beside the title only (16px gap; a post with only a code cover shows none, and its title takes the row), and
-the summary and date run the full width under them, so the summary keeps a readable line (about 38 characters at
-375, not 27).
+tokens, so the `code` line in its frontmatter stays short (about 20 characters). On a phone the row is text only (home, /blogs and More blogs): no cover, the title, the summary held to two lines
+(`line-clamp`), then the date, all at the full width, 20px padding.
 
 ## §6 Blogs list (`pages/blogs/index.astro`)
 
@@ -439,7 +442,8 @@ minmax(0, 1fr)`, gap 64px, so the article is centred (it gives up its centre nea
   in the `--media` column at 2:1), then the "Read all N posts" row (`.all`, shared in `global.css`). Rows fade up as
   they scroll in, like the home page's row reveal (§4).
 
-Under 1200px one column on the 44em measure: Back, then the date and reading time stacked, then title, dek, cover,
+Under 1200px one column on the 44em measure: Back on the left and the date and reading time on the right of one row
+(a dotted line, wrapping under Back if it must), then title, dek, cover,
 prose, then the contents and the Markdown controls. At 720px and under the contents are left out. The header's reading line (§3) runs on every post.
 
 **Page not found** (`pages/404.astro`): the landing's frame (`.hero`, `.hero-text` and `.art` in `global.css`, shared

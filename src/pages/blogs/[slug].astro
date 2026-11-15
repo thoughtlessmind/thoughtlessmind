@@ -52,7 +52,7 @@ const article = {
   <meta slot="head" property="article:published_time" content={date.toISOString()} />
   {updated && <meta slot="head" property="article:modified_time" content={updated.toISOString()} />}
   {/* From 1200px a sticky rail on the left holds Back, the date and reading time, the contents and the Markdown
-      controls, and the article sits beside it. Under that Back and the meta stack over the title, and the contents and
+      controls, and the article sits beside it. Under that Back and the meta share a row over the title, and the contents and
       Markdown controls follow the article (no contents on a phone). */}
   <div class="post">
     <aside class="side" aria-label="About this post">
@@ -495,8 +495,24 @@ const article = {
     }
   }
 
-  /* Under 1200px the rail has no room: the contents and Markdown controls follow the article. */
+  /* Under 1200px the rail has no room: Back and the meta share one row over the title (the meta as one dotted line,
+     wrapping if it must), and the contents and Markdown controls follow the article. */
   @media (max-width: 1199px) {
+    .lead {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px 24px;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .meta > * + *::before {
+      content: "·" / "";
+      margin-inline: 6px;
+    }
     .end {
       display: block;
       margin-top: 56px;
@@ -514,7 +530,10 @@ const article = {
   }
   @media (max-width: 720px) {
     .post {
-      padding-top: calc(var(--head-h) + 40px);
+      padding-top: calc(var(--head-h) + 32px);
+    }
+    .lead {
+      margin-bottom: 24px;
     }
     .cover {
       margin-top: 36px;
