@@ -21,7 +21,7 @@ Node ≥ 22.12, pnpm.
 
 **Deploy**: Cloudflare Workers, static assets only (no Worker code). `wrangler.jsonc` points at `dist/`, drops
 trailing slashes (`/about/` 307s to `/about`) and serves `404.html` with a 404. `public/_headers` makes `/_astro/*`
-immutable; `public/_redirects` sends the old `/about` to `/#about`. Workers Builds deploys `main` (`pnpm build`, then `npx wrangler deploy`) and reads `.node-version`. rajiv.me is a
+immutable; `public/_redirects` sends the old `/about` to `/#about`. Workers Builds deploys `main` to the Worker `rajiv-me` (`pnpm build`, then `npx wrangler deploy`) and reads `.node-version`. rajiv.me is a
 Worker custom domain (`routes` in `wrangler.jsonc`); www.rajiv.me 301s to the apex via a Cloudflare Redirect Rule, not a
 repo file. Check locally with `npx wrangler dev`
 after a build.
