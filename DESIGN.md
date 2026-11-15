@@ -103,7 +103,7 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
   resizes or the fonts load. No scroll listener, no loop. A click on a home nav link sets the underline on it at once and holds the spy until the smooth scroll ends (one `scrollend`, or 2 s), then reads the section in the middle, so the underline slides straight there instead of stopping at each section on the way. With no current link (the 404) it is hidden. At 720px and under it is a flex row (gap 16px, nav gap 20px): the mark left, Say hi and the switch right, the nav
   centred in the room between them (`margin-inline: auto`) so the row balances; all three labels fit at 375. From 400px
   down the bar packs tighter (gap 8px, nav gap 12px, the pill 8px in), and under 360px Say hi is left out (the
-  footer's links and the landing's address carry the ways to write), so nothing leaves the screen at 320, and the nav may wrap under enlarged text spacing (WCAG 1.4.10, 1.4.12). Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
+  footer's address and links carry the ways to write), so nothing leaves the screen at 320, and the nav may wrap under enlarged text spacing (WCAG 1.4.10, 1.4.12). Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
   - **Blended, then lifted**: at scroll 0 it is no surface at all. One registered property, `--lift` (0 to 1), drives
     the bar: background `--bg` mixed in at up to 80%, `backdrop-filter: blur(16px) saturate(160%)`, a `--line`
     hairline, two offset shadows in `--shadow` (`0 4px 10px -6px`, `0 14px 32px -16px`), and padding compacting from
@@ -120,7 +120,7 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
   `localStorage['palette']`.)
 - **Skip link** (`BaseLayout.astro`, `.skip`): the first focusable thing on every page, "Skip to content". Off screen
   until the keyboard reaches it, then an `--ink` chip over the header's left corner; it jumps to `main#main`.
-- **Footer** (`Footer.astro`, every page): one row of "Write to me at <email>", the socials (GitHub, LinkedIn, X,
+- **Footer** (`Footer.astro`, every page): one row of the address (the link alone, no label), the socials (GitHub, LinkedIn, X,
   Stack Overflow), `RSS` and `llms.txt`, then "© 2026 Rajiv Kumar · New Delhi, India", the one place the city shows (a column on a phone). Under it, 64px down (40px on
   a phone), the star field across the full width of the window (out through the page margins, at every width) and `clamp(200px, 21vw, 300px)` tall: a canvas
   (`scripts/field.ts`) of dots on an 18px grid (14px under 600px wide), `--muted` at 50%, about one in seventeen a
@@ -293,7 +293,7 @@ the landing.
 ## §5 Home page (`pages/index.astro`)
 
 Quiet: about him in one paragraph, what he works on now, what he wrote, where he has worked, the things he made. One
-drawing that draws itself (on a phone a mini version: the landing fills the first screen, `min-height: 100svh`, a small doodle under the header, then the text 32px under it, the two centred in the screen together; the doodle is only the telescope (scaled 1.3, moved up beside the planet), the planet (scaled 0.72) and the stars, each part keeping the drawing's line weight, cropped to an 800 x 650 window of the drawing from y 378 and drawn 72% of the column wide (at most 230px tall) in a full-width band with the pause at its right end; on a short screen (a phone with its browser bars) the band gives way down to 112px (`100svh - 520px`) so the text keeps the first screen down to the email; the route, moon, pendulum and rocket are hidden by their group classes; How I work below the fold), the header for getting around. The AI depth is shown, never titled: no
+drawing that draws itself (on a phone a mini version: the landing fills the first screen, `min-height: 100svh`, a small doodle under the header, then the text 32px under it, the two centred in the screen together; the doodle is only the telescope (scaled 1.3, moved up beside the planet), the planet (scaled 0.72) and the stars, each part keeping the drawing's line weight, cropped to an 800 x 650 window of the drawing from y 378 and drawn 72% of the column wide (at most 230px tall) in a full-width band with the pause at its right end; on a short screen (a phone with its browser bars) the band gives way down to 112px (`100svh - 520px`) so the text keeps the first screen down to the intro's last line; the route, moon, pendulum and rocket are hidden by their group classes; How I work below the fold), the header for getting around. The AI depth is shown, never titled: no
 "AI engineer" anywhere. Copy is written the way the best engineers' own sites are (Lee Robinson, Mitchell Hashimoto,
 Hamel Husain): who and where, what now, one line of values, one human line. No labels, no adjectives about himself.
 Sections, in order:
@@ -308,8 +308,7 @@ Sections, in order:
    paragraph; then `--accent` flows through it left to right, line after line, and ebbs back on leave. It is text
    clipped to a `--accent` to `--ink` gradient (soft 40% to 60% edge, 250% wide, one strip across the line break)
    whose position slides 100% to 0 over 1100ms `--ease`. Reduced motion: the colour switches at once. Touch shows
-   plain text. Then 28px under it, at `--t-xs`, the address alone as an underlined link (the header's Say hi and the
-   footer carry the rest). The right
+   plain text. No address here: the header's Say hi and the footer carry the ways to write. The right
    48% (to the screen edge) holds the doodle, centred with 96 / 56 / 40 px of air: a sketchbook line drawing of a
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local
