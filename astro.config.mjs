@@ -26,6 +26,9 @@ export default defineConfig({
   // serves it at /about and 307s /about/ there (wrangler.jsonc).
   trailingSlash: 'never',
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+  // Every page's CSS goes inline in its <head> (about 11 KB gzipped): no render-blocking stylesheet request, so the
+  // first paint waits on the HTML alone. Hover prefetch covers the CSS not being shared between pages.
+  build: { inlineStylesheets: 'always' },
   integrations: [sitemap()],
   // Code blocks carry both themes as --shiki-light / --shiki-dark; prose.css picks one by the token rules.
   markdown: {

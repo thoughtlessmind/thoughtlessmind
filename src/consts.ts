@@ -16,9 +16,6 @@ export const SITE = {
     stackoverflow: 'https://stackoverflow.com/users/11222282/rajiv',
     x: 'https://x.com/d_rajivkumar',
   },
-  location: 'New Delhi, India',
-  coords: '28.6139° N, 77.2090° E',
-  timezone: 'Asia/Kolkata',
   // The header nav, in the home page's section order. `spy` is the home page section the scroll spy matches.
   nav: [
     { label: 'About', href: '/#about', spy: 'about' },
@@ -26,5 +23,3 @@ export const SITE = {
     { label: 'Projects', href: '/#projects', spy: 'projects' },
   ],
 } as const;
-
-export type SocialKey = keyof typeof SITE.socials;

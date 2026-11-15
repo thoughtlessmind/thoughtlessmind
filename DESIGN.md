@@ -26,12 +26,14 @@ kinds of page: the home page, the blogs list and a post. Product truth (who it i
 | `--t-code`    | `0.8125rem`, 13                            | the posts' code tokens                           |
 
   Code in posts is 14px/1.6. The project stills are small illustrations with their own sizes inside, not text steps. The header's
-  written name is the one place for `--hand` (Caveat, 600, 27px; 25px on a phone).
+  written name is Caveat 600 at 27px, outlined to an SVG once (no font loads for it). Each family loads its Latin face only
+  (every character on the site is in it); Geist is preloaded, and until it arrives the text sets in Arial sized to Geist's
+  metrics (`Geist Fallback`), so the swap shifts nothing.
 
 ## §2 Colour
 
-Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme inline` (`bg-bg`, `text-ink`,
-`border-line`…; the default palette is cleared).
+Tokens on `:root` in `src/styles/global.css`. Tailwind supplies only its theme and preflight (no utilities layer: every
+rule is hand-written); `@theme inline` maps `--sans` and `--mono` into preflight's default families.
 
 | Token      | Dark                    | Light                 | Use                       |
 | ---------- | ----------------------- | --------------------- | ------------------------- |
@@ -80,7 +82,8 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
   it, and `scroll-padding-top` keeps anchors below it.
 - **Header** (`Header.astro`, `.top`): pinned to the top on every page (a zero-height sticky dock, so a rubber-band overscroll pulls it along with the page), a grid on `--cols`. The logo in the first
   column: the hexagon mark (`.mark`, `data-logo`, 28px) in a link labelled "Rajiv Kumar, home" (the name it shows), and 12px after it his name
-  in `--hand` (`.sig`, `--ink`). On the home page the name is hidden while the hero's name is on screen and writes
+  handwritten (`.sig`: Caveat 600 at 27px outlined to `assets/sig.svg`, used as a mask over the `--sig` gradient, so
+  no hand font loads). On the home page the name is hidden while the hero's name is on screen and writes
   itself in once that name has scrolled up under the header (§4), so it is never on screen twice; other pages show it
   from the start. On a phone (720px and under) there is no room for both, and the nav is the way round a long page, so
   the nav stays and the name is left out on every page. From the axis, `.bar`:

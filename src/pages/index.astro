@@ -131,7 +131,7 @@ const person = {
       <h2 class="h2" id="now-h">How I work</h2>
       <p class="note">Where most of my week goes.</p>
     </div>
-    <div>
+    <div class="indent">
       <p class="thesis">The model is rarely the hard part. Everything around it is.</p>
       <ul class="parts">
         {
@@ -154,7 +154,7 @@ const person = {
       <h2 class="h2" id="blogs-h">Blogs</h2>
       <p class="note">Notes on building for the web, and the problems I would rather solve once.</p>
     </div>
-    <div class="list">
+    <div class="list indent">
       <ul>
         {
           posts.map((p) => (
@@ -173,7 +173,7 @@ const person = {
       <h2 class="h2" id="xp-h">Experience</h2>
       <p class="note">The teams I’ve built with, newest first.</p>
     </div>
-    <ol class="list tl">
+    <ol class="list tl indent">
       {
         jobs.map((j, i) => (
           <li class:list={['job', { cur: !j.to }]} style={`--t0:${i / Math.max(1, jobs.length - 1)};--t1:${(i + 1) / Math.max(1, jobs.length - 1)}`}>
@@ -218,7 +218,7 @@ const person = {
       <h2 class="h2" id="projects-h">Projects</h2>
       <p class="note">Tools I built for my own problems, then released.</p>
     </div>
-    <ul class="list">
+    <ul class="list indent">
       {
         work.map((w) => (
           <li>
@@ -401,20 +401,17 @@ const person = {
   .sec {
     padding-top: 120px;
   }
-  /* Every section below the landing reads top to bottom: the h2 and its note at the margin, then the content under
-     them, indented a step (112px at 1440) and capped at 1040px. That indent is the one text edge: every title,
-     paragraph and logo in every section starts on it, and nothing indents further (the Experience rail hangs in the
-     gutter left of it, like a bullet). Rows that carry a picture or dates put them in one right-hand column,
-     `--media` wide, 48px from the text. Body text stops at 36em (about 68 characters). No indent on a phone. */
+  /* Every section below the landing reads top to bottom: the h2 and its note at the margin, then the content 40px
+     under them on the text edge (`.indent`, global.css): every title, paragraph and logo in every section starts on
+     it, and nothing indents further (the Experience rail hangs in the gutter left of it, like a bullet). Rows that
+     carry a picture or dates put them in one right-hand column, `--media` wide, 48px from the text. Body text stops
+     at 36em (about 68 characters). */
   .sec > :last-child {
-    max-width: 1040px;
     margin-top: 40px;
-    margin-left: clamp(0px, 7.8vw, 112px);
   }
   @media (max-width: 720px) {
     .sec > :last-child {
       margin-top: 24px;
-      margin-left: 0;
     }
   }
   /* Quiet reveals: each row fades up 12px as it scrolls in, tied to its own position (a CSS view timeline, no
@@ -486,18 +483,6 @@ const person = {
   .soon span {
     margin-right: 12px;
     color: var(--accent);
-  }
-  .h2 {
-    font-size: var(--t-l);
-    font-weight: 500;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
-  .note {
-    max-width: 36em;
-    margin-top: 12px;
-    color: var(--muted);
-    text-wrap: pretty;
   }
   /* Experience as a timeline that keeps the text edge: each entry is the job (logo tile, role and company, one line
      on the product, the work) on the edge, and its dates in the right-hand column where the covers and stills sit.

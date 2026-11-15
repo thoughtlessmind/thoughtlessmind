@@ -28,14 +28,19 @@ after a build.
 ## Stack
 
 - Astro 7, `output: 'static'`, `trailingSlash: 'never'` (output stays `about/index.html`), prefetch on hover, sitemap.
-- Tailwind v4 via `@tailwindcss/vite`. Every token lives in `src/styles/global.css`.
-- Geist and Geist Mono from fontsource (variable).
+- Tailwind v4 via `@tailwindcss/vite`, theme and preflight only (no utilities: all CSS is hand-written). Every token
+  lives in `src/styles/global.css`.
+- Geist and Geist Mono from fontsource (variable), Latin faces only, declared in `global.css`; Geist is preloaded with a
+  metric-matched Arial fallback. The header's handwritten name is an SVG (`assets/sig.svg`, Caveat 600 outlined; the
+  generator is in the local `docs/sig/`), not a font.
+- `build.inlineStylesheets: 'always'`: each page's CSS is inline, no render-blocking stylesheet.
 - One content collection, `blogs`: plain Markdown, Shiki for code (themes in `astro.config.mjs`). No React or MDX.
 
 ## Layout of src
 
 ```
-assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG
+assets/          doodle.svg (the landing drawing), covers/<slug>.svg (post covers): line art traced to SVG; sig.svg (the
+                 header's written name), logos/
 components/      Header (fixed, lifts on scroll, writes the name in), Footer (links, then the star field), ThemeToggle, PostCard,
                  Splash (canvas + styles for the splash screen), Doodle (draw-on, the planet,
                  the loops)

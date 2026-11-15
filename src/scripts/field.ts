@@ -147,7 +147,7 @@ export function field(canvas: HTMLCanvasElement) {
   });
 
   colours();
-  build();
+  // The observer's first callback builds the grid, so the script forces no layout of its own at load.
   new ResizeObserver(() => {
     build();
     draw(performance.now());

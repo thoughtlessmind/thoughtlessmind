@@ -144,10 +144,10 @@ const article = {
     more.length > 0 && (
       <section class="more" aria-labelledby="more-h">
         <div>
-          <h2 id="more-h">More blogs</h2>
+          <h2 class="h2" id="more-h">More blogs</h2>
           <p class="note">Notes on building for the web, and the problems I would rather solve once.</p>
         </div>
-        <div class="list">
+        <div class="list indent">
           <ul>
             {more.map((p) => (
               <li>
@@ -459,22 +459,8 @@ const article = {
   .more {
     margin-top: 120px;
   }
-  .more h2 {
-    font-size: var(--t-l);
-    font-weight: 500;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
-  .note {
-    max-width: 36em;
-    margin-top: 12px;
-    color: var(--muted);
-    text-wrap: pretty;
-  }
   .list {
-    max-width: 1040px;
     margin-top: 40px;
-    margin-left: clamp(0px, 7.8vw, 112px);
   }
   @keyframes row-in {
     from {
@@ -552,7 +538,6 @@ const article = {
     }
     .list {
       margin-top: 24px;
-      margin-left: 0;
     }
   }
 </style>

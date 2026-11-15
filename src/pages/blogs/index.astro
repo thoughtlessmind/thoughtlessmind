@@ -18,7 +18,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
       <p class="dek">Notes on building for the web, and the problems I would rather solve once.</p>
       <p class="count">{count}</p>
     </header>
-    <div class="years">
+    <div class="years indent">
       {
         years.map(([year, list]) => (
           <section class="year" aria-labelledby={`y${year}`}>
@@ -63,9 +63,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     font-variant-numeric: tabular-nums;
   }
   .years {
-    max-width: 1040px;
     margin-top: 56px;
-    margin-left: clamp(0px, 7.8vw, 112px);
   }
   .year + .year {
     margin-top: 48px;
@@ -88,7 +86,6 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
     }
     .years {
       margin-top: 40px;
-      margin-left: 0;
     }
   }
 </style>

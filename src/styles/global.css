@@ -1,7 +1,37 @@
-@import "tailwindcss";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
-@import "@fontsource-variable/caveat";
+/* Tailwind for its reset only: no utilities layer. Every rule here is hand-written, and the utilities layer only
+   held classes the scanner guessed from words in the markup (`.ring`, `.hidden`, `.m-113` from path data...). */
+@layer theme, base, components;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+
+/* The two families, Latin only: every character on the site is in it, so the other subsets' faces are left out.
+   BaseLayout preloads Geist. */
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/geist/files/geist-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* Arial sized to Geist (measured in Chrome: 3.2% wider, its ascent and descent), so text set before Geist arrives
+   takes the same room and the swap moves nothing (it cost a post 0.05 CLS on slow 4G). */
+@font-face {
+  font-family: "Geist Fallback";
+  src: local("Arial");
+  size-adjust: 103.16%;
+  ascent-override: 97.9%;
+  descent-override: 28.11%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Geist Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 /* How far the header has lifted off the page, 0 at rest to 1 as a bar (see the header below). Registered so it can
    animate and transition. */
@@ -66,10 +96,8 @@
   --sel-ink: #b23c0a;
   /* The lifted header's drop shadow. */
   --shadow: rgba(0, 0, 0, 0.55);
-  --sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sans: "Geist Variable", "Geist Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   /* Mono is for code and the splash screen's digits only. */
-  /* Hand is for the header's written name only. */
-  --hand: "Caveat Variable", "Bradley Hand", cursive;
   --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* taste-skill-ignore */
   /* Type steps (DESIGN.md §1): the phone size at 375 to the full size at 1440, in rem so browser zoom scales them.
      Titles lead by weight and colour, not size: 60 / 44 / 30 / 24 / 20 / 17 / 14. */
@@ -152,19 +180,10 @@
   color-scheme: light;
 }
 
-/* Tailwind utilities read the tokens (bg-bg, text-ink, border-line…). The default palette is cleared so
-   only tokens exist. */
+/* Preflight's default families, from the tokens. */
 @theme inline {
-  --color-*: initial;
-  --color-bg: var(--bg);
-  --color-panel: var(--panel);
-  --color-line: var(--line);
-  --color-ink: var(--ink);
-  --color-muted: var(--muted);
-  --color-hi: var(--hi);
-  --color-logo: var(--logo);
-  --color-accent: var(--accent);
   --font-sans: var(--sans);
+  --font-mono: var(--mono);
 }
 
 @layer base {
@@ -348,25 +367,21 @@
     align-items: center;
     gap: 12px;
   }
-  /* The name beside the logo, in the hand font (Header.astro shows it). Hidden, it is clipped away to its left edge.
-     Shown, the clip opens left to right at a steady pen speed, so the name reads as written; leaving, it fades fast
-     and the clip resets behind the fade. Reduced motion: a plain fade. `still` (pages without the hero name): shown,
-     no transition. */
+  /* The name beside the logo, handwritten (Header.astro shows it). It is "Rajiv Kumar" in Caveat 600 at 27px, kerned,
+     outlined to an SVG (assets/sig.svg, viewBox 4214 x 900 font units, so 1 unit is 0.027px) and used as a mask over
+     the --sig gradient: the same look as the text was, without a 75KB font for two words. The box hugs the outline;
+     the margin and translate put the strokes where the text's glyphs sat (its first ink 76 units in, and the box
+     centre 106 units under the text line's). Hidden, it is clipped away to its left edge. Shown, the clip opens left
+     to right at a steady pen speed, so the name reads as written; leaving, it fades fast and the clip resets behind
+     the fade. Reduced motion: a plain fade. `still` (pages without the hero name): shown, no transition. */
   .sig {
-    font-family: var(--hand);
-    font-size: 27px;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0.005em;
-    white-space: nowrap;
-    translate: 0 1px;
-    /* A little room either side so the hand's swashes keep the gradient fill. */
-    padding-inline: 0.12em;
-    margin-inline: -0.12em;
+    flex: none;
+    width: calc(27px * 4.214);
+    height: calc(27px * 0.9);
+    margin-left: calc(27px * 0.076);
+    translate: 0 calc(1px + 27px * 0.106);
     background: var(--sig);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    mask: url("../assets/sig.svg") center / 100% 100% no-repeat;
     opacity: 0;
     clip-path: inset(-40% 100% -40% 0);
     transition: opacity 150ms var(--ease), clip-path 0s 150ms;
@@ -809,6 +824,31 @@
     }
     .hero .art .doodle {
       --k: 1.8;
+    }
+  }
+
+  /* A section head below the landing (the home page's sections, a post's More blogs): the h2, then its muted note. */
+  .h2 {
+    font-size: var(--t-l);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .note {
+    max-width: 36em;
+    margin-top: 12px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  /* The one text edge (DESIGN.md §5): a section's content indented a step from the margin (112px at 1440, none on a
+     phone) and capped at 1040px. Home sections, /blogs and More blogs all hang on it. */
+  .indent {
+    max-width: 1040px;
+    margin-left: clamp(0px, 7.8vw, 112px);
+  }
+  @media (max-width: 720px) {
+    .indent {
+      margin-left: 0;
     }
   }
 
