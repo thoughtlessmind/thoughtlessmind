@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://thoughtlessmind.dev/sitemap-index.xml
+Sitemap: https://rajiv.me/sitemap-index.xml

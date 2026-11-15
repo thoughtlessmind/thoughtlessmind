@@ -98,4 +98,4 @@ Two things this version does not do: it cannot detect the viewport edge, and it 
 
 ---
 
-Also published on [dev.to](https://dev.to/thoughtlessmind/tooltip-using-only-css-2oh4) and [Hashnode](https://script.thoughtlessmind.dev/tooltip-using-only-css).
+Also published on [dev.to](https://dev.to/thoughtlessmind/tooltip-using-only-css-2oh4).

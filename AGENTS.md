@@ -1,7 +1,7 @@
 # rajiv.me
 
-Personal site of Rajiv Kumar, a software engineer in New Delhi: portfolio and writing. The brand is **rajiv.me**;
-the site deploys to thoughtlessmind.dev for now and rajiv.me redirects there. Static, fast, accessible. No backend,
+Personal site of Rajiv Kumar, a software engineer in New Delhi: portfolio and writing. The site is **rajiv.me**
+(thoughtlessmind.dev is being retired). Static, fast, accessible. No backend,
 no login, no comments by design. `README.md` is the GitHub profile README: never overwrite it.
 
 `DESIGN.md` is the v4 design spec (§1 type · §2 colour · §3 chrome · §4 motion). Read the relevant section before UI
@@ -21,8 +21,9 @@ Node ≥ 22.12, pnpm.
 
 **Deploy**: Cloudflare Workers, static assets only (no Worker code). `wrangler.jsonc` points at `dist/`, drops
 trailing slashes (`/about/` 307s to `/about`) and serves `404.html` with a 404. `public/_headers` makes `/_astro/*`
-immutable. Workers Builds deploys `main` (`pnpm build`, then `npx wrangler deploy`) and reads `.node-version`. The www,
-script.* and rajiv.me redirects are Cloudflare Redirect Rules, not repo files. Check locally with `npx wrangler dev`
+immutable. Workers Builds deploys `main` (`pnpm build`, then `npx wrangler deploy`) and reads `.node-version`. rajiv.me is a
+Worker custom domain (`routes` in `wrangler.jsonc`); www.rajiv.me 301s to the apex via a Cloudflare Redirect Rule, not a
+repo file. Check locally with `npx wrangler dev`
 after a build.
 
 ## Stack
