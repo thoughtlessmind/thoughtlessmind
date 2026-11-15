@@ -20,7 +20,7 @@ impressions: "I met a person", "he knows his stuff", "I want to read more", "tha
 
 ## Positioning
 
-A software engineer in New Delhi, shipping since 2019, who builds web and native apps, their backends and
+A software engineer in New Delhi, shipping since 2020, who builds web and native apps, their backends and
 infrastructure, and now spends much of his time putting language models to work inside real products. The AI depth is
 shown, never titled: no "AI engineer" label. It shows through specifics (MCP servers and agent tools, LLM features in
 production, evals and guardrails, coding agents as daily tools), the writing, and a site agents can read.

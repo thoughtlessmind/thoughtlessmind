@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getPosts } from '../../lib/blogs';
 
-// Every post, grouped by year, newest first, each as the home page's row (PostCard): its cover morphs into the
+// Every post, grouped by year, newest first, each as the home page's wide row (PostCard): its cover morphs into the
 // post's own cover on navigation.
 const posts = await getPosts();
 const years = [...Map.groupBy(posts, (p) => p.data.date.getUTCFullYear())];
@@ -26,7 +26,7 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
             <ol>
               {list.map((p) => (
                 <li>
-                  <PostCard post={p} />
+                  <PostCard post={p} wide />
                 </li>
               ))}
             </ol>
@@ -38,36 +38,34 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
 </BaseLayout>
 
 <style>
+  /* Laid out like the home page's Blogs (DESIGN.md §5): the head at the left margin, then the posts under it on the
+     home page's text edge (indented 112px at 1440, at most 1040px wide), covers in the --media column. */
   .list {
-    display: grid;
-    grid-template-columns: var(--cols);
     padding-top: calc(var(--head-h) + 72px);
-  }
-  .head {
-    position: sticky;
-    top: calc(var(--head-h) + 40px);
-    align-self: start;
-    padding-right: 48px;
   }
   h1 {
     font-size: var(--t-xl);
     font-weight: 500;
-    line-height: 0.98;
-    letter-spacing: -0.045em;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
   }
   .dek {
-    max-width: 22em;
-    margin-top: 20px;
-    font-size: var(--t-sm);
-    line-height: 1.4;
+    max-width: 36em;
+    margin-top: 16px;
+    line-height: 1.5;
     color: var(--muted);
     text-wrap: pretty;
   }
   .count {
-    margin-top: 20px;
+    margin-top: 12px;
     font-size: var(--t-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+  }
+  .years {
+    max-width: 1040px;
+    margin-top: 56px;
+    margin-left: clamp(0px, 7.8vw, 112px);
   }
   .year + .year {
     margin-top: 48px;
@@ -84,27 +82,13 @@ const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}${first ?
   li:first-child > :global(.post) {
     border-top: 0;
   }
-
-  /* One column: the head on top, not sticky. */
-  @media (max-width: 999px) {
-    .list {
-      display: block;
-    }
-    .head {
-      position: static;
-      padding-right: 0;
-    }
-    .years {
-      margin-top: 56px;
-    }
-  }
   @media (max-width: 720px) {
     .list {
       padding-top: calc(var(--head-h) + 40px);
     }
-    h1 {
-      line-height: 1;
-      letter-spacing: -0.04em;
+    .years {
+      margin-top: 40px;
+      margin-left: 0;
     }
   }
 </style>

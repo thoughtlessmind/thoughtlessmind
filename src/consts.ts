@@ -3,12 +3,12 @@ export const SITE = {
   brand: 'rajiv.me',
   title: 'Rajiv Kumar, software engineer in New Delhi',
   description:
-    'Software engineer in New Delhi. I build web and native apps, their backends and infrastructure, and put language models to work inside them. Since 2019.',
+    'Software engineer in New Delhi. I build web and native apps, their backends and infrastructure, and put language models to work inside them. Since 2020.',
   url: 'https://thoughtlessmind.dev',
   email: 'hello@rajiv.me',
   role: 'Senior Frontend Engineer',
   previousCompany: 'Influence',
-  since: 2019,
+  since: 2020,
   socials: {
     github: 'https://github.com/thoughtlessmind',
     linkedin: 'https://www.linkedin.com/in/thoughtlessmind/',

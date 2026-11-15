@@ -9,21 +9,23 @@ kinds of page: the home page, the blogs list and a post. Product truth (who it i
 - **Geist** (`--sans`) does every visible word. Weights 400 and 500. Sentence case, no emoji, no em or en dashes.
 - **Geist Mono** (`--mono`) only for code: the posts' code tokens (cards, the blogs list), code in posts, the
   tooltip still's markup and the splash screen's digits. No mono labels, no small uppercase labels.
-- Seven steps, tokens on `:root`. Each is its full size at 1440 and its phone size by about 720:
+- Eight steps, tokens on `:root`, each from its phone size at 375 to its full size at 1440, in rem so browser zoom
+  scales them. Titles lead by weight and colour, not size (60 / 44 / 30 / 24 / 20 / 17 / 14). Geist has no optical
+  size axis, so the tracking tightens by hand as the size grows. (Until 14 Nov the steps ran 72 / 34 / 28 / 22 / 17 /
+  15: a 2x jump under the headline, then steps too close to tell apart, and a 72px "Blogs".)
 
-| Token      | Size                          | Use                                              |
-| ---------- | ----------------------------- | ------------------------------------------------ |
-| `--t-xl`   | `clamp(40px, 5vw, 72px)`      | the headline                                     |
-| `--t-l`    | `clamp(28px, 2.4vw, 34px)`    | h2s                                              |
-| `--t-m`    | `clamp(20px, 1.95vw, 28px)`   | the name over the headline, post and project row titles |
-| `--t-sm`   | `clamp(19px, 1.55vw, 22px)`   | the landing paragraph, list titles, deks, h2 in posts |
-| `--t-s`    | `17px`                        | body (line-height 1.5; 1.7 in posts)             |
-| `--t-xs`   | `15px`                        | nav, meta, dates, contents, footer               |
-| `--t-code` | `13px`                        | the posts' code tokens                           |
+| Token         | Size (375 to 1440)                         | Use                                              |
+| ------------- | ------------------------------------------ | ------------------------------------------------ |
+| `--t-display` | `clamp(2.25rem, 1.72rem + 2.25vw, 3.75rem)`, 36 to 60 | the home headline, the 404's (400, leading 1.02, -0.03em) |
+| `--t-xl`      | `clamp(2rem, 1.74rem + 1.13vw, 2.75rem)`, 32 to 44 | the blogs h1, a post's title (500, leading 1.08, -0.025em) |
+| `--t-l`       | `clamp(1.5rem, 1.37rem + 0.56vw, 1.875rem)`, 24 to 30 | section h2s (500, leading 1.15, -0.02em)   |
+| `--t-m`       | `clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem)`, 20 to 24 | the thesis (400), h2 in posts (500)        |
+| `--t-sm`      | `clamp(1.125rem, 1.08rem + 0.19vw, 1.25rem)`, 18 to 20 | the name over the headline, the landing paragraph, list, role and project titles (500, leading 1.3, -0.01em), a post's dek |
+| `--t-s`       | `1.0625rem`, 17                            | body (line-height 1.5; 1.7 in posts), the blogs dek, "Read all" (500) |
+| `--t-xs`      | `0.875rem`, 14                             | nav, meta, dates, contents, footer               |
+| `--t-code`    | `0.8125rem`, 13                            | the posts' code tokens                           |
 
-  Display type: weight 500, leading 0.98 (1 on a phone), tracking -0.045em (-0.04em on a phone). A post's title is
-  the one size between steps: `clamp(34px, 3.6vw, 54px)`, leading 1.04, tracking -0.035em, balanced. Code in posts is
-  14px/1.6. The project stills are small illustrations with their own sizes inside, not text steps. The header's
+  Code in posts is 14px/1.6. The project stills are small illustrations with their own sizes inside, not text steps. The header's
   written name is the one place for `--hand` (Caveat, 600, 27px; 25px on a phone).
 
 ## §2 Colour
@@ -40,6 +42,7 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 | `--muted`  | `#8f8f8a`               | `#555b66`             | secondary text            |
 | `--hi`     | `#ffffff`               | `#000000`             | emphasis                  |
 | `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark and the rocket's flame (decorative) |
+| `--draw`   | `--ink` 66% into `--bg` | `--ink` 66% into `--bg` | the drawings' lines: the landing and 404 doodle, post covers; a step behind the text beside them (`--ink` under `prefers-contrast: more`) |
 | `--spot`   | `--logo`                | `--logo`              | the drawings' filled bits: the doodles' hexagon and spark, cover accents (decorative) |
 | `--accent` | `#ff5f1f`               | `#b23c0a`             | text orange, focus ring, the nav underline, active dots, reading line, the timeline's current node |
 | `--frame`  | `--ink` at 16%          | `--ink` at 16%        | the 1px border round post covers and project stills (no fill) |
@@ -55,7 +58,7 @@ Tokens on `:root` in `src/styles/global.css`, exposed to Tailwind with `@theme i
 | `--sel-ink`| `#b23c0a`               | `#ff5f1f`             | selected text: the other theme's text orange (4.8:1 / 6.7:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
-`data-theme="light"`. Under `prefers-contrast: more`, `--line` and `--frame` both go to `--ink` at 40%. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
+`data-theme="light"`. Under `prefers-contrast: more`, `--line` and `--frame` both go to `--ink` at 40% and `--draw` to `--ink`. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
 footer's star field, never running text.
 
 Code in posts uses Shiki's `github-dark-default` and `github-light-default` on `--panel`, both themes emitted as
@@ -65,31 +68,37 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
 
 ## §3 Chrome
 
-- **The frame**: margins `--gut` / `--gut-r` = `clamp(20px, 3.4vw, 48px)` (or the safe area) via `.wrap`. One axis at
+- **The frame**: margins `--gut` / `--gut-r` = `clamp(20px, 3.4vw, 48px)` (or the safe area) via `.wrap`. The page
+  is laid out for a window up to 1440 wide: past that each margin grows by `--side` (half the width over 1440), so the
+  header, content and footer hold at the 1440 layout (1344px of content), centred, and a wide screen does not stretch
+  them apart. Anything sized from the window's width that is not a capped clamp reads `--fw` (`min(100vw, 1440px)`)
+  instead of `vw`: the landing's text column and the doodle's 48%, which ends at the frame's right edge, not the
+  screen's. One axis at
   42% of the width, `--cols` = `42fr 58fr`, shared by every page: the header's nav, the
   blogs list and a post's article all start on it. `--media` (240px) is the home page's right-hand column (§5).
   `--head-h` (76px) is the header's height at rest; pages clear
   it, and `scroll-padding-top` keeps anchors below it.
 - **Header** (`Header.astro`, `.top`): pinned to the top on every page (a zero-height sticky dock, so a rubber-band overscroll pulls it along with the page), a grid on `--cols`. The logo in the first
-  column: the hexagon mark (`.mark`, `data-logo`, 28px) in a link labelled "rajiv.me, home", and 12px after it his name
+  column: the hexagon mark (`.mark`, `data-logo`, 28px) in a link labelled "Rajiv Kumar, home" (the name it shows), and 12px after it his name
   in `--hand` (`.sig`, `--ink`). On the home page the name is hidden while the hero's name is on screen and writes
   itself in once that name has scrolled up under the header (§4), so it is never on screen twice; other pages show it
-  from the start. On a phone there is no room for both, so the name floats over the nav's place and the nav fades
-  out while it shows; other pages on a phone keep the nav and show no name. From the axis, `.bar`:
+  from the start. On a phone (720px and under) there is no room for both, and the nav is the way round a long page, so
+  the nav stays and the name is left out on every page. From the axis, `.bar`:
   nav (About `/#about`, Blogs `/#blogs`, Projects `/#projects`, in the home page's section order; sans 15px, gap
   28px; every link scrolls to its home section, from any page, and the blogs index is reached from the section's
   "All blogs"), then on the right `.reach` (the X icon, 17px, and "Say hi", a pill with a 1px `--frame` border) and the
   theme switch. "Say hi" opens a native popover (`#say-hi`, light dismiss and Esc built in) anchored 10px under it
   (84px down without anchor positioning): a muted line, then Email (mailto, with a Copy button that reads "Copied", announced politely, for
   1.6s), LinkedIn and X, split by `--line` hairlines, on `--raised` (a layer lighter than the page, so it reads apart from it and from the lifted bar) with a 1px `--line` border, 14px radius and the
-  header's shadows. It fades and drops 6px in over 180 ms; under reduced motion it just appears. At 640px and under
+  header's shadows. It fades and drops 6px in over 180 ms and leaves in 120 ms; under reduced motion it just appears. At 640px and under
   the X icon goes (X is in the popover). The current link has a small `--accent` underline (`.nav-line`: 16 x 2px,
   radius 1px, 5px under the nav, centred under the label), so no label moves: `aria-current="page"` on the blogs
   pages (`current="blogs"`), and on the home page the scroll spy's `aria-current="true"`. The header script measures
   the current link (labels differ in width) and sets its `translateX`; it slides between links (320 ms `--ease`, no
   slide on the first placement, none under reduced motion) and is placed again when `aria-current` changes, the nav
-  resizes or the fonts load. No scroll listener, no loop. With no current link (the 404) it is hidden. At 720px and under it is a flex row (gap 16px, nav gap 20px); all three
-  labels fit at 375. Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
+  resizes or the fonts load. No scroll listener, no loop. A click on a home nav link sets the underline on it at once and holds the spy until the smooth scroll ends (one `scrollend`, or 2 s), then reads the section in the middle, so the underline slides straight there instead of stopping at each section on the way. With no current link (the 404) it is hidden. At 720px and under it is a flex row (gap 16px, nav gap 20px); all three
+  labels fit at 375. From 400px down the bar packs tighter (gap 8px, nav gap 14px, the pill 8px in) so nothing leaves
+  the screen at 320, and the nav may wrap under enlarged text spacing (WCAG 1.4.10, 1.4.12). Hover and keyboard focus: `--accent` (see Hover below); the logo does not change.
   - **Blended, then lifted**: at scroll 0 it is no surface at all. One registered property, `--lift` (0 to 1), drives
     the bar: background `--bg` mixed in at up to 80%, `backdrop-filter: blur(16px) saturate(160%)`, a `--line`
     hairline, two offset shadows in `--shadow` (`0 4px 10px -6px`, `0 14px 32px -16px`), and padding compacting from
@@ -108,7 +117,7 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
   until the keyboard reaches it, then an `--ink` chip over the header's left corner; it jumps to `main#main`.
 - **Footer** (`Footer.astro`, every page): one row of "Write to me at <email>", the socials (GitHub, LinkedIn, X,
   dev.to, Stack Overflow), `RSS` and `llms.txt`, then "© 2026 Rajiv Kumar" (a column on a phone). Under it, 64px down (40px on
-  a phone), the star field as wide as the content and `clamp(200px, 21vw, 300px)` tall: a canvas
+  a phone), the star field across the full width of the window (out through the page margins, at every width) and `clamp(200px, 21vw, 300px)` tall: a canvas
   (`scripts/field.ts`) of dots on an 18px grid (14px under 600px wide), `--muted` at 50%, about one in seventeen a
   brighter star in `--ink`. The cursor stirs it (§4).
 - **Text links** (`.ul`, and links in posts): 1px underline at 0.22em offset; on hover or keyboard focus the text and
@@ -156,7 +165,11 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   `backwards`, so once done every element is back to its plain state. While the splash plays the animations are held
   (`animation-play-state: paused`) at their hidden start. Under reduced motion the finished drawing shows at once.
 - **Doodle, alive**: two things keep moving after the draw, and both hold still while the doodle is off screen (the
-  svg's `.idle`, set by its IntersectionObserver) and under reduced motion.
+  svg's `.idle`, set by its IntersectionObserver), under reduced motion, and once paused: they run as long as the page
+  is open, so a round 36px button in the drawing's lower right corner (`.d-pause`, 24px in, a `--frame` ring, a 14px
+  Phosphor pause or play icon in `--muted`, `--accent` on hover and focus, `aria-pressed`) stops both, the planet's
+  loop and the current job's pulse in Experience (`html.held`; labelled "Pause animations"), the way an autoplaying
+  hero video has a pause (WCAG 2.2.2). It is not shown under reduced motion.
   The pendulum swings between its drawn extreme and its far ghost (rotate 0 to -55° about the pivot, 1.1 s each way,
   sine ease, `infinite alternate`). The planet (`scripts/planet.ts`, generated, not traced) turns with its rings, seen
   16° above the ring plane, its axis leaning 26°; the near side of both moves left to right (anticlockwise from the
@@ -165,8 +178,8 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   as real rings do, and its dash clumps orbit by `stroke-dashoffset` with a period ∝ r^1.5 (about 45 s inside to 75 s
   outside). The body hides the far half; a second copy clipped to the near half passes over it. Bands: seven broken
   latitude lines projected on the sphere each frame (64 s day), so they slow and shorten towards the limb and end
-  exactly at it; the loop runs only while the doodle is on screen and not covered by the splash, and its clock stops
-  with it.
+  exactly at it, redrawn at 30 fps (each redraw is a layout, and they move well under a pixel a frame); the loop runs
+  only while the doodle is on screen, not covered by the splash and not paused, and its clock stops with it.
 - **Header lift**: a CSS scroll-driven animation, `lift` on `animation-timeline: scroll(root)` over
   `animation-range: 0 120px`, takes `--lift` from 0 to 1, so the bar forms as the page leaves the top and dissolves
   as it comes back, with no script. The timeline and range sit in their own `:root .top` rule: the minifier folds
@@ -181,9 +194,11 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   `100000px 0px -70% 0px`, so a jump of any length still flips it). In-page links scroll smoothly
   (`html { scroll-behavior: smooth }`, instant under reduced motion).
 - **Page transitions**: cross-document view transitions (`@view-transition { navigation: auto }`, only without
-  reduced motion). The root cross-fades in 200 ms on `--ease`; the header (`view-transition-name: top`) holds still; a
-  post card's cover (`cover-<id>`) morphs into the post's cover and a blogs list title (`title-<id>`) into the
-  post's h1.
+  reduced motion). The root cross-fades in 200 ms on `--ease`; the header (`view-transition-name: top`) holds still; the
+  post's cover (`cover-<id>`) morphs from and back to the card you clicked. Only that card is named: an inline script
+  in BaseLayout's head names it on `pageswap` (the card you leave from) and on `pagereveal` (the card you return to,
+  list pages only), since a post's More blogs repeats other covers that would otherwise fly across the screen. (The
+  title morph went on 14 Nov: nothing carried its name.)
 - **Theme pour** (`ThemeToggle.astro`): a click on the switch spills the new theme out of it over the old one, a
   liquid blob centred on the switch, so from the top right it floods down and left. A same-document view transition
   snapshots the page (`html.pour` drops every other view-transition-name, so the header and covers go with it, and
@@ -193,15 +208,21 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
   pours are alike: every click rolls each knob inside a range that still reads as liquid: 850 to 1250 ms, ease-out
   power 1.7 to 2.6, and per wave its lobes (3 to 5, 6 to 9, 10 to 14), depth (4 to 8%, 2.5 to 5%, 1 to 3% of the
   radius, so the rim never dips more than 16%), speed (3 to 6, 4 to 7, 2 to 5 rad/s, either way round) and phase.
-  A click mid-pour starts a new one from the current state. Under reduced motion the themes cross-fade (the view
+  A click mid-pour is ignored until it lands: a second view transition would skip the first and snap the whole page
+  to the new theme. Under reduced motion the themes cross-fade (the view
   transition's default, about 250 ms), so there is no full-screen brightness jump; without view transitions the
   theme flips at once.
-- **Switch morph** (`global.css`, `.theme`): as the theme flips the icon morphs over 600 ms `--ease`. Sun to moon:
-  the rays spin a quarter turn into the middle and vanish (opacity 200 ms), the orb grows by half (its outline
-  thinned to keep the weight) and a shade circle slides in along the diagonal from the top right; an svg mask cuts
-  the orb's outline under the shade and the shade's own outline, clipped to the orb, closes the crescent. Moon to
-  sun runs it back, the rays fading in only after 250 ms, once they are outside the orb. Every part is a CSS
-  transition on `--m`, so a system theme change morphs too. Under reduced motion it swaps at once.
+- **Switch morph** (`global.css`, `.theme`): as the theme flips the icon morphs over 600 ms `--ease`. One registered
+  number, `--m` (0 sun, 1 moon), transitions, and every part is worked out from it each frame, so a system theme
+  change morphs too. Sun to moon: the rays spin a quarter turn into the middle and fade by m = 0.25 (on the way back
+  they appear only near the end, once they are outside the orb), the orb grows by half (its outline thinned to keep
+  the weight) and a shade circle (r 38 against the orb's 56) slides in along the diagonal from the top right, ending
+  46 from the orb's centre, so the circles cross at about 55 degrees: a full crescent with short horns. The crescent
+  has round horns at every frame: the orb's outline is two round-capped half circles turned so their ends sit where
+  the circles cross (`acos` of the law of cosines in CSS, 0 while they don't meet, so the halves close the orb), and
+  the shade's outline is two round-capped quarter circles turned to end at the same points, clipped to the orb.
+  (Until 14 Nov the moon was cut with a mask and a clip, which left long, square-cut horns.) Without CSS trig the
+  halves don't turn and the moon shows as an eclipsed orb. Under reduced motion it swaps at once.
 - **Header name**: the name beside the logo (§3) is shown when the hero's name has left the area under the header
   (an IntersectionObserver with the header's height as its top margin). It writes itself in: a `clip-path` inset
   opens left to right over 750 ms, linear, a steady pen speed, so the hand font reads as written. Scrolled back, it
@@ -242,12 +263,13 @@ both are gone. Reduced motion: the light only, no ripple. Trackpad wheel only.
 ### Splash screen (`components/Splash.astro`, `scripts/splash/`)
 
 On a fresh arrival at the home page, once per tab session, the mark assembles in the middle of the screen in the theme's ink, moves
-into the header logo (800 ms, centre linear in eased time, scale geometric), turns orange (350 ms) and the real SVG
-takes over in the same frame; the content rises from 200 ms into the move. It does not play on a reload, a second arrival in the same tab session
+into the header logo (650 ms, centre linear in eased time, scale geometric), turns orange (350 ms) and the real SVG
+takes over in the same frame; the content rises from 100 ms into the move. It does not play on a reload, a second arrival in the same tab session
 (`sessionStorage['splash']`), from another page of the site (the header logo included) or by back and forward.
 `?splash=off` skips it (for screenshots and checks), `?splash=on` forces it.
 
-- **Bits** (`bits.ts`, lands 4.05 s), the one splash: a faint field of 0s and 1s gathers into the mark hexagon by
+- **Bits** (`bits.ts`, the mark is whole at 2.27 s, docks from 2.3 s, lands about 3.3 s; until 14 Nov it landed at
+  4.05 s and the finished mark sat still for 400 ms before the sweep), the one splash: a faint field of 0s and 1s gathers into the mark hexagon by
   hexagon; read row by row the landed digits are the ASCII bits of "rajiv.me". A diagonal sweep turns them into a pixel
   mosaic that resolves into the vector mark. (Machine, the plates that unfolded into the mark, was dropped on 30 Oct.)
 
@@ -258,24 +280,24 @@ it adds `html.splash` (never under reduced motion), which hides `.mark` and `.ri
 everything after the landing too (a screen taller than the hero shows it); that rises with the last fact row (500).
 The splash's frame is a pure function of t (`kit.ts` holds the geometry; prototypes and frame-by-frame scrubbing live
 in the local `docs/v4-research/i-loaders/` playboard). A pointer down, key, touch or wheel while the bits gather moves its clock to the start of the move
-to the header, so the hand-off still plays and the wait is at most 1.35 s more; the page holds at the top (`overflow: hidden`, gutter kept) until the content rises. A theme change mid-splash
+to the header, so the hand-off still plays and the wait is at most about 1 s more; the page holds at the top (`overflow: hidden`, gutter kept) until the content rises. A theme change mid-splash
 redraws in the new ink. If the splash script hasn't started 2.5 s after the gate, the page shows anyway. rAF stops at
 the landing.
 
 ## §5 Home page (`pages/index.astro`)
 
 Quiet: about him in one paragraph, what he works on now, what he wrote, where he has worked, the things he made. One
-drawing that draws itself (not on a phone), the header for getting around. The AI depth is shown, never titled: no
+drawing that draws itself (on a phone a mini version: the landing fills the first screen, `min-height: 100svh`, a small doodle under the header, then the text 32px under it, the two centred in the screen together; the doodle is only the telescope (scaled 1.3, moved up beside the planet), the planet (scaled 0.72) and the stars, each part keeping the drawing's line weight, cropped to an 800 x 650 window of the drawing from y 378 and drawn 72% of the column wide (at most 230px tall) in a full-width band with the pause at its right end; on a short screen (a phone with its browser bars) the band gives way down to 112px (`100svh - 520px`) so the text keeps the first screen down to the email; the route, moon, pendulum and rocket are hidden by their group classes; How I work below the fold), the header for getting around. The AI depth is shown, never titled: no
 "AI engineer" anywhere. Copy is written the way the best engineers' own sites are (Lee Robinson, Mitchell Hashimoto,
 Hamel Husain): who and where, what now, one line of values, one human line. No labels, no adjectives about himself.
 Sections, in order:
 
 1. **Landing** (`#about`): `min-height: clamp(640px, 100vh, 960px)`, the text vertically centred. Left column
    `min(760px, 52vw)`: the name (`--t-sm`, `--accent`), then 20px under it the h1 "Software you don’t / have to think
-   about." (`clamp(38px, 4.6vw, 66px)`, weight 400, leading 1, `--hi`, two authored lines): big and quiet, a step
-   lighter than the rest of the display type. Under it one short paragraph (`clamp(17px, 1.3vw, 19px)`, leading 1.55,
-   `--muted`, max 28em, 36px down): "A software engineer in New Delhi, building web and native apps, their backends and
-   the infrastructure under them since 2019. Lately, language models inside real products. The aim stays the same:
+   about." (`--t-display`, weight 400, leading 1.02, `--hi`, two authored lines): big and quiet, a step
+   lighter than the rest of the display type. Under it one short paragraph (`--t-sm`, leading 1.55,
+   `--muted`, max 28em, 32px down): "A software engineer in New Delhi, building web and native apps, their backends and
+   the infrastructure under them since 2020. Lately, language models inside real products. The aim stays the same:
    fast to load, clear to use, boring to run." The values phrase (`.hl`) reads in `--ink` until the pointer is on the
    paragraph; then `--accent` flows through it left to right, line after line, and ebbs back on leave. It is text
    clipped to a `--accent` to `--ink` gradient (soft 40% to 60% edge, 250% wide, one strip across the line break)
@@ -285,14 +307,14 @@ Sections, in order:
    48% (to the screen edge) holds the doodle, centred with 96 / 56 / 40 px of air: a sketchbook line drawing of a
    telescope whose dotted route loops a ringed planet and runs up to a rocket, with a moon, a pendulum, stars and two
    hexagons. It is an inline SVG traced from Codex line art (`src/assets/doodle.svg`; tracer in the local
-   `docs/v4-research/art/vector/`; the planet is generated, see §4): strokes on `currentColor` (`--ink`), the flame in
+   `docs/v4-research/art/vector/`; the planet is generated, see §4): strokes on `currentColor` (`--draw`), the flame in
    `--logo` and one hexagon in `--spot`, so it follows the theme. At 720px and under the home page has no doodle (the
    404 keeps its 208px band): the landing starts `--head-h` + 32px down, so the page opens on the name and headline,
    balanced over three lines (no forced break). The hidden doodle does no work: its observer never sees it, so the
    planet's loop never starts and its CSS loops don't run.
 2. **How I work** (`#now`, counted as About by the scroll spy): the h2 "How I work" (it read as a status, not as
-   what he does) with its note under it ("Where most of my week goes."), then, in the content block (below), the thesis (`--t-m`, 500,
-   max 22em, balanced): "The model is rarely the hard part. Everything around it is." Under it its four parts in two
+   what he does) with its note under it ("Where most of my week goes."), then, in the content block (below), the thesis (`--t-m`, 400 in `--ink`, leading 1.3,
+   max 22em, balanced, so it reads as a statement and not as a second heading): "The model is rarely the hard part. Everything around it is." Under it its four parts in two
    columns (one on a phone), each a 500 title and a muted sentence on a `--line` hairline. Each sentence is in the
    first person and in words a founder or recruiter can follow, the outcome last; the posts on these
    topics, once written, carry the technical terms (no MCP, evals, hooks or diffs here). Tools, not paragraphs (a few narrow tools over a product's
@@ -312,13 +334,11 @@ Sections, in order:
    characters) everywhere. Nothing is sticky. (Until 13 Nov the head sat in a sticky
    first column on `--cols` with the content from the axis; it read as two pages side by side.)
    - Blogs: the note "Notes on building for the web, and the problems I would rather solve once." (the same
-     line as the /blogs dek; "putting models to work" comes back into both when those posts are published), then
-     a hint for the other half of his writing, 12px down in `--muted` 15px: "Here for philosophy or psychology?
-     Those essays are in the full list too." with the full list linked, the
+     line as the /blogs dek; "putting models to work" comes back into both when those posts are published), then the
      four newest posts that have a cover drawing as `PostCard` rows (so the list is a mix and every row carries a
      doodle; a new post joins it once its cover is drawn), their covers in the `--media` column at 2:1 (240 x 120,
-     so a row is about as tall as its text; from 721px up, the /blogs list keeps its own smaller cover), then a row of its own between hairlines: "Read all 6
-     posts" (`--t-sm`, 500, the live count; a phone shows three posts, then this row)
+     so a row is about as tall as its text, from 721px up; /blogs uses the same row), then a row of its own between hairlines: "Read all 6
+     posts" (`--t-s`, 500, the live count, a step under the post titles so it does not read as another post; a phone shows three posts, then this row)
      with a `--accent` arrow at the far end that slides 6px on hover (reduced motion: it stays); the label turns
      `--accent` too.
    - Experience (counted as Blogs by the scroll spy): the note "The teams I’ve built with, newest first." A
@@ -328,12 +348,26 @@ Sections, in order:
      the logo (`src/assets/logos/`, imported and hashed, a plain `<img>`), beside it the role as the h3 (`--t-sm`,
      500) and the company muted under it, then one line on the product and his part in it in `--ink` (16px down),
      then a short list of what he built there and the problem it solved (`ul.wk`, 12px down: muted, lines 6px apart,
-     disc markers in `--accent` hanging outside the edge). Both at most 36em. The rail hangs in the gutter 35px left
-     of the edge: one 2px line down the whole list from the first node, `--accent` at the top into `--line` by 160px
-     and fading out over the last 64px. Each entry has a 12px node on it, level with the logo tile: the current job
-     filled `--accent` with a 5px ring of the accent at 18%, a past job a 2px `--muted` ring on `--bg`. Entries sit
-     48px apart. The `work` lines are lorem ipsum placeholders until he writes them; they must be replaced before
-     this ships. The one place an employer is named: Senior Frontend Engineer at swipejobs (Aug 2021 to now),
+     disc markers in `--accent` hanging outside the edge; left out while a job has no lines). Both at most 36em. The rail hangs in the gutter 35px left
+     of the edge, one stroke of colour from now into the past: a 2px line from the current job's node to the oldest's,
+     a gradient from `--accent` to an ember (`--accent` at 58% over `--bg`, so it stays orange in both themes: a deep
+     ember on dark, a peach on light), ending at the last node. Each job carries its place on it (`--t0` at its node,
+     `--t1` at the next, 0 to 1 down the list, set in the template), so its segment (`.job:not(:last-child)::before`)
+     runs from one colour to the next and the segments join into one gradient however many jobs there are. Each node
+     is a 12px dot centred on the logo tile, filled with the rail's colour where it sits, with a halo of the same
+     colour (5px at 20% for the current job, 3px at 16% for a past one); "to now" is `--accent`, so the current job
+     reads as live. The current job's dot also breathes: while the job is on screen
+     (an IntersectionObserver at 30% sets `.live` and takes it off once the job leaves, so off screen nothing runs) a
+     soft ring of its colour swells out of the dot and fades (`::after`, opacity 0.4 to 0 and scale 1 to 2.8 over the
+     first 70% of 3000 ms `--ease`, then a rest), on a loop. A past job never pulses, so the pulse says "still here".
+     The drawing's pause button stops it too (it sets `html.held`), which is how it meets WCAG 2.2.2. Only transform
+     and opacity move; under reduced motion there is the still halo only, and on a phone, with no rail, there is no
+     dot to pulse. The line draws itself down from each node as it scrolls in (`scale` 1 0 to 1 1 from the top, on
+     the job's named view timeline `--job`, `entry 40%` to `cover 55%`; a pseudo-element can't be a view timeline's
+     subject); under reduced motion or without view timelines it is simply there. (Until 14 Nov it was one line down
+     the whole list, accent fading into `--line` and out at the bottom, with a `--bg` ring for past jobs: the fades
+     said nothing and it read unfinished.) Entries sit
+     48px apart. The `work` lines are empty until he writes them (no placeholder text on the page). The one place an employer is named: Senior Frontend Engineer at swipejobs (Aug 2021 to now),
      Frontend Engineer at Influence (Jan 2020 to Jul 2021). Real titles and dates only, no stats. At 720px and under
      there is no gutter, so no rail or nodes: the dates sit on one line above each job, which takes the full width
      (the work list's markers move inside, 18px).
@@ -360,21 +394,24 @@ Sections sit 120px apart (88px on a phone). The footer is the layout's (§3).
 pass `wide`, which from 721px puts the cover in the `--media` column at 2:1, 48px from the text): on a `--line` hairline with 24px padding, the text on the left (the title in `--t-sm`, the muted summary,
 max 36em, then "Oct 2026 · 4 min read" in `--muted` 14px under it) and, 32px away, a 16:10 cover with a `--frame`
 border and no fill, `clamp(112px, 9vw, 136px)`
-wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, ink on `currentColor`, orange in
+wide: the post's line doodle, traced to SVG in `src/assets/covers/<slug>.svg`, `--draw` on `currentColor`, orange in
 `--spot`, scaled 1.25 so the drawing (at most 70% of its frame) keeps only a thin margin; a post with no cover yet
-shows its line of code there, in mono at `--t-code`. On a phone the cover is an 80px thumbnail beside the title only (16px gap; a code cover sets its line at 9px), and
+shows its line of code there, in mono, sized to its frame (`clamp(9px, 7.4cqi, --t-code)`) and broken only between
+tokens, so the `code` line in its frontmatter stays short (about 20 characters). On a phone the cover is an 80px thumbnail beside the title only (16px gap; a post with only a code cover shows none, and its title takes the row), and
 the summary and date run the full width under them, so the summary keeps a readable line (about 38 characters at
 375, not 27).
 
 ## §6 Blogs list (`pages/blogs/index.astro`)
 
-A grid on `--cols` from 1000px up. The first column is a sticky head (top `--head-h` + 40px): the h1 "Blogs"
-(`--t-xl`), the dek "Notes on building for the web, and the problems I would rather solve once." (`--t-sm`,
-`--muted`) and a count ("6 posts since 2021"). From the axis, the posts by year, newest first: the
-year (`--t-xs`, `--muted`) on a hairline, then each post as the home page's row (`PostCard`): title, summary, "Mon
-YYYY · N min read" under it and the cover on the right (or its line of code when it has none), the cover morphing into
-the post's own on navigation. The year's hairline stands in for its first row's.
-Under 1000px one column with the head on top.
+Laid out like the home page's Blogs (§5), top to bottom with no columns: the h1 "Blogs" (`--t-xl`) at the left margin,
+the dek "Notes on building for the web, and the problems I would rather solve once." (`--t-s`, `--muted`, max 36em,
+16px down) and a count ("6 posts since 2021", `--t-xs`, 12px down). Then, 56px under them (40px on a phone), the posts
+by year, newest first, on the home page's text edge (indented `clamp(0px, 7.8vw, 112px)`, at most 1040px wide): the year
+(`--t-xs`, `--muted`) on a hairline, then each post as the home page's wide row (`PostCard wide`): title, summary, "Mon
+YYYY · N min read" under it and the cover in the `--media` column at 2:1 (or its line of code when it has none), the
+cover morphing into the post's own on navigation. The year's hairline stands in for its first row's. (Until 14 Nov the
+head sat in a sticky first column on `--cols` with the list from the axis; it read as two pages side by side, as the
+home page's sections once did.)
 
 ## §7 Post (`pages/blogs/[slug].astro`, `styles/prose.css`)
 
@@ -383,14 +420,14 @@ code, canonical, draft; helpers in `lib/blogs.ts`). From 1200px three tracks, `m
 minmax(0, 1fr)`, gap 64px, so the article is centred (it gives up its centre near 1200px before the rail narrows):
 
 - **Rail**, 220px at the start of the left track (under the logo), sticky under the header, its top level with the
-  title: "Blogs" with a Phosphor arrow back to the list; the meta as a column (date, "N min read", "Updated" when there
+  title: "All blogs" with a Phosphor arrow back to the list; the meta as a column (date, "N min read", "Updated" when there
   is one); then under a hairline "On this page" and the `##` headings (when there are two or more; `--muted`, the
   active one `--ink` with the `--accent` dot); then two controls with 16px Phosphor icons: "Copy as Markdown"
   (fetches the post's `.md` into the clipboard; the icon becomes an `--accent` tick and the label "Copied" for 2 s,
   announced by an `aria-live` region) and "View as Markdown".
-- **Article**, 44em (20% wider than the old 37em): the title (§1), the description as a dek (`--t-sm`, `--muted`), the
+- **Article**, 44em (20% wider than the old 37em): the title (`--t-xl`), the description as a dek (`--t-sm`, `--muted`), the
   cover (16:10 `--panel`, posts without one have none), then the prose, 17px/1.7, text, code, tables and images all on
-  the 44em measure (about 90 characters a line). h2 at `--t-sm`, inline code on
+  the 44em measure (about 90 characters a line). h2 at `--t-m` (a step over the dek and the list titles), inline code on
   `--panel`, code blocks on `--panel` with no radius, blockquotes with a 1px `--line` rule, tables and rules in
   hairlines. A post first published elsewhere ends with "First published on <host>." Every post then signs off
   (`.by`, muted, max 44em, links in `--ink`), for the reader who came from a search and has not seen the home page:

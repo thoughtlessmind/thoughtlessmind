@@ -11,6 +11,14 @@
   initial-value: 0;
 }
 
+/* The theme switch's state, 0 for the sun to 1 for the moon (see the theme switch below). Registered so it can
+   transition: every part of the drawing is worked out from it, frame by frame. */
+@property --m {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 /* Tokens. Dark is the default; light follows the system until the switch picks one (data-theme on <html>).
    The logo is #ff5f1f in both themes; text orange darkens to #b23c0a on light for AA. */
 :root {
@@ -39,6 +47,9 @@
   --accent: #ff5f1f;
   /* The header's written name: an orange gradient along the writing, logo orange to a warm amber. */
   --sig: linear-gradient(90deg, #ff5f1f, #ff9a4d 70%, #ffb877);
+  /* The drawings' lines (the landing doodle, the 404's, post covers): the text colour mixed a third of the way into the
+     page, so a drawing sits behind the words next to it instead of matching them. Follows both themes. */
+  --draw: color-mix(in oklab, var(--ink) 66%, var(--bg));
   /* The drawings' filled bits (the doodles' star, the footer name, cover accents): the logo colour. */
   --spot: var(--logo);
   /* The frame round post covers and project stills: the text colour at 16%, on no fill. */
@@ -60,17 +71,23 @@
   /* Hand is for the header's written name only. */
   --hand: "Caveat Variable", "Bradley Hand", cursive;
   --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* taste-skill-ignore */
-  /* Type steps (DESIGN.md §1): full size at 1440, the phone size by 720 or so. */
-  --t-xl: clamp(40px, 5vw, 72px);
-  --t-l: clamp(28px, 2.4vw, 34px);
-  --t-m: clamp(20px, 1.95vw, 28px);
-  --t-sm: clamp(19px, 1.55vw, 22px);
-  --t-s: 17px;
-  --t-xs: 15px;
-  --t-code: 13px;
-  /* The frame: one pair of margins, the 42% axis of the header, and the header's height at rest (pages clear it). */
-  --gut: max(clamp(20px, 3.4vw, 48px), env(safe-area-inset-left, 0px));
-  --gut-r: max(clamp(20px, 3.4vw, 48px), env(safe-area-inset-right, 0px));
+  /* Type steps (DESIGN.md §1): the phone size at 375 to the full size at 1440, in rem so browser zoom scales them.
+     Titles lead by weight and colour, not size: 60 / 44 / 30 / 24 / 20 / 17 / 14. */
+  --t-display: clamp(2.25rem, 1.72rem + 2.25vw, 3.75rem);
+  --t-xl: clamp(2rem, 1.74rem + 1.13vw, 2.75rem);
+  --t-l: clamp(1.5rem, 1.37rem + 0.56vw, 1.875rem);
+  --t-m: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem);
+  --t-sm: clamp(1.125rem, 1.08rem + 0.19vw, 1.25rem);
+  --t-s: 1.0625rem;
+  --t-xs: 0.875rem;
+  --t-code: 0.8125rem;
+  /* The frame: one pair of margins, the 42% axis of the header, and the header's height at rest (pages clear it).
+     The page is laid out for a window up to 1440 wide (--fw); past that the margins grow (--side each) and the frame
+     holds at 1440, centred, so a wide screen doesn't stretch the content apart. */
+  --fw: min(100vw, 1440px);
+  --side: max(0px, (100vw - 1440px) / 2);
+  --gut: max(clamp(20px, 3.4vw, 48px) + var(--side), env(safe-area-inset-left, 0px));
+  --gut-r: max(clamp(20px, 3.4vw, 48px) + var(--side), env(safe-area-inset-right, 0px));
   --cols: minmax(0, 42fr) minmax(0, 58fr);
   --head-h: 76px;
   /* The home page's right-hand column: post covers, project stills and job dates all start on it (DESIGN.md §5). */
@@ -108,6 +125,7 @@
   :root {
     --frame: color-mix(in oklab, var(--ink) 40%, transparent) !important;
     --line: color-mix(in oklab, var(--ink) 40%, transparent) !important;
+    --draw: var(--ink) !important;
   }
 }
 :root[data-theme="light"] {
@@ -368,27 +386,11 @@
       transition: opacity 200ms var(--ease);
     }
   }
-  /* Phone: no room for the name and the nav side by side. The name floats over the nav's place and the nav fades
-     out while it shows; scrolled back to the top, the nav returns. Other pages keep the nav and show no name. */
+  /* Phone: no room for the name and the nav side by side, and the nav is the way around a long page, so the nav
+     stays and the name is left out. */
   @media (max-width: 720px) {
-    .top .name {
-      position: relative;
-    }
     .sig {
-      position: absolute;
-      left: calc(100% + 4px);
-      font-size: 25px;
-    }
-    .top[data-named="still"] .sig {
       display: none;
-    }
-    .top nav {
-      transition: opacity 200ms var(--ease);
-    }
-    .top[data-named=""] nav {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 150ms var(--ease), visibility 0s 150ms;
     }
   }
   .mark {
@@ -610,9 +612,11 @@
     .hi-pop {
       transition: opacity 180ms var(--ease), translate 180ms var(--ease), display 180ms allow-discrete, overlay 180ms allow-discrete;
     }
+    /* Closing is quicker than opening. */
     .hi-pop:not(:popover-open) {
       opacity: 0;
       translate: 0 -6px;
+      transition-duration: 120ms;
     }
     @starting-style {
       .hi-pop:popover-open {
@@ -633,6 +637,34 @@
     }
     .top .reach + .theme {
       margin-left: -6px;
+    }
+  }
+  /* The narrowest phones (320 to 400): the bar packs tighter so the theme switch never runs off the screen, and the
+     nav may wrap under enlarged text spacing rather than push it out (WCAG 1.4.10, 1.4.12). */
+  @media (max-width: 400px) {
+    /* :root, so these win over the phone bar's rules further down. */
+    :root .top {
+      gap: 8px;
+    }
+    :root .top .bar {
+      gap: 6px;
+      min-width: 0;
+    }
+    :root .top nav {
+      flex-wrap: wrap;
+      gap: 2px 12px;
+      min-width: 0;
+    }
+    .hi {
+      padding-inline: 8px;
+    }
+  }
+  @media (max-width: 340px) {
+    :root .top nav {
+      column-gap: 10px;
+    }
+    .hi {
+      padding-inline: 6px;
     }
   }
 
@@ -662,33 +694,56 @@
   :root[data-theme="light"] .theme svg {
     --m: 1;
   }
-  /* The rays spin a quarter turn into the middle; the orb grows half again (its outline thinned to keep the weight);
-     the shade slides in along the diagonal from outside the orb to bite the crescent. */
+  /* Everything follows --m. The rays spin a quarter turn into the middle and fade by m = 0.25 (so no ray shows
+     inside the orb; on the way back they appear only near the end). The orb grows half again, its outline thinned to
+     keep the weight. The shade (r 38) slides in along the diagonal from outside the orb to bite the crescent: at
+     m = 1 its centre is 46 from the orb's (r 56), so the two cross at about 55 degrees, a full crescent with short
+     horns. The orb's outline is two round-capped half circles turned so their ends sit exactly where the circles
+     cross (acos of the law of cosines, --al; 0 while they don't meet, so the halves close the full orb). The shade's
+     outline is two round-capped quarter circles turned the same way (--be) to meet in the middle and end at those
+     points, clipped to the orb for the first frames, when its visible arc is still shorter than one of them. So each
+     horn is a round cap at every frame of the morph. */
+  .theme svg {
+    --dx: calc(85 - var(--m) * 52.5);
+    --d: calc(var(--dx) * 1.41421);
+    --al: acos(min(1, (1692 + var(--d) * var(--d)) / (112 * var(--d))));
+    --be: acos(min(1, (var(--d) * var(--d) - 1692) / (76 * var(--d))));
+  }
   .theme .sm-rays,
-  .theme .sm-orb {
+  .theme .sm-orb,
+  .theme .sm-a,
+  .theme .sm-b {
     transform-origin: 128px 128px;
   }
   .theme .sm-rays {
     transform: rotate(calc(var(--m) * 90deg)) scale(calc(1 - var(--m)));
-    opacity: calc(1 - var(--m));
+    opacity: clamp(0, 1 - var(--m) * 4, 1);
   }
   .theme .sm-orb {
     transform: scale(calc(1 + var(--m) * 0.5));
     stroke-width: calc(16px / (1 + var(--m) * 0.5));
   }
-  .theme .sm-b {
-    transform: translate(calc(85px - var(--m) * 61px), calc(var(--m) * 61px - 85px));
+  .theme .sm-a {
+    stroke-dasharray: 180 180;
   }
-  /* The rays fade fast on the way in and only once they are back outside the orb on the way out, so no faint ray
-     shows inside it. */
+  .theme .sm-a1 {
+    transform: rotate(calc(-45deg + var(--al)));
+  }
+  .theme .sm-a2 {
+    transform: rotate(calc(-225deg - var(--al)));
+  }
+  .theme .sm-b {
+    stroke-dasharray: 90 270;
+  }
+  .theme .sm-b1 {
+    transform: translate(calc(var(--dx) * 1px), calc(var(--dx) * -1px)) rotate(calc(135deg - var(--be)));
+  }
+  .theme .sm-b2 {
+    transform: translate(calc(var(--dx) * 1px), calc(var(--dx) * -1px)) rotate(calc(45deg + var(--be)));
+  }
   @media (prefers-reduced-motion: no-preference) {
-    .theme .sm-rays,
-    .theme .sm-orb,
-    .theme .sm-b {
-      transition:
-        transform 600ms var(--ease),
-        opacity 200ms var(--ease) calc((1 - var(--m)) * 250ms),
-        stroke-width 600ms var(--ease);
+    .theme svg {
+      transition: --m 600ms var(--ease);
     }
   }
 
@@ -711,26 +766,26 @@
   }
 
   /* Landing frame (the home page and the 404): the text on the left, the doodle on the right 48%. It runs to the
-     right edge of the screen and clips the doodle there. On a phone the doodle is a band under the header (strokes
+     right edge of the screen (of the 1440 frame on a wider one) and clips the doodle there. On a phone the doodle is a band under the header (strokes
      1.8x thicker), the text under it. */
   .hero {
     position: relative;
     display: flex;
     align-items: center;
     min-height: clamp(640px, 100vh, 960px);
-    margin-right: calc(-1 * var(--gut-r));
+    margin-right: calc(var(--side) - var(--gut-r));
     padding-block: 112px 56px;
     overflow-x: clip;
   }
   .hero-text {
     position: relative;
     z-index: 1;
-    width: min(760px, 52vw);
+    width: min(760px, var(--fw) * 0.52);
   }
   .hero .art {
     position: absolute;
     inset: 0 0 0 auto;
-    width: 48vw;
+    width: calc(var(--fw) * 0.48);
     padding: 96px 56px 40px 0;
     pointer-events: none;
   }
@@ -763,9 +818,9 @@
     align-items: baseline;
     padding-block: 22px;
     border-block: 1px solid var(--line);
-    font-size: var(--t-sm);
+    font-size: var(--t-s);
     font-weight: 500;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
     transition: color 200ms var(--ease);
   }
   @media (hover: hover) {

@@ -19,7 +19,7 @@ const socials = [
         socials.map(([label, href]) => (
           <li>
             <a class="ul hit" href={href} rel="noopener me" target="_blank">
-              {label}
+              {label}<span class="sr-only"> (opens in a new tab)</span>
             </a>
           </li>
         ))
@@ -65,10 +65,12 @@ const socials = [
     gap: 8px 24px;
   }
   /* Each link takes a finger (`.hit` in global.css), the one-letter X included. */
-  /* The star field: a canvas (scripts/field.ts) that reads its dot colour from `color`. */
+  /* The star field: a canvas (scripts/field.ts) that reads its dot colour from `color`. It runs the full width of the
+     window, out through the page margins (the footer clips it at the edges). */
   .field {
     display: block;
-    width: 100%;
+    width: calc(100% + var(--gut) + var(--gut-r));
+    margin-inline: calc(-1 * var(--gut)) calc(-1 * var(--gut-r));
     height: clamp(200px, 21vw, 300px);
     margin-top: 64px;
     color: var(--muted);

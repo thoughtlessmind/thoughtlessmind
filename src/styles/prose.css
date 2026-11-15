@@ -15,8 +15,8 @@
 /* Text, code, tables and images all use the article's 44em measure (about 90 characters a line in Geist). */
 
 .prose h2 {
-  margin: 2.4em 0 0.6em;
-  font-size: var(--t-sm);
+  margin: 2.2em 0 0.6em;
+  font-size: var(--t-m);
   font-weight: 500;
   line-height: 1.25;
   letter-spacing: -0.015em;

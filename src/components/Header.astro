@@ -15,7 +15,7 @@ const { current, progress = false } = Astro.props;
 
 <div class="dock">
 <header class="top wrap" data-progress={progress ? '' : undefined}>
-  <a class="name" href="/" aria-label={`${SITE.brand}, home`}>
+  <a class="name" href="/" aria-label={`${SITE.name}, home`}>
     <svg class="mark" data-logo viewBox="-2.01 0 30 30" fill="#ff5f1f" aria-hidden="true"><path d="M8.66 5 17.32 10v10l-8.66 5L0 20V10z" fill-opacity=".45"></path><path d="M17.32 10l8.66 5v10l-8.66 5-8.66-5V15z" fill-opacity=".65"></path><path d="M17.32 0l8.66 5v10l-8.66 5-8.66-5V5z" fill-opacity=".8"></path></svg>
     <span class="sig" aria-hidden="true">{SITE.name}</span>
   </a>
@@ -48,8 +48,8 @@ const { current, progress = false } = Astro.props;
             <a href={`mailto:${SITE.email}`}><span>Email</span><span class="hi-sub">{SITE.email}</span></a>
             <button type="button" class="hi-copy" data-copy={SITE.email} aria-live="polite">Copy</button>
           </li>
-          <li><a href={SITE.socials.linkedin} rel="noopener" target="_blank"><span>LinkedIn</span><span class="hi-sub">Message me</span></a></li>
-          <li><a href={SITE.socials.x} rel="noopener" target="_blank"><span>X</span><span class="hi-sub">@{SITE.socials.x.split('/').pop()}</span></a></li>
+          <li><a href={SITE.socials.linkedin} rel="noopener" target="_blank"><span>LinkedIn</span><span class="hi-sub">Message me</span><span class="sr-only"> (opens in a new tab)</span></a></li>
+          <li><a href={SITE.socials.x} rel="noopener" target="_blank"><span>X</span><span class="hi-sub">@{SITE.socials.x.split('/').pop()}</span><span class="sr-only"> (opens in a new tab)</span></a></li>
         </ul>
       </div>
     </div>
@@ -112,7 +112,7 @@ const { current, progress = false } = Astro.props;
   });
 
   // Say hi: a native popover (light dismiss and Esc for free). Copy puts the address on the clipboard and says so.
-  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
+  document.querySelectorAll<HTMLButtonElement>('.hi-copy').forEach((b) =>
     b.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(b.dataset.copy!);

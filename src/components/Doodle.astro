@@ -3,14 +3,25 @@
 // Codex line art into strokes on currentColor (the tracer lives in the local docs/v4-research/art/vector/). It draws
 // itself once when the content rises (DESIGN.md §4): each stroke carries its delay (--d) and duration (--t) in ms.
 // The planet is generated (scripts/planet.ts) and keeps turning, with its rings; the pendulum keeps swinging. All of it
-// holds still while the doodle is off screen.
+// holds still while the doodle is off screen. Each top-level group is named for its part (.telescope, .route, .planet,
+// .moon, .pendulum, .stars, .rocket) so the home page can show a mini doodle on a phone.
 import doodle from '../assets/doodle.svg?raw';
+import pause from '@phosphor-icons/core/assets/regular/pause.svg?raw';
+import play from '@phosphor-icons/core/assets/regular/play.svg?raw';
 import { withPlanet } from '../scripts/planet';
 
 const svg = withPlanet(doodle);
+const inner = (s: string) => s.replace(/^<svg[^>]*>|<\/svg>$/g, '');
 ---
 
 <Fragment set:html={svg} />
+{/* The planet, the pendulum and the current job's pulse (index.astro) move for as long as the page is open, so they
+    get a pause (WCAG 2.2.2), the way an autoplaying hero video does: it holds the drawing and sets `html.held`. Not
+    shown under reduced motion, where nothing moves. */}
+<button class="d-pause" type="button" aria-pressed="false" aria-label="Pause animations">
+  <svg class="d-i d-i-pause" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(pause)} />
+  <svg class="d-i d-i-play" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" set:html={inner(play)} />
+</button>
 
 <script>
   import { BANDS, bandPath } from '../scripts/planet';
@@ -20,16 +31,21 @@ const svg = withPlanet(doodle);
   const root = document.documentElement;
   const paths = [...document.querySelectorAll<SVGPathElement>('[data-band]')];
   const svg = paths[0]?.ownerSVGElement;
+  const btn = document.querySelector<HTMLButtonElement>('.d-pause');
   if (svg && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    let raf = 0, last = 0, t = 0, seen = false;
+    let raf = 0, last = 0, t = 0, drawn = 0, seen = false, held = false;
+    // The bands move well under a pixel a frame (a 64 s day), so they are redrawn at 30 fps: each redraw is a layout.
     const tick = (now: number) => {
       if (last) t += (now - last) / 1000;
       last = now;
-      paths.forEach((p, i) => p.setAttribute('d', bandPath(BANDS[i], t)));
+      if (now - drawn >= 33) {
+        drawn = now;
+        paths.forEach((p, i) => p.setAttribute('d', bandPath(BANDS[i], t)));
+      }
       raf = requestAnimationFrame(tick);
     };
     const sync = () => {
-      const go = seen && !root.classList.contains('splash');
+      const go = seen && !held && !root.classList.contains('splash');
       if (go && !raf) raf = requestAnimationFrame(tick);
       if (!go && raf) {
         cancelAnimationFrame(raf);
@@ -42,6 +58,13 @@ const svg = withPlanet(doodle);
       sync();
     }).observe(svg);
     new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
+    btn?.addEventListener('click', () => {
+      held = !held;
+      svg.classList.toggle('held', held);
+      root.classList.toggle('held', held);
+      btn.setAttribute('aria-pressed', String(held));
+      sync();
+    });
   }
 </script>
 
@@ -51,7 +74,7 @@ const svg = withPlanet(doodle);
     width: 100%;
     height: 100%;
     overflow: visible;
-    color: var(--ink);
+    color: var(--draw);
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
@@ -89,9 +112,43 @@ const svg = withPlanet(doodle);
     /* Held at the start while the splash plays; it runs once the content rises (html.go). */
     html.splash:not(.go) .doodle,
     html.splash:not(.go) .doodle * { animation-play-state: paused; }
+    html.splash:not(.go) .d-pause { visibility: hidden; }
     .doodle.idle .ring,
-    .doodle.idle .swing { animation-play-state: paused; }
+    .doodle.idle .swing,
+    .doodle.held .ring,
+    .doodle.held .swing { animation-play-state: paused; }
   }
+  /* The pause: a quiet round button in the drawing's lower right corner, --muted, --accent on hover or focus. */
+  .d-pause {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    display: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--frame);
+    border-radius: 50%;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: color 200ms var(--ease), border-color 200ms var(--ease), scale 100ms var(--ease);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .d-pause { display: grid; }
+    .d-pause:active { scale: 0.92; }
+  }
+  @media (hover: hover) {
+    .d-pause:hover { color: var(--accent); border-color: var(--accent); }
+  }
+  .d-pause:focus-visible,
+  .d-pause:active { color: var(--accent); }
+  .d-i { width: 14px; height: 14px; }
+  .d-pause .d-i-play,
+  .d-pause[aria-pressed="true"] .d-i-pause { display: none; }
+  .d-pause[aria-pressed="true"] .d-i-play { display: block; }
   @keyframes d-draw { from { stroke-dasharray: 1; stroke-dashoffset: 1; visibility: hidden; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
   @keyframes d-pop { from { opacity: 0; transform: scale(0.2); } }
   @keyframes d-fade { from { opacity: 0; } }

@@ -71,6 +71,21 @@ const card = new URL('/og.png', Astro.site).href;
           localStorage.removeItem('palette'); // the palette trial is over
         } catch {}
       })();
+      // Cover morphs: only the card you go to (or come back to) carries a view-transition-name, so other covers that
+      // sit on both pages (a post's More blogs) don't fly across the screen. The post's own cover is always named. On
+      // a post the reveal is left alone, or post A's cover would fly into post B's More blogs.
+      (() => {
+        const name = (u) => {
+          const id = new URL(u).pathname.split('/blogs/')[1];
+          const el = id && document.querySelector(`[data-cover="${CSS.escape(id)}"]`);
+          if (el) el.style.viewTransitionName = `cover-${id}`;
+        };
+        addEventListener('pageswap', (e) => e.viewTransition && e.activation?.entry && name(e.activation.entry.url));
+        addEventListener('pagereveal', (e) => {
+          const from = window.navigation?.activation?.from;
+          if (e.viewTransition && from && !location.pathname.startsWith('/blogs/')) name(from.url);
+        });
+      })();
     </script>
     {
       splash && (

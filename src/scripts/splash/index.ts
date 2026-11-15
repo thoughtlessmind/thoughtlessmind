@@ -7,7 +7,7 @@ import bits from './bits';
 
 // ms: the move to the header, the tint to the logo colour, how long after the move starts the content rises, and how
 // long the rises take (the longest rise plus its delay: the last fact row, 800 ms at 500).
-const DOCK = 800, TINT = 350, CONTENT = 200, RISE = 1340;
+const DOCK = 650, TINT = 350, CONTENT = 100, RISE = 1340;
 const SKIP = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
 
 const root = document.documentElement;

@@ -6,18 +6,18 @@ const BITS = [...'rajiv.me'].flatMap((ch) => [...ch.charCodeAt(0).toString(2).pa
 
 // Choreography, ms from the start.
 const T = {
-  fade: 250, fadeLag: 250,     // the field fades in over 0..500
-  go: [450, 690, 930],         // each hexagon's first launch: A, B, C
-  spread: 400,                 // launch window per hexagon, centre cells first
-  fly: 560, flyJit: 80,        // flight time
+  fade: 250, fadeLag: 150,     // the field fades in over 0..400
+  go: [380, 560, 740],         // each hexagon's first launch: A, B, C
+  spread: 320,                 // launch window per hexagon, centre cells first
+  fly: 500, flyJit: 80,        // flight time
   lock: 0.94,                  // flight progress where a bit lands (within ~0.5% of its path): its digit locks and it pops
   pop: 0.3, popDur: 260,       // the landing pop: extra alpha, and how long it takes to settle
   flyFlick: 125,               // a flying digit may change every 125 ms (8 a second at most)
-  die: [650, 1650], dieDur: 350,   // the extra bits dissolve while the mark gathers
-  sweep0: 2330, sweep: 220, cell: 100,   // compile: a diagonal sweep turns each digit into a block
-  xf0: 2650, xf: 200,          // then the mosaic crossfades into the vector mark
+  die: [550, 1350], dieDur: 350,   // the extra bits dissolve while the mark gathers
+  sweep0: 1750, sweep: 220, cell: 100,   // compile: a diagonal sweep turns each digit into a block (the last bit lands ~1640)
+  xf0: 2070, xf: 200,          // then the mosaic crossfades into the vector mark
 };
-const SOLID = T.xf0 + T.xf;    // 2850: the finished mark from here on
+const SOLID = T.xf0 + T.xf;    // 2270: the finished mark from here on
 const EXTRA = 0.4;             // field bits that never land, as a share of the ones that do
 // The compile sweep runs from the top-left of the mark to the bottom-right, a little steeper than 45 degrees.
 const DIR = [0.45 / Math.hypot(0.45, 1), 1 / Math.hypot(0.45, 1)];
@@ -211,5 +211,5 @@ function draw(c: CanvasRenderingContext2D, t: number, cam: { x: number; y: numbe
   c.globalAlpha = 1;
 }
 
-const bits: Splash = { dock: 2900, init, draw };
+const bits: Splash = { dock: 2300, init, draw };
 export default bits;

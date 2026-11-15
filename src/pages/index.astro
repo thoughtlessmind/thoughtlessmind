@@ -68,7 +68,7 @@ const now = [
 // named (AGENTS.md). `from`/`to` are ISO months for <time>; `to` is empty while the job is current. The logos are
 // imported assets shown as plain <img>: the project has no Sharp, and two tiny PNGs need no resizing. `work` is a few
 // lines on what he built there and the problem it solved.
-// Placeholder: the `work` lines are lorem ipsum until he writes the real ones; replace before publishing.
+// `work` is empty until he writes the real lines (no placeholder text on the page); the list shows once it has any.
 const jobs = [
   {
     from: ['2021-08', 'Aug 2021'],
@@ -78,11 +78,7 @@ const jobs = [
     logo: swipejobs,
     pad: 8,
     text: 'A platform that matches workers with jobs. I build its web apps.',
-    work: [
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.',
-      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.',
-      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.',
-    ],
+    work: [] as string[],
   },
   {
     from: ['2020-01', 'Jan 2020'],
@@ -92,10 +88,7 @@ const jobs = [
     logo: influence,
     pad: 5,
     text: 'A product that helps websites turn more visitors into customers. I built and maintained its web app.',
-    work: [
-      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt.',
-      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.',
-    ],
+    work: [] as string[],
   },
 ];
 const mark =
@@ -116,7 +109,6 @@ const person = {
 
 <BaseLayout splash jsonLd={person}>
   <section class="hero" id="about" aria-labelledby="h1">
-    <div class="art" aria-hidden="true"><Doodle /></div>
     <div class="hero-text">
       <h1 id="h1">
         <span class="name rise" style="--d:120" data-hero-name>{SITE.name}<span class="sr-only">,</span></span>
@@ -131,6 +123,7 @@ const person = {
         <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>
       </p>
     </div>
+    <div class="art"><Doodle /></div>
   </section>
 
   <section class="sec now" id="now" aria-labelledby="now-h">
@@ -160,9 +153,6 @@ const person = {
     <div class="head">
       <h2 class="h2" id="blogs-h">Blogs</h2>
       <p class="note">Notes on building for the web, and the problems I would rather solve once.</p>
-      <p class="hint">
-        Here for philosophy or psychology? Those essays are in <a class="ul" href="/blogs">the full list</a> too.
-      </p>
     </div>
     <div class="list">
       <ul>
@@ -185,8 +175,8 @@ const person = {
     </div>
     <ol class="list tl">
       {
-        jobs.map((j) => (
-          <li class:list={['job', { cur: !j.to }]}>
+        jobs.map((j, i) => (
+          <li class:list={['job', { cur: !j.to }]} style={`--t0:${i / Math.max(1, jobs.length - 1)};--t1:${(i + 1) / Math.max(1, jobs.length - 1)}`}>
             <span class="when">
               <time datetime={j.from[0]}>{j.from[1]}</time>
               {j.to ? (
@@ -194,7 +184,7 @@ const person = {
                   to <time datetime={j.to[0]}>{j.to[1]}</time>
                 </>
               ) : (
-                'to now'
+                <span class="till">to now</span>
               )}
             </span>
             <span class="node" aria-hidden="true" />
@@ -209,11 +199,13 @@ const person = {
                 </div>
               </div>
               <p class="cs">{j.text}</p>
-              <ul class="wk">
-                {j.work.map((w) => (
-                  <li>{w}</li>
-                ))}
-              </ul>
+              {j.work.length > 0 && (
+                <ul class="wk">
+                  {j.work.map((w) => (
+                    <li>{w}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </li>
         ))
@@ -304,25 +296,52 @@ const person = {
   // as About, Experience (under Blogs) as Blogs and the footer as Projects, so a jump to the end still lands there.
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
   const foot = document.querySelector('footer');
+  const secs = [...['about', 'now', 'blogs', 'experience', 'projects'].map((id) => document.getElementById(id)), foot].filter(
+    (s): s is HTMLElement => !!s,
+  );
+  const spyOf = (el: Element) =>
+    el === foot ? 'projects' : el.id === 'now' ? 'about' : el.id === 'experience' ? 'blogs' : el.id;
+  const set = (id: string) =>
+    links.forEach((a) => {
+      if (a.dataset.spy === id) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  // A click on a nav link moves the underline straight to it and holds it there while the page scrolls, so it doesn't
+  // stop at every section on the way. When the scroll ends (or after 2 s) the hold lets go and the underline goes to
+  // the section actually in the middle, in case the scroll was cut short.
+  let held = false;
   const spy = new IntersectionObserver(
-    (entries) =>
-      entries.forEach((e) => {
-        if (!e.isIntersecting) return;
-        const t = e.target.id;
-        const id = e.target === foot ? 'projects' : t === 'now' ? 'about' : t === 'experience' ? 'blogs' : t;
-        links.forEach((a) => {
-          const on = a.dataset.spy === id;
-          if (on) a.setAttribute('aria-current', 'true');
-          else a.removeAttribute('aria-current');
-        });
-      }),
+    (entries) => entries.forEach((e) => e.isIntersecting && !held && set(spyOf(e.target))),
     { rootMargin: '-45% 0px -54% 0px' },
   );
-  ['about', 'now', 'blogs', 'experience', 'projects'].forEach((id) => {
-    const s = document.getElementById(id);
-    if (s) spy.observe(s);
-  });
-  if (foot) spy.observe(foot);
+  secs.forEach((s) => spy.observe(s));
+  let free: () => void = () => {};
+  links.forEach((a) =>
+    a.addEventListener('click', () => {
+      removeEventListener('scrollend', free);
+      held = true;
+      set(a.dataset.spy!);
+      const t = setTimeout(() => free(), 2000);
+      free = () => {
+        clearTimeout(t);
+        removeEventListener('scrollend', free);
+        held = false;
+        const y = innerHeight * 0.45;
+        const s = secs.find((s) => {
+          const r = s.getBoundingClientRect();
+          return r.top <= y && r.bottom > y;
+        });
+        if (s) set(spyOf(s));
+      };
+      addEventListener('scrollend', free, { once: true });
+    }),
+  );
+
+  // The current job's dot pulses while the job is on screen: `.live` goes on as it comes into view and off once it
+  // has left, so off screen the pulse does no work.
+  const cur = document.querySelector('.job.cur');
+  if (cur)
+    new IntersectionObserver(([e]) => cur.classList.toggle('live', e.isIntersecting), { threshold: 0.3 }).observe(cur);
 </script>
 
 <style>
@@ -341,17 +360,17 @@ const person = {
   .st {
     display: block;
     margin-top: 20px;
-    font-size: clamp(38px, 4.6vw, 66px);
+    font-size: var(--t-display);
     font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.045em;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
     color: var(--hi);
   }
   /* One short paragraph in --muted, the values phrase in --ink, then the address. */
   .intro {
     max-width: 28em;
-    margin-top: 36px;
-    font-size: clamp(17px, 1.3vw, 19px);
+    margin-top: 32px;
+    font-size: var(--t-sm);
     line-height: 1.55;
     letter-spacing: -0.005em;
     color: var(--muted);
@@ -434,8 +453,8 @@ const person = {
   .thesis {
     max-width: 22em;
     font-size: var(--t-m);
-    font-weight: 500;
-    line-height: 1.2;
+    font-weight: 400;
+    line-height: 1.3;
     letter-spacing: -0.015em;
     text-wrap: balance;
   }
@@ -480,31 +499,53 @@ const person = {
     color: var(--muted);
     text-wrap: pretty;
   }
-  /* The hint for the other half of the writing: one muted line under the note. */
-  .hint {
-    max-width: 36em;
-    margin-top: 12px;
-    font-size: var(--t-xs);
-    color: var(--muted);
-    text-wrap: pretty;
-  }
   /* Experience as a timeline that keeps the text edge: each entry is the job (logo tile, role and company, one line
      on the product, the work) on the edge, and its dates in the right-hand column where the covers and stills sit.
-     The rail hangs in the gutter left of the edge, one line down the whole list, accent at the top fading into
-     --line and out at the bottom; each job's node sits on it level with the logo tile, the current job's filled, a
-     past one a ring. */
+     The rail hangs in the gutter left of the edge, one stroke of colour from now into the past: bright --accent at
+     the current job, cooling to an ember (the accent faded into the page, so it stays in the orange family) at the oldest, and ending there. Each job
+     carries its place on it (--t0 at its node, --t1 at the next, 0 to 1 down the list), so the segments join into one
+     gradient however many jobs there are, and each node is a dot filled with the rail's colour where it sits, with a
+     soft halo of the same colour (the current job's wider). */
   .tl {
     position: relative;
+    --ember: color-mix(in oklab, var(--accent) 58%, var(--bg));
   }
-  .tl::before {
+  .job {
+    --c0: color-mix(in oklab, var(--accent) calc(100% - var(--t0, 0) * 100%), var(--ember));
+    --c1: color-mix(in oklab, var(--accent) calc(100% - var(--t1, 1) * 100%), var(--ember));
+  }
+  .job:not(:last-child)::before {
     content: "";
     position: absolute;
     left: -35px;
-    top: 22px;
-    bottom: 0;
+    top: 27px;
+    bottom: -27px;
     width: 2px;
     border-radius: 1px;
-    background: linear-gradient(var(--accent), var(--line) 160px, var(--line) calc(100% - 64px), transparent);
+    background: linear-gradient(var(--c0), var(--c1));
+    transform-origin: top;
+  }
+  /* The rail draws itself down from each node as it scrolls in, on its own view timeline (no script); anywhere the
+     row reveal doesn't run, it is simply there. */
+  @keyframes rail-in {
+    from {
+      scale: 1 0;
+    }
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      /* A pseudo-element can't be a view timeline's subject, so the job names its own and the line follows it. */
+      .job {
+        view-timeline: --job;
+      }
+      .job:not(:last-child)::before {
+        animation: rail-in linear both;
+      }
+      :root .job:not(:last-child)::before {
+        animation-timeline: --job;
+        animation-range: entry 40% cover 55%;
+      }
+    }
   }
   .job {
     position: relative;
@@ -533,17 +574,50 @@ const person = {
   .node {
     position: absolute;
     left: -40px;
-    top: 16px;
+    top: 21px;
     width: 12px;
     height: 12px;
-    border: 2px solid var(--muted);
     border-radius: 50%;
-    background: var(--bg);
+    background: var(--c0);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--c0) 16%, transparent);
   }
   .cur .node {
-    border: 0;
-    background: var(--accent);
-    box-shadow: 0 0 0 5px color-mix(in oklab, var(--accent) 18%, transparent);
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--c0) 20%, transparent);
+  }
+  /* The current job breathes: a soft ring of the accent swells out of its dot and fades, every 3 s, while the job is
+     on screen (the script below sets `.live`), so off screen nothing runs. Only transform and opacity move. The
+     drawing's pause button (Doodle.astro, `html.held`) stops it too (WCAG 2.2.2). A past job never pulses. Reduced
+     motion: the still halo only. */
+  .node::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--c0);
+    opacity: 0;
+  }
+  @keyframes pulse {
+    0% {
+      opacity: 0.4;
+      scale: 1;
+    }
+    70%,
+    100% {
+      opacity: 0;
+      scale: 2.8;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cur.live .node::after {
+      animation: pulse 3000ms var(--ease) infinite;
+    }
+    :global(html.held) .cur.live .node::after {
+      animation-play-state: paused;
+    }
+  }
+  /* "to now" in the accent: the current job reads as live, in the rail's colour. */
+  .till {
+    color: var(--accent);
   }
   .who {
     display: flex;
@@ -595,7 +669,7 @@ const person = {
   }
   /* Phone: no gutter, so no rail. The dates sit on one line over each job, which keeps the full width. */
   @media (max-width: 720px) {
-    .tl::before,
+    .job::before,
     .node {
       display: none;
     }
@@ -668,8 +742,8 @@ const person = {
     display: block;
     font-size: var(--t-sm);
     font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.015em;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
     transition: color 200ms var(--ease);
   }
   /* Every clickable item's title turns orange while the pointer is anywhere on the item, or it has keyboard focus. */
@@ -857,19 +931,71 @@ const person = {
     fill: var(--logo);
   }
 
-  /* Phone: one column everywhere, stills above their text. No landing doodle here (the 404 keeps its band), so the page
-     opens on the name and headline under the header. */
+  /* Phone: one column everywhere, stills above their text. */
   @media (max-width: 720px) {
+    /* The landing fills the first screen, as on desktop: a small doodle under the header (the telescope, the planet and
+       the stars, the telescope moved up beside the planet), then the text, which leads; the two centred in the screen
+       together, How I work below the fold. The doodle is cropped to an 800 x 650 window of the drawing (from y 378),
+       drawn 72% of the column wide (at most 230px tall) in the middle of a full-width band, the pause at its right
+       end, 32px over the text. On a short screen (a phone with its browser bars) it gives way, down to 112px, so the
+       text keeps the first screen down to the email. */
     #about {
-      padding-top: calc(var(--head-h) + 32px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 100svh;
+      padding-block: calc(var(--head-h) + 24px) 24px;
+      container-type: inline-size;
     }
     #about .art {
+      position: relative;
+      inset: auto;
+      flex: none;
+      align-self: stretch;
+      width: auto;
+      /* ponytail: 520px is about everything else on the first screen at 375 (header, text, gaps); a much taller intro
+         would want it raised. */
+      height: clamp(112px, 100svh - 520px, min(72cqi * 650 / 800, 230px));
+      order: -1;
+      margin-bottom: 32px;
+      padding: 0;
+      overflow: hidden;
+    }
+    #about :global(.doodle) {
+      --k: 1.7;
+      position: absolute;
+      top: calc(-378 / 650 * 100%);
+      left: 50%;
+      width: auto;
+      height: calc(1331 / 650 * 100%);
+      translate: calc(-400 / 851 * 100%) 0;
+    }
+    #about :global(.doodle :is(.route, .moon, .pendulum, .rocket)) {
       display: none;
+    }
+    /* The telescope a size up and the planet a size down, so neither outweighs the other at this scale; each keeps the
+       drawing's line weight (--k divided by its scale). */
+    #about :global(.doodle :is(.telescope, .planet)) {
+      transform-box: fill-box;
+    }
+    #about :global(.doodle .telescope) {
+      --k: calc(1.7 / 1.3);
+      transform-origin: 0 100%;
+      translate: 30px -300px;
+      scale: 1.3;
+    }
+    #about :global(.doodle .planet) {
+      --k: calc(1.7 / 0.72);
+      transform-origin: 50% 50%;
+      translate: 60px 0;
+      scale: 0.72;
+    }
+    #about :global(.d-pause) {
+      right: 0;
+      bottom: 0;
     }
     .st {
       margin-top: 12px;
-      line-height: 1;
-      letter-spacing: -0.04em;
       text-wrap: balance;
     }
     .st br {

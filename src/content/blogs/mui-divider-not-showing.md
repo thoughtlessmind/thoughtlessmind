@@ -2,7 +2,7 @@
 title: 'Why your MUI Divider is not showing in a flex container'
 description: 'An MUI Divider inside a flex container can collapse to 0px. Why align-items causes it, and how the flexItem prop brings it back in MUI v9.'
 date: 2026-10-07
-code: '<Divider orientation="vertical" flexItem />'
+code: '<Divider flexItem />'
 ---
 
 If your MUI Divider vanishes inside a flex container, it is still in the DOM; it is 0px wide. In a flex column with `alignItems: 'center'`, items are sized to their content, and the Divider's `<hr>` has no content. Add the `flexItem` prop, `<Divider flexItem />`, and it stretches across the container again. Everything here is checked against `@mui/material` 9.4.0, the current release.

@@ -2,7 +2,7 @@
 title: 'MUI theme shadows, gradient text and scrollable tabs'
 description: 'Three MUI answers, updated for v9: pad theme.shadows to 25 entries, write WebkitBackgroundClip with a capital W, add variant="scrollable" to Tabs.'
 date: 2026-10-07
-code: "WebkitBackgroundClip: 'text'"
+code: 'WebkitBackgroundClip'
 ---
 
 `theme.shadows` must hold exactly 25 entries, one for each elevation from 0 to 24, so pad your custom shadows out to 25. Gradient text on `Typography` needs `background-clip: text`, and in a JavaScript style object the prefixed key is `WebkitBackgroundClip`, with a capital W. Tabs that overflow scroll once you add `variant="scrollable"`.

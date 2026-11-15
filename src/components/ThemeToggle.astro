@@ -1,19 +1,21 @@
 ---
 // One sun that morphs into a moon (DESIGN.md §3, §4), drawn in Phosphor's regular weight. The moon is the orb grown,
-// with a shade circle slid in from the top right: the mask cuts the orb's outline where the shade covers it and the
-// shade's own outline, clipped to the orb, closes the crescent. The rays spin away into the middle.
+// with a shade circle slid in from the top right. The orb's outline is two round-capped half circles that turn to end
+// where the shade crosses it, and the shade's outline
+// is two round-capped quarter circles that end there too, so the crescent's horns are round. Every
+// part follows --m in global.css. The rays spin away into the middle.
 ---
 <button class="theme rise" style="--d:180" type="button" aria-label="Switch to light theme" data-theme-toggle>
   <svg viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" aria-hidden="true" focusable="false">
-    <mask id="sm-cut" maskUnits="userSpaceOnUse">
-      <rect width="256" height="256" fill="#fff" stroke="none" />
-      <circle class="sm-b" cx="128" cy="128" r="38" fill="#000" stroke="none" />
-    </mask>
-    <clipPath id="sm-in"><circle cx="128" cy="128" r="64" /></clipPath>
+    <clipPath id="sm-in"><circle cx="128" cy="128" r="56" /></clipPath>
     <path class="sm-rays" d="M128 16v24M128 216v24M16 128h24M216 128h24M48 48l16 16M208 48l-16 16M48 208l16-16M208 208l-16-16" />
     <g class="sm-orb">
-      <circle cx="128" cy="128" r="56" mask="url(#sm-cut)" />
-      <g clip-path="url(#sm-in)"><circle class="sm-b" cx="128" cy="128" r="46" /></g>
+      <circle class="sm-a sm-a1" cx="128" cy="128" r="56" pathLength="360" />
+      <circle class="sm-a sm-a2" cx="128" cy="128" r="56" pathLength="360" />
+      <g clip-path="url(#sm-in)">
+        <circle class="sm-b sm-b1" cx="128" cy="128" r="38" pathLength="360" />
+        <circle class="sm-b sm-b2" cx="128" cy="128" r="38" pathLength="360" />
+      </g>
     </g>
   </svg>
 </button>
@@ -87,6 +89,8 @@
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   let pouring: ViewTransition | undefined;
   const pour = (from: Element, apply: () => void) => {
+    // A click mid-pour waits for it: starting another would skip this one and snap the whole page to the new theme.
+    if (pouring) return;
     if (!document.startViewTransition) return apply();
     // Reduced motion: no pour, but no full-screen brightness jump either; the themes cross-fade.
     if (still.matches) return void document.startViewTransition(apply);
@@ -98,8 +102,10 @@
     vt.ready
       .then(() => root.animate({ clipPath: pourFrames(x, y, knobs) }, { duration: knobs.T, pseudoElement: '::view-transition-new(root)' }))
       .catch(() => {});
-    // A second click mid-pour skips this one; only the latest takes the class off.
-    vt.finished.finally(() => pouring === vt && root.classList.remove('pour'));
+    vt.finished.finally(() => {
+      pouring = undefined;
+      root.classList.remove('pour');
+    });
   };
   btns.forEach((b) => b.addEventListener('click', () => pour(b, apply)));
   light.addEventListener('change', () => {

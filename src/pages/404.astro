@@ -7,7 +7,6 @@ import { SITE } from '../consts';
 <BaseLayout title={`Page not found, ${SITE.name}`} description="There is nothing at this address.">
   {/* The landing's frame and its drawing (global.css `.hero`): the telescope, still looking. */}
   <section class="hero" aria-labelledby="h1">
-    <div class="art" aria-hidden="true"><Doodle /></div>
     <div class="hero-text">
       <h1 id="h1">Page not found.</h1>
       <p>
@@ -19,21 +18,24 @@ import { SITE } from '../consts';
         <li><a class="ul hit" href="/blogs">All blogs</a></li>
       </ul>
     </div>
+    <div class="art"><Doodle /></div>
   </section>
   <meta slot="head" name="robots" content="noindex" />
 </BaseLayout>
 
 <style>
   h1 {
-    font-size: var(--t-xl);
-    font-weight: 500;
-    line-height: 0.98;
-    letter-spacing: -0.045em;
+    font-size: var(--t-display);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    color: var(--hi);
   }
   p {
     max-width: 30em;
     margin-top: 24px;
     font-size: var(--t-sm);
+    line-height: 1.55;
     color: var(--muted);
     text-wrap: pretty;
   }
@@ -42,11 +44,5 @@ import { SITE } from '../consts';
     flex-wrap: wrap;
     gap: 24px 28px;
     margin-top: 32px;
-  }
-  @media (max-width: 720px) {
-    h1 {
-      line-height: 1;
-      letter-spacing: -0.04em;
-    }
   }
 </style>
