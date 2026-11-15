@@ -6,7 +6,7 @@ import { getPosts } from '../lib/blogs';
 export const GET: APIRoute = async () => {
   const posts = await getPosts();
   const body = [
-    `# ${SITE.brand}\n\n> ${SITE.name} (thoughtlessmind) is a software engineer in New Delhi, India. ${SITE.url}`,
+    `# ${SITE.brand}\n\n> ${SITE.name} (thoughtlessmind) is a software engineer. ${SITE.url}`,
     ...posts.map((p) => `# ${p.data.title}\n\n${SITE.url}/blogs/${p.id}\n\n${p.data.description}\n\n${p.body?.trim() ?? ''}`),
   ].join('\n\n---\n\n');
   return new Response(`${body}\n`, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

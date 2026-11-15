@@ -45,6 +45,7 @@ rule is hand-written); `@theme inline` maps `--sans` and `--mono` into preflight
 | `--hi`     | `#ffffff`               | `#000000`             | emphasis                  |
 | `--logo`   | `#ff5f1f`               | `#ff5f1f`             | the mark and the rocket's flame (decorative) |
 | `--draw`   | `--ink` 66% into `--bg` | `--ink` 66% into `--bg` | the drawings' lines: the landing and 404 doodle, post covers; a step behind the text beside them (`--ink` under `prefers-contrast: more`) |
+| `--lede`   | `--ink` 80% into `--bg` | `--ink` 80% into `--bg` | the landing intro: a clear step above `--draw` beside it, below the values phrase in `--ink` (`--ink` under `prefers-contrast: more`) |
 | `--spot`   | `--logo`                | `--logo`              | the drawings' filled bits: the doodles' hexagon and spark, cover accents (decorative) |
 | `--accent` | `#ff5f1f`               | `#b23c0a`             | text orange, focus ring, the nav underline, active dots, reading line, the timeline's current node |
 | `--frame`  | `--ink` at 16%          | `--ink` at 16%        | the 1px border round post covers and project stills (no fill) |
@@ -60,7 +61,7 @@ rule is hand-written); `@theme inline` maps `--sans` and `--mono` into preflight
 | `--sel-ink`| `#b23c0a`               | `#ff5f1f`             | selected text: the other theme's text orange (4.8:1 / 6.7:1) |
 
 Dark is the default. Light applies under `prefers-color-scheme: light` unless `data-theme="dark"`, and always under
-`data-theme="light"`. Under `prefers-contrast: more`, `--line` and `--frame` both go to `--ink` at 40% and `--draw` to `--ink`. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
+`data-theme="light"`. Under `prefers-contrast: more`, `--line` and `--frame` both go to `--ink` at 40% `--draw` and `--lede` to `--ink`. Both pass WCAG AA for text; `--logo` and `--spot` are only ever the mark, drawings and the
 footer's star field, never running text.
 
 Code in posts uses Shiki's `github-dark-default` and `github-light-default` on `--panel`, both themes emitted as
@@ -120,7 +121,7 @@ worst token is 4.9:1 on the light panel and 6.0:1 on the dark one.
 - **Skip link** (`BaseLayout.astro`, `.skip`): the first focusable thing on every page, "Skip to content". Off screen
   until the keyboard reaches it, then an `--ink` chip over the header's left corner; it jumps to `main#main`.
 - **Footer** (`Footer.astro`, every page): one row of "Write to me at <email>", the socials (GitHub, LinkedIn, X,
-  dev.to, Stack Overflow), `RSS` and `llms.txt`, then "© 2026 Rajiv Kumar" (a column on a phone). Under it, 64px down (40px on
+  Stack Overflow), `RSS` and `llms.txt`, then "© 2026 Rajiv Kumar · New Delhi, India", the one place the city shows (a column on a phone). Under it, 64px down (40px on
   a phone), the star field across the full width of the window (out through the page margins, at every width) and `clamp(200px, 21vw, 300px)` tall: a canvas
   (`scripts/field.ts`) of dots on an 18px grid (14px under 600px wide), `--muted` at 50%, about one in seventeen a
   brighter star in `--ink`. The cursor stirs it (§4).
@@ -230,7 +231,8 @@ lights up or a cursor is stirring it, stopping once every dot is back in place.
 - **Header name**: the name beside the logo (§3) is shown when the hero's name has left the area under the header
   (an IntersectionObserver with the header's height as its top margin). It writes itself in: a `clip-path` inset
   opens left to right over 750 ms, linear, a steady pen speed, so the hand font reads as written. Scrolled back, it
-  fades out in 150 ms and the clip resets behind the fade, so the exit is quick and the next entry writes again.
+  un-writes: the clip closes right to left over 450 ms (ease in and out), and a 160 ms fade starts 290 ms in, once
+  about 70% of the name has gone, so the last strokes soften out instead of cutting off. The exit ends fully clipped, so the next entry writes again.
   Both are transitions, so a quick scroll back and forth retargets instead of restarting. Under reduced motion it
   is a 200 ms fade.
 - **Star field** (footer): the first time a fifth of it is on screen the dots light up outward from the centre, each
@@ -300,9 +302,9 @@ Sections, in order:
    `min(760px, 52vw)`: the name (`--t-sm`, `--accent`), then 20px under it the h1 "Software you don’t / have to think
    about." (`--t-display`, weight 400, leading 1.02, `--hi`, two authored lines): big and quiet, a step
    lighter than the rest of the display type. Under it one short paragraph (`--t-sm`, leading 1.55,
-   `--muted`, max 28em, 32px down): "A software engineer in New Delhi, building web and native apps, their backends and
-   the infrastructure under them since 2020. Lately, language models inside real products. The aim stays the same:
-   fast to load, clear to use, boring to run." The values phrase (`.hl`) reads in `--ink` until the pointer is on the
+   `--lede`, max 28em, 32px down): "I build web and native apps, their backends and the
+   infrastructure under them, and lately the language models inside real products. Since 2020 the aim hasn’t changed:
+   software that’s fast to load, clear to use and boring to run." The values phrase (`.hl`) reads in `--ink` until the pointer is on the
    paragraph; then `--accent` flows through it left to right, line after line, and ebbs back on leave. It is text
    clipped to a `--accent` to `--ink` gradient (soft 40% to 60% edge, 250% wide, one strip across the line break)
    whose position slides 100% to 0 over 1100ms `--ease`. Reduced motion: the colour switches at once. Touch shows

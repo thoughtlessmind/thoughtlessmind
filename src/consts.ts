@@ -1,9 +1,9 @@
 export const SITE = {
   name: 'Rajiv Kumar',
   brand: 'rajiv.me',
-  title: 'Rajiv Kumar, software engineer in New Delhi',
+  title: 'Rajiv Kumar, software engineer',
   description:
-    'Software engineer in New Delhi. I build web and native apps, their backends and infrastructure, and put language models to work inside them. Since 2020.',
+    'Software engineer putting language models to work inside real products, and building the web and native apps, backends and infrastructure around them.',
   url: 'https://rajiv.me',
   email: 'hello@rajiv.me',
   role: 'Senior Frontend Engineer',
@@ -12,7 +12,6 @@ export const SITE = {
   socials: {
     github: 'https://github.com/thoughtlessmind',
     linkedin: 'https://www.linkedin.com/in/thoughtlessmind/',
-    devto: 'https://dev.to/thoughtlessmind',
     stackoverflow: 'https://stackoverflow.com/users/11222282/rajiv',
     x: 'https://x.com/rajiv_x_',
   },

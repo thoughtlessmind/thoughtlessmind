@@ -141,9 +141,9 @@ const person = {
         <span class="st rise" style="--d:190">Software you don’t <br />have to think about.</span>
       </h1>
       <p class="intro rise" style="--d:300">
-        A software engineer in New Delhi, building web and native apps, their backends and the infrastructure under
-        them since {SITE.since}. Lately, language models inside real products. The aim stays the
-        same: <span class="hl">fast to load, clear to use, boring to run</span>.
+        I build web and native apps, their backends and the infrastructure under them, and lately the language models
+        inside real products. Since {SITE.since} the aim hasn’t changed:
+        software that’s <span class="hl">fast to load, clear to use and boring to run</span>.
       </p>
       <p class="reach rise" style="--d:380">
         <a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a>
@@ -392,14 +392,15 @@ const person = {
     letter-spacing: -0.03em;
     color: var(--hi);
   }
-  /* One short paragraph in --muted, the values phrase in --ink, then the address. */
+  /* One short paragraph in --lede (brighter than the doodle's lines beside it), the values phrase in --ink, then the
+     address. */
   .intro {
     max-width: 28em;
     margin-top: 32px;
     font-size: var(--t-sm);
     line-height: 1.55;
     letter-spacing: -0.005em;
-    color: var(--muted);
+    color: var(--lede);
     text-wrap: pretty;
   }
   /* The values phrase reads as plain text until the pointer is on the paragraph. Then the orange flows through it

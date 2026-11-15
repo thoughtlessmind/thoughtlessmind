@@ -80,6 +80,9 @@
   /* The drawings' lines (the landing doodle, the 404's, post covers): the text colour mixed a third of the way into the
      page, so a drawing sits behind the words next to it instead of matching them. Follows both themes. */
   --draw: color-mix(in oklab, var(--ink) 66%, var(--bg));
+  /* The landing intro: the text colour 80% of the way from the page, a clear step above the drawing beside it
+     (--draw) and below the values phrase (--ink). Follows both themes. */
+  --lede: color-mix(in oklab, var(--ink) 80%, var(--bg));
   /* The drawings' filled bits (the doodles' star, the footer name, cover accents): the logo colour. */
   --spot: var(--logo);
   /* The frame round post covers and project stills: the text colour at 16%, on no fill. */
@@ -154,6 +157,7 @@
     --frame: color-mix(in oklab, var(--ink) 40%, transparent) !important;
     --line: color-mix(in oklab, var(--ink) 40%, transparent) !important;
     --draw: var(--ink) !important;
+    --lede: var(--ink) !important;
   }
 }
 :root[data-theme="light"] {
@@ -372,8 +376,8 @@
      the --sig gradient: the same look as the text was, without a 75KB font for two words. The box hugs the outline;
      the margin and translate put the strokes where the text's glyphs sat (its first ink 76 units in, and the box
      centre 106 units under the text line's). Hidden, it is clipped away to its left edge. Shown, the clip opens left
-     to right at a steady pen speed, so the name reads as written; leaving, it fades fast and the clip resets behind
-     the fade. Reduced motion: a plain fade. `still` (pages without the hero name): shown, no transition. */
+     to right at a steady pen speed, so the name reads as written; leaving, it un-writes: the clip closes right to left,
+     quicker than the write, and a short fade only once most of it has gone, so the last strokes soften out. Reduced motion: a plain fade. `still` (pages without the hero name): shown, no transition. */
   .sig {
     flex: none;
     width: calc(27px * 4.214);
@@ -384,7 +388,7 @@
     mask: url("../assets/sig.svg") center / 100% 100% no-repeat;
     opacity: 0;
     clip-path: inset(-40% 100% -40% 0);
-    transition: opacity 150ms var(--ease), clip-path 0s 150ms;
+    transition: clip-path 450ms cubic-bezier(0.4, 0, 0.6, 1), opacity 160ms 290ms linear;
   }
   .top[data-named] .sig {
     opacity: 1;

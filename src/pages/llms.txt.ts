@@ -16,7 +16,7 @@ export const GET: APIRoute = async () => {
   const list = (rows: string[][]) => rows.map(([name, href, note]) => `- [${name}](${href})${note ? `: ${note}` : ''}`).join('\n');
   const body = `# ${SITE.brand}
 
-> ${SITE.name} (thoughtlessmind) is a software engineer in New Delhi, India. He builds web and native apps, their backends and infrastructure, and puts language models to work inside them. Since ${SITE.since}.
+> ${SITE.name} (thoughtlessmind) is a software engineer. He builds web and native apps, their backends and infrastructure, and puts language models to work inside them. Since ${SITE.since}.
 
 I am ${SITE.name}, and this is my site, ${SITE.url}. Everything in one file: ${SITE.url}/llms-full.txt. Lately most of my week goes to putting language models to work inside real products: MCP servers that give a model typed access to a product’s data and actions, model features with a budget for latency and cost and a fallback, and evals that run on every prompt and model change. Every post below links to its Markdown source.
 
@@ -33,7 +33,6 @@ ${list(projects)}
 ${list([
   ['GitHub', SITE.socials.github],
   ['LinkedIn', SITE.socials.linkedin],
-  ['dev.to', SITE.socials.devto],
   ['Stack Overflow', SITE.socials.stackoverflow],
   ['X', SITE.socials.x],
   ['Email', `mailto:${SITE.email}`],
