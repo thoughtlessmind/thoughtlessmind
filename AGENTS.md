@@ -36,6 +36,9 @@ after a build.
   generator is in the local `docs/sig/`), not a font.
 - `build.inlineStylesheets: 'always'`: each page's CSS is inline, no render-blocking stylesheet.
 - One content collection, `blogs`: plain Markdown, Shiki for code (themes in `astro.config.mjs`). No React or MDX.
+- Analytics: Umami Cloud, cookieless. The script loads only when `SITE.umami` (the website id) is set, and counts
+  rajiv.me only. Outbound clicks carry `data-umami-event` (email, social, project). Bots and AI crawlers: the Cloudflare
+  dashboard.
 
 ## Layout of src
 

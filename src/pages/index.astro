@@ -250,6 +250,8 @@ const person = {
               target="_blank"
               aria-label={`${w.name}: ${w.go} (opens in a new tab)`}
               aria-describedby={`pj-${w.id}`}
+              data-umami-event="project"
+              data-umami-event-name={w.name}
             >
               <span class="pj">
                 <span class="pt">

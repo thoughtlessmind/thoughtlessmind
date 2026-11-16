@@ -9,6 +9,8 @@ export const SITE = {
   role: 'Senior Frontend Engineer',
   previousCompany: 'Influence',
   since: 2020,
+  // Umami Cloud website id (cookieless analytics). Empty means no script is loaded.
+  umami: 'a0fe1bef-1b82-4890-8e2f-27753b91d1a5',
   socials: {
     github: 'https://github.com/thoughtlessmind',
     linkedin: 'https://www.linkedin.com/in/thoughtlessmind/',

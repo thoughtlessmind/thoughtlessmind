@@ -63,6 +63,8 @@ const card = new URL('/og.png', Astro.site).href;
     {/* The text face, fetched with the HTML instead of once the inline CSS has been laid out. */}
     <link rel="preload" href={geist} as="font" type="font/woff2" crossorigin />
     <link rel="manifest" href="/site.webmanifest" />
+    {/* Cookieless analytics: page views, referrers, time on page, and the data-umami-event clicks. Counts rajiv.me only, not dev or preview. */}
+    {SITE.umami && <script is:inline defer src="https://cloud.umami.is/script.js" data-website-id={SITE.umami} data-domains="rajiv.me" />}
     <script is:inline>
       // Before paint: `js` on <html> and the theme picked with the switch (it follows the system until then).
       (() => {

@@ -12,12 +12,12 @@ const socials = [
 
 <footer class="foot wrap" data-foot>
   <div class="foot-row">
-    <p class="mail"><a class="ul" href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+    <p class="mail"><a class="ul" href={`mailto:${SITE.email}`} data-umami-event="email">{SITE.email}</a></p>
     <ul class="soc">
       {
         socials.map(([label, href]) => (
           <li>
-            <a class="ul hit" href={href} rel="noopener me" target="_blank">
+            <a class="ul hit" href={href} rel="noopener me" target="_blank" data-umami-event="social" data-umami-event-name={label}>
               {label}<span class="sr-only"> (opens in a new tab)</span>
             </a>
           </li>
