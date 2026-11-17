@@ -474,10 +474,14 @@ Every post is also served as Markdown at `/blogs/<slug>.md` (`[slug].md.ts`: tit
 `/llms.txt` (llmstxt.org format) lists the posts' Markdown, the projects and where to find him. The footer links
 `llms.txt` and the head carries `<link rel="alternate" type="text/plain" href="/llms.txt">`.
 
-- **Link preview**: one card for every page, `public/og.png` (1200x630): the mark, the name in orange, the headline,
-  "rajiv.me" and the landing doodle on the dark page, with `twitter:card` `summary_large_image`. It is a screenshot
-  of the landing at 1200x630 with the paragraphs and the nav hidden; retake it when the headline or the doodle
-  changes. A link shared anywhere carries the drawing, which is where most people meet the site first.
+- **Link preview**: one card for every page, `public/og-card.png` (1200x630), with `twitter:card`
+  `summary_large_image`: the mark inside a line-drawn rocket's dashed orbit, "Rajiv Kumar" (Geist 600, 80px, `--ink`)
+  and "rajiv.me" (`--muted`), stacked on the dark `--bg`. Everything sits in the centre 630px square, because WhatsApp,
+  Telegram and chat apps often show a square centre crop about 96px wide; a page-like card (text left, art right)
+  lost both the name and the mark there. Lines are thick (8px at 1024) so the drawing holds at that size. The orbit
+  is Codex art (the `style.txt` recipe, thicker), recoloured with `process.mjs art`; the card is
+  `docs/v4-research/art/og/og.html` screenshotted at 1200x630 by headless Chrome. Give a new card a new filename:
+  previews cache by URL.
 - **Structured data** (`jsonLd` on `BaseLayout`): the home page is a schema.org `Person` (the real job title, New
   Delhi, the socials, no employer); a post is a `BlogPosting` with its dates and author, and `og:type` `article`.
 - **Feed**: `/rss.xml` (`rss.xml.ts`, written by hand: titles, summaries, dates), linked from the head and the footer.

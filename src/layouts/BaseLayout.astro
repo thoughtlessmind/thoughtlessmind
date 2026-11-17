@@ -28,8 +28,9 @@ const { title = SITE.title, description = SITE.description, splash = false, curr
 // No trailing slash (trailingSlash: 'never'); the root stays `/`.
 const path = Astro.url.pathname;
 const canonical = new URL(path.length > 1 ? path.replace(/\/+$/, '') : path, Astro.site);
-// One link-preview card for every page: the landing drawing with the name and the headline (public/og.png).
-const card = new URL('/og.png', Astro.site).href;
+// One link-preview card for every page: the mark in a rocket's orbit over the name, all inside the centre square so
+// a square thumbnail crop keeps it (public/og-card.png). Rename the file when it changes: previews cache by URL.
+const card = new URL('/og-card.png', Astro.site).href;
 // ponytail: theme-color follows the system only; a theme picked with the switch keeps the system's bar colour.
 ---
 
@@ -45,11 +46,16 @@ const card = new URL('/og.png', Astro.site).href;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical.href} />
+    <meta property="og:locale" content="en_IN" />
     <meta property="og:image" content={card} />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`${SITE.name}. Software you don’t have to think about. A line drawing of a telescope, a ringed planet and a rocket.`} />
+    <meta property="og:image:alt" content={`${SITE.name}, rajiv.me. The orange hexagon mark with a line-drawn rocket circling it on a dashed orbit.`} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@rajiv_x_" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={card} />
     <link rel="alternate" type="application/rss+xml" href="/rss.xml" title={`${SITE.name}, blogs`} />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
