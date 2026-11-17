@@ -1,2 +1,5 @@
 /about /#about 301
 /about/ /#about 301
+/x /?utm_source=x 302
+/gh /?utm_source=github 302
+/in /?utm_source=linkedin 302
