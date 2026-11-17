@@ -64,7 +64,26 @@ const card = new URL('/og.png', Astro.site).href;
     <link rel="preload" href={geist} as="font" type="font/woff2" crossorigin />
     <link rel="manifest" href="/site.webmanifest" />
     {/* Cookieless analytics: page views, referrers, time on page, and the data-umami-event clicks. Counts rajiv.me only, not dev or preview. */}
-    {SITE.umami && <script is:inline defer src="https://cloud.umami.is/script.js" data-website-id={SITE.umami} data-domains="rajiv.me" />}
+    {/* Clean address bar: the utm_* tags (the /x, /gh, /in short links add them) come off before Umami loads, then go
+       back into the first page view only. Stripping them later would count a second view: the tracker treats every
+       history change as one. */}
+    <script is:inline>
+      (() => {
+        let tagged = location.href;
+        const url = new URL(tagged);
+        for (const k of [...url.searchParams.keys()]) if (k.startsWith('utm_')) url.searchParams.delete(k);
+        if (url.href === tagged) return;
+        history.replaceState(history.state, '', url);
+        window.umamiBeforeSend = (type, payload) => {
+          if (tagged && type === 'event' && !payload.name) {
+            payload.url = tagged;
+            tagged = null;
+          }
+          return payload;
+        };
+      })();
+    </script>
+    {SITE.umami && <script is:inline defer src="https://cloud.umami.is/script.js" data-website-id={SITE.umami} data-domains="rajiv.me" data-before-send="umamiBeforeSend" />}
     <script is:inline>
       // Before paint: `js` on <html> and the theme picked with the switch (it follows the system until then).
       (() => {
